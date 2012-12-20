@@ -7,8 +7,10 @@ which is a plugin of Sublime Text2.
 
 ## Screenshot
 
+### linum-mode style
 ![git-gutter.el](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter1.png)
 
+### View git information in fringe
 ![git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-fringe.png)
 
 

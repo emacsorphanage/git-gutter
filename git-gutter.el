@@ -220,12 +220,12 @@
     (git-gutter:write-file original orig-content)
     (git-gutter:write-file current cur-content)))
 
-(defvar git-gutter:view-diff-func #'git-gutter:view-diff-infos
+(defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
   "Function of viewing diff information")
 
 (defun git-gutter:process-diff (original current)
   (let ((diffinfos (git-gutter:diff original current)))
-    (funcall git-gutter:view-diff-func diffinfos)))
+    (funcall git-gutter:view-diff-function diffinfos)))
 
 ;;;###autoload
 (defun git-gutter ()

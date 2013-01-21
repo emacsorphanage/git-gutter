@@ -106,10 +106,10 @@
       (loop while (re-search-forward regexp nil t)
             collect
             (let* ((type (match-string 3))
-                   (start-line (string-to-int (match-string 4)))
+                   (start-line (string-to-number (match-string 4)))
                    (temp-end (match-string 5))
                    (end-line (or (and (string= temp-end "") start-line)
-                                 (string-to-int temp-end))))
+                                 (string-to-number temp-end))))
               (git-gutter:construct-diffinfo type start-line end-line))))))
 
 (defun git-gutter:remove-tempfiles (files)
@@ -118,7 +118,8 @@
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
-    (goto-line line)
+    (goto-char (point-min))
+    (forward-line (1- line))
     (point)))
 
 (defmacro git-gutter:before-string (sign)

@@ -33,6 +33,13 @@
   :prefix "git-gutter:"
   :group 'vc)
 
+(defcustom git-gutter:window-length nil
+  "Character width of gutter window. Emacs mistakes width of some characters.
+It is better to explicitly assign width to this variable, if you use full-width
+character for signs of changes"
+  :type 'integer
+  :group 'git-gutter)
+
 (defcustom git-gutter:modified-sign "="
   "Modified sign"
   :type 'string
@@ -178,7 +185,8 @@
 
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((curwin (get-buffer-window))
-        (winlen (git-gutter:longest-sign-length)))
+        (winlen (or git-gutter:window-length
+                    (git-gutter:longest-sign-length))))
     (save-excursion
       (loop for diffinfo in diffinfos
             do

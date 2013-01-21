@@ -83,38 +83,37 @@
          (gitdir (concat rootdir ".git")))
     (make-git-gutter:repoinfo :root rootdir :gitdir gitdir)))
 
-(defun git-gutter:construct-diffinfo (type start end)
-  (cond ((string= type "c")
-         (make-git-gutter:diffinfo :type 'modified
-                                   :start-line start :end-line end))
-        ((string= type "a")
-         (make-git-gutter:diffinfo :type 'added
-                                   :start-line start :end-line end))
-        ((string= type "d")
-         (make-git-gutter:diffinfo :type 'deleted :start-line (1+ start)))
-        (t
-         (error (format "Unknown diff type '%s'" type)))))
+(defun git-gutter:changes-to-number (str)
+  (if (string= str "")
+      1
+    (string-to-number str)))
 
-(defun git-gutter:diff (orig cur)
-  (let ((cmd (format "diff %s %s" orig cur))
-        (regexp "^\\([0-9]+\\),?\\([0-9]*\\)\\(.\\)\\([0-9]+\\),?\\([0-9]*\\)"))
+(defun git-gutter:diff (curfile)
+  (let ((cmd (format "git diff -U0 %s" curfile))
+        (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
     (with-temp-buffer
       (let ((ret (call-process-shell-command cmd nil t)))
-        (unless (or (zerop ret) (= ret 1)) ;; `diff' returns 1 if it succeeds
+        (unless (or (zerop ret))
           (error (format "Failed '%s'" cmd))))
       (goto-char (point-min))
       (loop while (re-search-forward regexp nil t)
+            for orig-line = (string-to-number (match-string 1))
+            for new-line  = (string-to-number (match-string 3))
+            for orig-changes = (git-gutter:changes-to-number (match-string 2))
+            for new-changes = (git-gutter:changes-to-number (match-string 4))
+            for end-line = (1- (+ new-line new-changes))
             collect
-            (let* ((type (match-string 3))
-                   (start-line (string-to-number (match-string 4)))
-                   (temp-end (match-string 5))
-                   (end-line (or (and (string= temp-end "") start-line)
-                                 (string-to-number temp-end))))
-              (git-gutter:construct-diffinfo type start-line end-line))))))
-
-(defun git-gutter:remove-tempfiles (files)
-  (dolist (file files)
-    (delete-file file)))
+            (cond ((zerop orig-changes)
+                   (make-git-gutter:diffinfo :type 'added
+                                             :start-line new-line
+                                             :end-line end-line))
+                  ((zerop new-changes)
+                   (make-git-gutter:diffinfo :type 'deleted
+                                             :start-line (1- orig-line)))
+                  (t
+                   (make-git-gutter:diffinfo :type 'modified
+                                             :start-line new-line
+                                             :end-line end-line)))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -192,52 +191,43 @@
   (let ((curwin (get-buffer-window)))
     (set-window-margins curwin 0 (cdr (window-margins curwin)))))
 
-(defun git-gutter:filepath-to-gitpath (path root)
-  (file-relative-name path root))
-
-(defun git-gutter:show-original-content-command (repoinfo file)
-  (let ((gitdir (git-gutter:repoinfo-gitdir repoinfo))
-        (rootdir (git-gutter:repoinfo-root repoinfo)))
-    (format "git --git-dir=%s --work-tree=%s show HEAD:%s"
-            gitdir rootdir (git-gutter:filepath-to-gitpath file rootdir))))
-
-(defun git-gutter:original-content (repoinfo)
-  (let ((cmd (git-gutter:show-original-content-command
-              repoinfo (expand-file-name (buffer-file-name)))))
-    (with-temp-buffer
-      (let ((ret (call-process-shell-command cmd nil t)))
-        (unless (zerop ret)
-          (error (format "Did you add '%s' to Git repository ?"
-                         (buffer-file-name))))
-        (buffer-substring-no-properties (point-min) (point-max))))))
-
-(defun git-gutter:write-file (filename content)
-  (with-temp-file filename
-    (insert content)))
-
-(defun git-gutter:prepare-diff (repoinfo original current)
-  (let ((orig-content (git-gutter:original-content repoinfo))
-        (cur-content (buffer-substring-no-properties (point-min) (point-max))))
-    (git-gutter:write-file original orig-content)
-    (git-gutter:write-file current cur-content)))
-
 (defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
-  "Function of viewing diff information")
+  "Function of viewing changes")
 
-(defun git-gutter:process-diff (original current)
-  (let ((diffinfos (git-gutter:diff original current)))
+(defvar git-gutter:clear-function #'git-gutter:clear-overlays
+  "Function of clear changes")
+
+(defun git-gutter:process-diff (curfile)
+  (let ((diffinfos (git-gutter:diff curfile)))
     (funcall git-gutter:view-diff-function diffinfos)))
+
+(defun git-gutter:clear-overlays ()
+  (git-gutter:delete-overlay))
+
+(defvar git-gutter:enabled nil)
 
 ;;;###autoload
 (defun git-gutter ()
   (interactive)
   (git-gutter:delete-overlay)
-  (let ((repoinfo (git-gutter:repo-info))
-        (original (make-temp-name "gutter_orig"))
-        (current  (make-temp-name "gutter_cur")))
-    (git-gutter:prepare-diff repoinfo original current)
-    (git-gutter:process-diff original current)
-    (git-gutter:remove-tempfiles (list original current))))
+  (let* ((repoinfo (git-gutter:repo-info))
+         (curfile (file-relative-name
+                   (buffer-file-name) (git-gutter:repoinfo-root repoinfo))))
+    (git-gutter:process-diff curfile)
+    (setq git-gutter:enabled t)))
+
+;;;###autoload
+(defun git-gutter:clear ()
+  (interactive)
+  (funcall git-gutter:clear-function)
+  (setq git-gutter:enabled nil))
+
+;;;###autoload
+(defun git-gutter:toggle ()
+  (interactive)
+  (if git-gutter:enabled
+      (git-gutter:clear)
+    (git-gutter)))
 
 (provide 'git-gutter)
 

@@ -24,18 +24,27 @@ which is a plugin of Sublime Text2.
 
 `git-gutter.el` provides following commands.
 
+Show changes from last commit
+
     M-x git-gutter
+
+Clear changes
+
+    M-x git-gutter:clear
+
+Toggle git-gutter
+
+    M-x git-gutter:toggle
 
 
 ## Sample Configuration
 
 ```` elisp
 (require 'git-gutter)
-;;(require 'git-gutter) If you use flinge version
+;;(require 'git-gutter-fringe) If you use flinge version
 
 (add-hook 'after-save-hook
           (lambda ()
             (if (zerop (call-process-shell-command "git rev-parse --show-toplevel"))
                 (git-gutter))))
-
 ````

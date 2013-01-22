@@ -175,13 +175,15 @@ character for signs of changes"
         (git-gutter:propertized-sign 'deleted)
         (git-gutter:line-to-pos start-line))))))
 
+(defun git-gutter:sign-length (sign)
+  (loop for s across sign
+        sum (char-width s)))
+
 (defun git-gutter:longest-sign-length ()
   (let ((signs (list git-gutter:modified-sign
                      git-gutter:added-sign
                      git-gutter:deleted-sign)))
-    (apply #'max
-           (mapcar (lambda (c)
-                     (char-width (string-to-char c))) signs))))
+    (apply #'max (mapcar #'git-gutter:sign-length signs))))
 
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((curwin (get-buffer-window))

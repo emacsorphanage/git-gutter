@@ -213,6 +213,7 @@ character for signs of changes"
   (git-gutter:delete-overlay))
 
 (defvar git-gutter:enabled nil)
+(make-variable-buffer-local 'git-gutter:enabled)
 
 ;;;###autoload
 (defun git-gutter ()

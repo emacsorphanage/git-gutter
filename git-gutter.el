@@ -72,7 +72,6 @@ character for signs of changes"
 
 (defvar git-gutter:overlays nil)
 
-(defstruct git-gutter:repoinfo root gitdir)
 (defstruct git-gutter:diffinfo type start-line end-line)
 
 (defun git-gutter:root-directory ()
@@ -84,11 +83,6 @@ character for signs of changes"
       (goto-char (point-min))
       (file-name-as-directory
        (buffer-substring-no-properties (point) (line-end-position))))))
-
-(defun git-gutter:repo-info ()
-  (let* ((rootdir (git-gutter:root-directory))
-         (gitdir (concat rootdir ".git")))
-    (make-git-gutter:repoinfo :root rootdir :gitdir gitdir)))
 
 (defun git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -219,11 +213,11 @@ character for signs of changes"
 (defun git-gutter ()
   (interactive)
   (git-gutter:delete-overlay)
-  (let* ((repoinfo (git-gutter:repo-info))
-         (curfile (file-relative-name
-                   (buffer-file-name) (git-gutter:repoinfo-root repoinfo))))
-    (git-gutter:process-diff curfile)
-    (setq git-gutter:enabled t)))
+  (let* ((gitroot (git-gutter:root-directory)))
+    (let ((default-directory gitroot)
+          (current-file (file-relative-name (buffer-file-name) gitroot)))
+      (git-gutter:process-diff current-file)
+      (setq git-gutter:enabled t))))
 
 ;;;###autoload
 (defun git-gutter:clear ()

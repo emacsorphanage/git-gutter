@@ -39,12 +39,54 @@ Toggle git-gutter
 
 ## Sample Configuration
 
+### linum style setting
+
 ```` elisp
 (require 'git-gutter)
-;;(require 'git-gutter-fringe) If you use flinge version
 
+;; Update changes information after save buffer
 (add-hook 'after-save-hook
           (lambda ()
-            (if (zerop (call-process-shell-command "git rev-parse --show-toplevel"))
-                (git-gutter))))
+            (when (zerop (call-process-shell-command "git rev-parse --show-toplevel"))
+              (git-gutter))))
 ````
+
+### fringe version setting
+
+```` elisp
+;; You need to install fringe-helper.el
+(require 'git-gutter-fringe)
+````
+
+## Customize
+
+You can change change signes and those faces in linum style.
+
+```` elisp
+(setq git-gutter:modified-sign "==")
+(setq git-gutter:added-sign "++")
+(setq git-gutter:deleted-sign "--")
+
+(set-face-foreground 'git-gutter:modified "cyan")
+(set-face-foreground 'git-gutter:added "green")
+(set-face-foreground 'git-gutter:deleted "red")
+````
+
+
+### Using full width characters
+
+Emacs has `char-width` function which returns character width.
+`git-gutter.el` uses it for calculating character length of the signs.
+But `char-width` does not work for some full-width characters.
+So you should explicitly specify window width, if you use full-width
+character.
+
+```` elisp
+(setq git-gutter:window-width 2)
+(setq git-gutter:modified-sign "☁")
+(setq git-gutter:added-sign "☀")
+(setq git-gutter:deleted-sign "☂")
+````
+
+### Screenshot of above customization
+![git-gutter-fullwidth](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-fullwidth.png)

@@ -44,6 +44,9 @@ Toggle git-gutter
 ```` elisp
 (require 'git-gutter)
 
+;; bind git-gutter toggle command
+(global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
+
 ;; Update changes information after save buffer
 (add-hook 'after-save-hook
           (lambda ()
@@ -60,17 +63,21 @@ Toggle git-gutter
 
 ## Customize
 
-You can change change signes and those faces in linum style.
+You can change the signs and those faces in linum style.
 
 ```` elisp
-(setq git-gutter:modified-sign "==")
-(setq git-gutter:added-sign "++")
+(setq git-gutter:modified-sign "  ") ;; two space
+(setq git-gutter:added-sign "++")    ;; multiple character is OK
 (setq git-gutter:deleted-sign "--")
 
-(set-face-foreground 'git-gutter:modified "cyan")
+(set-face-background 'git-gutter:modified "purple") ;; background color
 (set-face-foreground 'git-gutter:added "green")
 (set-face-foreground 'git-gutter:deleted "red")
 ````
+
+### Screenshot of above customization
+
+![git-gutter-multichar](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-multichar.png)
 
 
 ### Using full width characters

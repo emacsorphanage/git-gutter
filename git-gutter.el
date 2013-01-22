@@ -1,6 +1,6 @@
 ;;; git-gutter.el --- Port of Sublime Text 2 plugin GitGutter
 
-;; Copyright (C) 2012 by Syohei YOSHIDA
+;; Copyright (C) 2013 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter

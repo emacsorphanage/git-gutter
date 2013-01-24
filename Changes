@@ -1,4 +1,7 @@
 Revision history for git-gutter.el
 
+Revision 0.02 2013/01/24 syohex
+   - Fix clear all overlays problem
+
 Revision 0.01 2013/01/23 syohex
    - Initial version

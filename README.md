@@ -87,3 +87,28 @@ character.
 
 ### Screenshot of above customization
 ![git-gutter-fullwidth](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-fullwidth.png)
+
+
+## Implement your own git-gutter
+
+You can create your own git-gutter to implement 2 functions.
+
+### view function
+
+View function view diff informations to current buffer.
+View function takes list of diff informations(`diffinfos`). `diffinfos`
+are list of plist(`diffinfo`) and `diffinfo` has property `:type`,
+`:start-line`, `:end-line`.
+
+Set view function variable `git-gutter:view-diff-function`.
+
+
+### clear function
+
+Clear function clears diff informations.
+Clear function takes no arguments.
+
+Set clear function variable `git-gutter:view-diff-function`.
+
+If you are interested in implement your git-gutter,
+please see example, [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe).

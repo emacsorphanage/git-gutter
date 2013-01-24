@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.03 2013/01/24 syohex
+   - Change data struction of diffinfo
+
 Revision 0.02 2013/01/24 syohex
    - Fix clear all overlays problem
 

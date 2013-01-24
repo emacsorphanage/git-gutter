@@ -71,6 +71,7 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defvar git-gutter:overlays nil)
+(make-variable-buffer-local 'git-gutter:overlays)
 
 (defstruct git-gutter:diffinfo type start-line end-line)
 

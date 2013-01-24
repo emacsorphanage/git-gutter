@@ -5,19 +5,17 @@
 which is a plugin of Sublime Text2.
 
 
+If you use fringe style(not linum style), please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe)
+
+
 ## Screenshot
 
-### linum-mode style
 ![git-gutter.el](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter1.png)
-
-### View git information in fringe
-![git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-fringe.png)
 
 
 ## Requirements
 
 * Emacs 24 or higher
-* [fringe-helper](http://www.emacswiki.org/emacs/FringeHelper) for using `git-gutter-fringe`
 
 
 ## Basic Usage
@@ -39,8 +37,6 @@ Toggle git-gutter
 
 ## Sample Configuration
 
-### linum style setting
-
 ```` elisp
 (require 'git-gutter)
 
@@ -54,16 +50,10 @@ Toggle git-gutter
               (git-gutter))))
 ````
 
-### fringe version setting
-
-```` elisp
-;; You need to install fringe-helper.el
-(require 'git-gutter-fringe)
-````
 
 ## Customize
 
-You can change the signs and those faces in linum style.
+You can change the signs and those faces.
 
 ```` elisp
 (setq git-gutter:modified-sign "  ") ;; two space

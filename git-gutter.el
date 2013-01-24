@@ -73,8 +73,6 @@ character for signs of changes"
 (defvar git-gutter:overlays nil)
 (make-variable-buffer-local 'git-gutter:overlays)
 
-(defstruct git-gutter:diffinfo type start-line end-line)
-
 (defun git-gutter:root-directory ()
   (with-temp-buffer
     (let* ((cmd "git rev-parse --show-toplevel")
@@ -89,6 +87,9 @@ character for signs of changes"
   (if (string= str "")
       1
     (string-to-number str)))
+
+(defun git-gutter:make-diffinfo (type start &optional end)
+  (list :type type :start-line start :end-line end))
 
 (defun git-gutter:diff (curfile)
   (let ((cmd (format "git diff -U0 %s" curfile))
@@ -106,16 +107,11 @@ character for signs of changes"
             for end-line = (1- (+ new-line new-changes))
             collect
             (cond ((zerop orig-changes)
-                   (make-git-gutter:diffinfo :type 'added
-                                             :start-line new-line
-                                             :end-line end-line))
+                   (git-gutter:make-diffinfo 'added new-line end-line))
                   ((zerop new-changes)
-                   (make-git-gutter:diffinfo :type 'deleted
-                                             :start-line (1- orig-line)))
+                   (git-gutter:make-diffinfo 'deleted (1- orig-line)))
                   (t
-                   (make-git-gutter:diffinfo :type 'modified
-                                             :start-line new-line
-                                             :end-line end-line)))))))
+                   (git-gutter:make-diffinfo 'modified new-line end-line)))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -156,19 +152,15 @@ character for signs of changes"
     (push ov git-gutter:overlays)))
 
 (defun git-gutter:view-diff-info (diffinfo)
-  (let ((start-line (git-gutter:diffinfo-start-line diffinfo))
-        (end-line (git-gutter:diffinfo-end-line diffinfo)))
-    (case (git-gutter:diffinfo-type diffinfo)
-      (modified
-       (git-gutter:view-region
-        (git-gutter:propertized-sign 'modified) start-line end-line))
-      (added
-       (git-gutter:view-region
-        (git-gutter:propertized-sign 'added) start-line end-line))
-      (deleted
-       (git-gutter:view-at-pos
-        (git-gutter:propertized-sign 'deleted)
-        (git-gutter:line-to-pos start-line))))))
+  (let* ((start-line (plist-get diffinfo :start-line))
+         (end-line (plist-get diffinfo :end-line))
+         (type (plist-get diffinfo :type))
+         (sign (git-gutter:propertized-sign type)))
+    (case type
+      (modified (git-gutter:view-region sign start-line end-line))
+      (added (git-gutter:view-region sign start-line end-line))
+      (deleted (git-gutter:view-at-pos
+                sign (git-gutter:line-to-pos start-line))))))
 
 (defun git-gutter:sign-width (sign)
   (loop for s across sign

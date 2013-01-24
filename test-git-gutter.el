@@ -1,6 +1,6 @@
-;;; test-git-gutter.el ---
+;;; test-git-gutter.el --- Test for git-gutter.el
 
-;; Copyright (C) 2012 by Syohei YOSHIDA
+;; Copyright (C) 2013 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL:
@@ -35,29 +35,49 @@
         (got (git-gutter:root-directory)))
     (should (string= expected got))))
 
-(ert-deftest git-gutter:filepath-to-gitpath ()
-  "helper function `git-gutter:filepath-to-gitpath'"
-  (let* ((filename "test-git-gutter.el")
-         (expected (file-name-nondirectory filename))
-         (got (git-gutter:filepath-to-gitpath
-               filename (git-gutter:root-directory))))
-    (should (string= expected got))))
+(ert-deftest git-gutter:sign-width ()
+  "helper function `git-gutter:sign-width'"
+  (let ((got1 (git-gutter:sign-width "a"))
+        (got2 (git-gutter:sign-width "0123456789")))
+    (should (= got1 1))
+    (should (= got2 10))))
 
-(ert-deftest git-gutter:repo-info ()
-  "helper function `git-gutter:repo-info'"
-  (flet ((buffer-file-name ()
-          (concat default-directory "test-git-gutter.el")))
-    (let ((repoinfo (git-gutter:repo-info))
-          (cwd (expand-file-name default-directory)))
-      (should (string= (git-gutter:repoinfo-root repoinfo) cwd))
-      (should (string= (git-gutter:repoinfo-gitdir repoinfo)
-                       (concat (expand-file-name cwd) ".git"))))))
+(ert-deftest git-gutter:select-face ()
+  "helper function `git-gutter:select-face'"
+  (loop for (type . expected) in '((added . git-gutter:added)
+                                   (modified . git-gutter:modified)
+                                   (deleted . git-gutter:deleted))
+        do
+        (should (eq (git-gutter:select-face type) expected)))
+  (should (not (git-gutter:select-face 'not-found))))
 
-(ert-deftest git-gutter:show-original-file-command ()
-  "helper function `git-gutter:show-original-file-command"
-  (let* ((repoinfo (make-git-gutter:repoinfo :root "/foo/" :gitdir "/foo/.git"))
-         (got (git-gutter:show-original-content-command repoinfo "/foo/bar.txt"))
-         (expected "git --git-dir=/foo/.git --work-tree=/foo/ show HEAD:bar.txt"))
-    (should (string= got expected))))
+(ert-deftest git-gutter:select-sign ()
+  "helper function `git-gutter:select-sign'"
+  (loop for (type . expected) in '((added . "+") (modified . "=") (deleted . "-"))
+        do
+        (should (string= (git-gutter:select-sign type) expected)))
+  (should (not (git-gutter:select-sign 'not-found))))
+
+(ert-deftest git-gutter:propertized-sign ()
+  "helper function `git-gutter:propertized-sign'"
+  (should (string= (git-gutter:propertized-sign 'added) "+")))
+
+(ert-deftest git-gutter:changes-to-number ()
+  "helper function `git-gutter:changes-to-number'"
+  (should (= (git-gutter:changes-to-number "") 1))
+  (should (= (git-gutter:changes-to-number "123") 123)))
+
+(ert-deftest git-gutter:make-diffinfo ()
+  "helper function `git-gutter:make-diffinfo'"
+  (let ((diffinfo1 (git-gutter:make-diffinfo 'added 10 20))
+        (diffinfo2 (git-gutter:make-diffinfo 'deleted 5)))
+    (loop for (prop . expected) in '((:type . added)
+                                     (:start-line . 10) (:end-line . 20))
+          do
+          (should (eql (plist-get diffinfo1 prop) expected)))
+    (loop for (prop . expected) in '((:type . deleted)
+                                     (:start-line . 5) (:end-line . nil))
+          do
+          (should (eql (plist-get diffinfo2 prop) expected)))))
 
 ;;; test-git-gutter.el end here

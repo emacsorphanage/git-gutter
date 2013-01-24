@@ -97,10 +97,15 @@ You can create your own git-gutter to implement 2 functions.
 
 View function view diff informations to current buffer.
 View function takes list of diff informations(`diffinfos`). `diffinfos`
-are list of plist(`diffinfo`) and `diffinfo` has property `:type`,
-`:start-line`, `:end-line`. `:type` is `'added` or `'deleted` or `'modified`.
-`:added` and `'modified` have `:start-line` and `':end-line` property.
-`:deleted` has only `:start-line` property.
+are list of plist(`diffinfo`).  `diffinfo` has following property.
+
+
+property    | about
+------------|-------------------------------------------------------
+:type       | diff type('added, 'deleted, 'modified)
+:start-line | line number of changed start
+:end-line   | line number of changed end(Only 'added and 'modified)
+
 
 Set view function variable `git-gutter:view-diff-function`.
 

@@ -117,5 +117,7 @@ Clear function takes no arguments.
 
 Set clear function variable `git-gutter:view-diff-function`.
 
-If you are interested in implement your git-gutter,
-please see example, [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe).
+
+## Sample implementation
+
+* [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe).

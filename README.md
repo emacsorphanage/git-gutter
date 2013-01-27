@@ -22,7 +22,7 @@ If you use fringe style(not linum style), please see [git-gutter-fringe](https:/
 
 * [diff-hl](https://github.com/dgutov/diff-hl/blob/master/diff-hl.el)
 
-`diff-hl` has more feature features than `git-gutter.el`.
+`diff-hl` has more features than `git-gutter.el`.
 
 
 ## Basic Usage

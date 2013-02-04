@@ -26,7 +26,7 @@ And you can also install it with [el-get](https://github.com/dimitri/el-get).
 
 ## Similar Project
 
-* [diff-hl](https://github.com/dgutov/diff-hl/blob/master/diff-hl.el)
+* [diff-hl](https://github.com/dgutov/diff-hl)
 
 `diff-hl` has more features than `git-gutter.el`.
 

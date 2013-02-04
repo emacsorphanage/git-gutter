@@ -20,7 +20,8 @@ If you use fringe style(not linum style), please see [git-gutter-fringe](https:/
 ## Installation
 
 You can install `git-gutter.el` from [MELPA](https://github.com/milkypostman/melpa.git) with package.el
-(`M-x package-install git-gutter`)
+(`M-x package-install git-gutter`).
+
 And you can also install it with [el-get](https://github.com/dimitri/el-get).
 
 

@@ -240,12 +240,13 @@ character for signs of changes"
   (if git-gutter-mode
       (if (zerop (git-gutter:in-git-repository-p))
           (progn
-            (make-local-variable 'after-save-hook)
-            (add-hook 'after-save-hook 'git-gutter)
+            (add-hook 'after-save-hook 'git-gutter nil t)
+            (add-hook 'after-revert-hook 'git-gutter nil t)
             (run-with-idle-timer 0 nil 'git-gutter))
         (message "Here is not Git Repository!!")
         (git-gutter-mode -1))
-    (remove-hook 'after-save-hook 'git-gutter)))
+    (remove-hook 'after-save-hook 'git-gutter t)
+    (remove-hook 'after-revert-hook 'git-gutter t)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode

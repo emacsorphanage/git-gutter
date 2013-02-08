@@ -32,6 +32,26 @@ And you can also install it with [el-get](https://github.com/dimitri/el-get).
 `diff-hl` has more features than `git-gutter.el`.
 
 
+## Global Minor Mode and Minor Mode
+
+`git-gutter.el` provides global minor-mode(`global-git-gutter-mode`) and minor-mode(`git-gutter-mode`).
+
+If you want to use `git-gutter` for files in git repository.
+You add following s-exp in your configuration file(`~/.emacs.d/init.el` or `~/.emacs`).
+
+````elisp
+(global-git-gutter-mode t)
+````
+
+Other case, you want to use `git-gutter` for some files, you can use `git-gutter-mode`.
+Following example of enabling `git-gutter` for some mode.
+
+````elisp
+(add-hook 'ruby-mode-hook 'git-gutter-mode)
+(add-hook 'python-mode-hook 'git-gutter-mode)
+````
+
+
 ## Basic Usage
 
 `git-gutter.el` provides following commands.
@@ -54,20 +74,14 @@ Toggle git-gutter
 ```` elisp
 (require 'git-gutter)
 
-;; enable global minor mode
+;; If you enable global minor mode
 (global-git-gutter-mode t)
 
-;; enable git-gutter-mode for some modes
+;; If you enable git-gutter-mode for some modes
 (add-hook 'ruby-mode-hook 'git-gutter-mode)
 
 ;; bind git-gutter toggle command
 (global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
-
-;; Update changes information after save buffer
-(add-hook 'after-save-hook
-          (lambda ()
-            (when (zerop (call-process-shell-command "git rev-parse --show-toplevel"))
-              (git-gutter))))
 ````
 
 

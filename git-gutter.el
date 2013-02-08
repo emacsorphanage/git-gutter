@@ -40,6 +40,11 @@ character for signs of changes"
   :type 'integer
   :group 'git-gutter)
 
+(defcustom git-gutter:diff-option ""
+  "Option of 'git diff'"
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:modified-sign "="
   "Modified sign"
   :type 'string
@@ -95,7 +100,7 @@ character for signs of changes"
   (list :type type :start-line start :end-line end))
 
 (defun git-gutter:diff (curfile)
-  (let ((cmd (format "git diff -U0 %s" curfile))
+  (let ((cmd (format "git diff -U0 %s %s" git-gutter:diff-option curfile))
         (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
     (with-temp-buffer
       (let ((ret (call-process-shell-command cmd nil t)))

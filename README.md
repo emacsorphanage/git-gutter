@@ -87,6 +87,13 @@ Toggle git-gutter
 
 ## Customize
 
+You can pass `git diff` option to set `git-gutter:diff-option`.
+
+````elisp
+;; ignore all spaces
+(setq git-gutter:diff-option "-w")
+````
+
 You can change the signs and those faces.
 
 ````elisp

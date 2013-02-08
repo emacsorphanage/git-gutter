@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.06 2013/02/09 syohex
+   - Add parameter of 'git diff' option(git-gutter:diff-option)
+
 Revision 0.05 2013/02/08 syohex
    - Fix localized hook function
 

@@ -251,7 +251,8 @@ character for signs of changes"
         (message "Here is not Git Repository!!")
         (git-gutter-mode -1))
     (remove-hook 'after-save-hook 'git-gutter t)
-    (remove-hook 'after-revert-hook 'git-gutter t)))
+    (remove-hook 'after-revert-hook 'git-gutter t)
+    (git-gutter:clear)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode

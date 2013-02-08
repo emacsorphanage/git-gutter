@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.07 2013/02/09 syohex
+   - Clear gutter when disable git-gutter-mode
+     (Thanks sabof)
+
 Revision 0.06 2013/02/09 syohex
    - Add parameter of 'git diff' option(git-gutter:diff-option)
 

@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.05 2013/02/08 syohex
+   - Fix localized hook function
+
 Revision 0.04 2013/02/08 syohex
    - Suppor minor-mode and global-minor-mode
 

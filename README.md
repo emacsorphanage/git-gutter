@@ -71,7 +71,7 @@ Toggle git-gutter
 
 ## Sample Configuration
 
-```` elisp
+````elisp
 (require 'git-gutter)
 
 ;; If you enable global minor mode
@@ -89,7 +89,7 @@ Toggle git-gutter
 
 You can change the signs and those faces.
 
-```` elisp
+````elisp
 (setq git-gutter:modified-sign "  ") ;; two space
 (setq git-gutter:added-sign "++")    ;; multiple character is OK
 (setq git-gutter:deleted-sign "--")

@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.04 2013/02/08 syohex
+   - Suppor minor-mode and global-minor-mode
+
 Revision 0.03 2013/01/24 syohex
    - Change data struction of diffinfo
 

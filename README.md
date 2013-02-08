@@ -54,6 +54,12 @@ Toggle git-gutter
 ```` elisp
 (require 'git-gutter)
 
+;; enable global minor mode
+(global-git-gutter-mode t)
+
+;; enable git-gutter-mode for some modes
+(add-hook 'ruby-mode-hook 'git-gutter-mode)
+
 ;; bind git-gutter toggle command
 (global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
 

@@ -73,6 +73,9 @@ character for signs of changes"
 (defvar git-gutter:overlays nil)
 (make-variable-buffer-local 'git-gutter:overlays)
 
+(defun git-gutter:in-git-repository-p ()
+  (call-process-shell-command "git rev-parse --is-inside-work-tree"))
+
 (defun git-gutter:root-directory ()
   (with-temp-buffer
     (let* ((cmd "git rev-parse --show-toplevel")
@@ -224,6 +227,34 @@ character for signs of changes"
   (if git-gutter:enabled
       (git-gutter:clear)
     (git-gutter)))
+
+(defvar git-gutter:lighter " GitGutter")
+
+;;;###autoload
+(define-minor-mode git-gutter-mode ()
+  "Git-Gutter mode"
+  :group      'git-gutter
+  :init-value nil
+  :global     nil
+  :lighter    git-gutter:lighter
+  (if git-gutter-mode
+      (if (zerop (git-gutter:in-git-repository-p))
+          (progn
+            (make-local-variable 'after-save-hook)
+            (add-hook 'after-save-hook 'git-gutter)
+            (run-with-idle-timer 0 nil 'git-gutter))
+        (message "Here is not Git Repository!!")
+        (git-gutter-mode -1))
+    (remove-hook 'after-save-hook 'git-gutter)))
+
+;;;###autoload
+(define-global-minor-mode global-git-gutter-mode
+  git-gutter-mode
+  (lambda ()
+    (unless (minibufferp)
+      (when (zerop (git-gutter:in-git-repository-p))
+        (git-gutter-mode 1))))
+  :group 'git-gutter)
 
 (provide 'git-gutter)
 

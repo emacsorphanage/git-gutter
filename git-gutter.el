@@ -214,11 +214,12 @@ character for signs of changes"
 (defun git-gutter ()
   (interactive)
   (git-gutter:delete-overlay)
-  (let* ((gitroot (git-gutter:root-directory)))
-    (let ((default-directory gitroot)
-          (current-file (file-relative-name (buffer-file-name) gitroot)))
-      (git-gutter:process-diff current-file)
-      (setq git-gutter:enabled t))))
+  (when (buffer-file-name)
+    (let* ((gitroot (git-gutter:root-directory)))
+      (let ((default-directory gitroot)
+            (current-file (file-relative-name (buffer-file-name) gitroot)))
+        (git-gutter:process-diff current-file)
+        (setq git-gutter:enabled t)))))
 
 ;;;###autoload
 (defun git-gutter:clear ()

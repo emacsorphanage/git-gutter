@@ -1,6 +1,6 @@
 Revision history for git-gutter.el
 
-Revision 0.08 2013/02/09 syohex
+Revision 0.09 2013/02/11 syohex
    - Fix problem that default-directory does not exist
      (Thanks doitian)
 

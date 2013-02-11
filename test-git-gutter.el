@@ -80,4 +80,9 @@
           do
           (should (eql (plist-get diffinfo2 prop) expected)))))
 
+(ert-deftest git-gutter:in-git-repository-p ()
+  "Should return 128 if default-directory does not exist"
+  (let ((default-directory "/non/exist/directory"))
+    (should (eql 128 (git-gutter:in-git-repository-p)))))
+
 ;;; test-git-gutter.el end here

@@ -1,6 +1,10 @@
 Revision history for git-gutter.el
 
 Revision 0.08 2013/02/09 syohex
+   - Fix problem that default-directory does not exist
+     (Thanks doitian)
+
+Revision 0.08 2013/02/09 syohex
    - Disable git-gutter if buffer does not have relation to file
      (Thanks sabof)
 

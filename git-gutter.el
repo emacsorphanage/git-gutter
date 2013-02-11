@@ -79,7 +79,9 @@ character for signs of changes"
 (make-variable-buffer-local 'git-gutter:overlays)
 
 (defun git-gutter:in-git-repository-p ()
-  (call-process-shell-command "git rev-parse --is-inside-work-tree"))
+  (if (and default-directory (file-directory-p default-directory))
+      (call-process-shell-command "git rev-parse --is-inside-work-tree")
+    128))
 
 (defun git-gutter:root-directory ()
   (with-temp-buffer

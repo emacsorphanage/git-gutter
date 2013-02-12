@@ -102,7 +102,7 @@ character for signs of changes"
   (list :type type :start-line start :end-line end))
 
 (defun git-gutter:diff (curfile)
-  (let ((cmd (format "git diff -U0 %s %s" git-gutter:diff-option curfile))
+  (let ((cmd (format "git diff --no-ext-diff -U0 %s %s" git-gutter:diff-option curfile))
         (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
     (with-temp-buffer
       (let ((ret (call-process-shell-command cmd nil t)))

@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.10 2013/02/13 syohex
+   - Disable using external 'diff'.
+     (Thanks emperorcezar)
+
 Revision 0.09 2013/02/11 syohex
    - Fix problem that default-directory does not exist
      (Thanks doitian)

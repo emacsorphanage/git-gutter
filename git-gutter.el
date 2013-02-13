@@ -81,7 +81,6 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defvar git-gutter:overlays nil)
-(make-variable-buffer-local 'git-gutter:overlays)
 
 (defun git-gutter:in-git-repository-p ()
   (if (and default-directory (file-directory-p default-directory))
@@ -215,7 +214,6 @@ character for signs of changes"
   (git-gutter:delete-overlay))
 
 (defvar git-gutter:enabled nil)
-(make-variable-buffer-local 'git-gutter:enabled)
 
 ;;;###autoload
 (defun git-gutter ()
@@ -251,6 +249,8 @@ character for signs of changes"
   (if git-gutter-mode
       (if (zerop (git-gutter:in-git-repository-p))
           (progn
+            (make-local-variable 'git-gutter:overlays)
+            (make-local-variable 'git-gutter:enabled)
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)
             (run-with-idle-timer 0 nil 'git-gutter))

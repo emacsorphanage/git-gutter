@@ -106,6 +106,14 @@ You can change the signs and those faces.
 (set-face-foreground 'git-gutter:deleted "red")
 ````
 
+You can change minor-mode name in mode-line to set `git-gutter:lighter`.
+Default is " GitGutter"
+
+````elisp
+;; first character should be a space
+(setq git-gutter:lighter " GG")
+````
+
 ### Screenshot of above customization
 
 ![git-gutter-multichar](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-multichar.png)

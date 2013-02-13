@@ -1,5 +1,10 @@
 Revision history for git-gutter.el
 
+Revision 0.11 2013/02/13 syohex
+   - Fix buffer local variable
+   - Add hook point(change-major-mode-hook)
+   - Change git-gutter:lighter to customize variable.
+
 Revision 0.10 2013/02/13 syohex
    - Disable using external 'diff'.
      (Thanks emperorcezar)

@@ -60,6 +60,11 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:lighter " GitGutter"
+  "Minor mode lighter in mode-line"
+  :type 'string
+  :group 'git-gutter)
+
 (defface git-gutter:modified
     '((t (:foreground "magenta" :weight bold)))
   "Face of modified"
@@ -235,8 +240,6 @@ character for signs of changes"
   (if git-gutter:enabled
       (git-gutter:clear)
     (git-gutter)))
-
-(defvar git-gutter:lighter " GitGutter")
 
 ;;;###autoload
 (define-minor-mode git-gutter-mode ()

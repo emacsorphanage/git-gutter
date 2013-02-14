@@ -191,8 +191,9 @@ character for signs of changes"
         (win-width (or git-gutter:window-width
                        (git-gutter:longest-sign-width))))
     (save-excursion
-      (mapc #'git-gutter:view-diff-info diffinfos)
-      (set-window-margins curwin win-width (cdr (window-margins curwin))))))
+      (when diffinfos
+        (mapc #'git-gutter:view-diff-info diffinfos)
+        (set-window-margins curwin win-width (cdr (window-margins curwin)))))))
 
 (defun git-gutter:delete-overlay ()
   (mapc #'delete-overlay git-gutter:overlays)

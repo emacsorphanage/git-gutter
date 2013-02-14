@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.14 2013/02/14 syohex
+   - Disable git-gutter when file is not existed.
+
 Revision 0.13 2013/02/14 syohex
    - Fixed problem when switching buffer
 

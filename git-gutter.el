@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.13
+;; Version: 0.14
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ character for signs of changes"
     (with-temp-buffer
       (let ((ret (call-process-shell-command cmd nil t)))
         (unless (or (zerop ret))
-          (error (format "Failed '%s'" cmd))))
+          (error (format "Failed '%s'(%s) %s" cmd default-directory (file-exists-p curfile)))))
       (goto-char (point-min))
       (loop while (re-search-forward regexp nil t)
             for orig-line = (string-to-number (match-string 1))
@@ -220,7 +220,7 @@ character for signs of changes"
 (defun git-gutter ()
   (interactive)
   (git-gutter:delete-overlay)
-  (when (buffer-file-name)
+  (when (and (buffer-file-name) (file-exists-p (buffer-file-name)))
     (let* ((gitroot (git-gutter:root-directory)))
       (let ((default-directory gitroot)
             (current-file (file-relative-name (buffer-file-name) gitroot)))

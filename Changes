@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.13 2013/02/14 syohex
+   - Fixed problem when switching buffer
+
 Revision 0.12 2013/02/14 syohex
    - Don't change window-margin if file has no changes.
 

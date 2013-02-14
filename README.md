@@ -56,7 +56,7 @@ Following example of enabling `git-gutter` for some mode.
 
 `git-gutter.el` provides following commands.
 
-Show changes from last commit
+Show changes from last commit or Update change information.
 
     M-x git-gutter
 

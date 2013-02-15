@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.16 2013/02/16 syohex
+   - Fixed 'git commit -v' problem
+
 Revision 0.15 2013/02/15 syohex
    - Improve git-gutter:in-git-repository-p and error message
    - Add test of 'git-gutter'

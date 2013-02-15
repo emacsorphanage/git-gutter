@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.15
+;; Version: 0.16
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -215,11 +215,17 @@ character for signs of changes"
 
 (defvar git-gutter:enabled nil)
 
+(defun git-gutter:enabled-p ()
+  (let ((filename (buffer-file-name)))
+    (and filename (file-exists-p filename)
+         ;; for .git/COMMIT_EDITMSG('git commit -v')
+         (not (string-match "/\\.git/" filename)))))
+
 ;;;###autoload
 (defun git-gutter ()
   (interactive)
   (git-gutter:delete-overlay)
-  (when (and (buffer-file-name) (file-exists-p (buffer-file-name)))
+  (when (git-gutter:enabled-p)
     (let* ((gitroot (git-gutter:root-directory)))
       (let ((default-directory gitroot)
             (current-file (file-relative-name (buffer-file-name) gitroot)))

@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.15 2013/02/15 syohex
+   - Improve git-gutter:in-git-repository-p and error message
+   - Add test of 'git-gutter'
+
 Revision 0.14 2013/02/14 syohex
    - Disable git-gutter when file is not existed.
 

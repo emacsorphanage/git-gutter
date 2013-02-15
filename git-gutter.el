@@ -83,9 +83,8 @@ character for signs of changes"
 (defvar git-gutter:overlays nil)
 
 (defun git-gutter:in-git-repository-p ()
-  (if (and default-directory (file-directory-p default-directory))
-      (call-process-shell-command "git rev-parse --is-inside-work-tree")
-    128))
+  (when (and default-directory (file-directory-p default-directory))
+    (zerop (call-process-shell-command "git rev-parse --is-inside-work-tree"))))
 
 (defun git-gutter:root-directory ()
   (with-temp-buffer
@@ -111,7 +110,7 @@ character for signs of changes"
     (with-temp-buffer
       (let ((ret (call-process-shell-command cmd nil t)))
         (unless (or (zerop ret))
-          (error (format "Failed '%s'(%s) %s" cmd default-directory (file-exists-p curfile)))))
+          (error (format "Failed '%s'" cmd))))
       (goto-char (point-min))
       (loop while (re-search-forward regexp nil t)
             for orig-line = (string-to-number (match-string 1))
@@ -248,7 +247,7 @@ character for signs of changes"
   :global     nil
   :lighter    git-gutter:lighter
   (if git-gutter-mode
-      (if (zerop (git-gutter:in-git-repository-p))
+      (if (git-gutter:in-git-repository-p)
           (progn
             (make-local-variable 'git-gutter:overlays)
             (make-local-variable 'git-gutter:enabled)
@@ -270,7 +269,7 @@ character for signs of changes"
   git-gutter-mode
   (lambda ()
     (unless (minibufferp)
-      (when (zerop (git-gutter:in-git-repository-p))
+      (when (git-gutter:in-git-repository-p)
         (git-gutter-mode 1))))
   :group 'git-gutter)
 

@@ -3,8 +3,6 @@
 ;; Copyright (C) 2013 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
-;; URL:
-;; Version: 0.01
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -81,8 +79,16 @@
           (should (eql (plist-get diffinfo2 prop) expected)))))
 
 (ert-deftest git-gutter:in-git-repository-p ()
-  "Should return 128 if default-directory does not exist"
+  "Should return nil if default-directory does not exist"
   (let ((default-directory "/non/exist/directory"))
-    (should (eql 128 (git-gutter:in-git-repository-p)))))
+    (should (null (git-gutter:in-git-repository-p)))))
+
+(ert-deftest git-gutter ()
+  "Should return nil if buffer does not related with file or file is not existed"
+  (with-current-buffer (get-buffer-create "*not-related-file*")
+    (should (null (git-gutter))))
+  (let ((buf (find-file-noselect "not-found")))
+    (with-current-buffer buf
+      (should (null (git-gutter))))))
 
 ;;; test-git-gutter.el end here

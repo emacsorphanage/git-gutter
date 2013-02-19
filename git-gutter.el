@@ -83,8 +83,12 @@ character for signs of changes"
 (defvar git-gutter:overlays nil)
 
 (defun git-gutter:in-git-repository-p ()
-  (when (and default-directory (file-directory-p default-directory))
-    (zerop (call-process-shell-command "git rev-parse --is-inside-work-tree"))))
+  (with-temp-buffer
+    (let ((cmd "git rev-parse --is-inside-work-tree"))
+      (when (zerop (call-process-shell-command cmd nil t))
+        (goto-char (point-min))
+        (string= "true" (buffer-substring-no-properties
+                         (point) (line-end-position)))))))
 
 (defun git-gutter:root-directory ()
   (with-temp-buffer
@@ -93,8 +97,10 @@ character for signs of changes"
       (unless (zerop ret)
         (error "Here is not git repository!!"))
       (goto-char (point-min))
-      (file-name-as-directory
-       (buffer-substring-no-properties (point) (line-end-position))))))
+      (let ((root (buffer-substring-no-properties (point) (line-end-position))))
+        (when (string= root "")
+          (error "You maybe be in '.git/' directory"))
+        (file-name-as-directory root)))))
 
 (defun git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -215,20 +221,15 @@ character for signs of changes"
 
 (defvar git-gutter:enabled nil)
 
-(defun git-gutter:enabled-p ()
-  (let ((filename (buffer-file-name)))
-    (and filename (file-exists-p filename)
-         ;; for .git/COMMIT_EDITMSG('git commit -v')
-         (not (string-match "/\\.git/" filename)))))
-
 ;;;###autoload
 (defun git-gutter ()
   (interactive)
   (git-gutter:delete-overlay)
-  (when (git-gutter:enabled-p)
-    (let* ((gitroot (git-gutter:root-directory)))
-      (let ((default-directory gitroot)
-            (current-file (file-relative-name (buffer-file-name) gitroot)))
+  (let ((file (buffer-file-name)))
+    (when (and file (file-exists-p file))
+      (let* ((gitroot (git-gutter:root-directory))
+             (default-directory gitroot)
+             (current-file (file-relative-name file gitroot)))
         (git-gutter:process-diff current-file)
         (setq git-gutter:enabled t)))))
 
@@ -245,6 +246,10 @@ character for signs of changes"
       (git-gutter:clear)
     (git-gutter)))
 
+(defun git-gutter:check-file-and-directory ()
+  (and (buffer-file-name)
+       default-directory (file-directory-p default-directory)))
+
 ;;;###autoload
 (define-minor-mode git-gutter-mode ()
   "Git-Gutter mode"
@@ -253,7 +258,8 @@ character for signs of changes"
   :global     nil
   :lighter    git-gutter:lighter
   (if git-gutter-mode
-      (if (git-gutter:in-git-repository-p)
+      (if (and (git-gutter:check-file-and-directory)
+               (git-gutter:in-git-repository-p))
           (progn
             (make-local-variable 'git-gutter:overlays)
             (make-local-variable 'git-gutter:enabled)
@@ -262,7 +268,7 @@ character for signs of changes"
             (add-hook 'change-major-mode-hook 'git-gutter nil t)
             (add-hook 'window-configuration-change-hook 'git-gutter nil t)
             (run-with-idle-timer 0 nil 'git-gutter))
-        (message "Here is not Git Repository!!")
+        (message "Here is not Git work tree")
         (git-gutter-mode -1))
     (remove-hook 'after-save-hook 'git-gutter t)
     (remove-hook 'after-revert-hook 'git-gutter t)
@@ -274,9 +280,8 @@ character for signs of changes"
 (define-global-minor-mode global-git-gutter-mode
   git-gutter-mode
   (lambda ()
-    (unless (minibufferp)
-      (when (git-gutter:in-git-repository-p)
-        (git-gutter-mode 1))))
+    (when (and (not (minibufferp)) (buffer-file-name))
+      (git-gutter-mode 1)))
   :group 'git-gutter)
 
 (provide 'git-gutter)

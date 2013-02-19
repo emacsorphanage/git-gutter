@@ -31,7 +31,15 @@
   "helper function `git-gutter:root-directory'"
   (let ((expected (expand-file-name default-directory))
         (got (git-gutter:root-directory)))
-    (should (string= expected got))))
+    (should (string= expected got)))
+
+  ;; temporary directory maybe be version-controled
+  (let ((default-directory temporary-file-directory))
+    (should-error (git-gutter:root-directory)))
+
+  ;; Files in .git/ directory are not version-controled
+  (let ((default-directory (concat default-directory ".git/")))
+    (should-error (git-gutter:root-directory))))
 
 (ert-deftest git-gutter:sign-width ()
   "helper function `git-gutter:sign-width'"
@@ -80,8 +88,14 @@
 
 (ert-deftest git-gutter:in-git-repository-p ()
   "Should return nil if default-directory does not exist"
-  (let ((default-directory "/non/exist/directory"))
-    (should (null (git-gutter:in-git-repository-p)))))
+
+  ;; In git repository, but here is '.git'
+  (let ((buf (find-file-noselect ".git/config")))
+    (with-current-buffer buf
+      (should (null (git-gutter:in-git-repository-p)))))
+
+  (let ((default-directory (file-name-directory (locate-library "git-gutter"))))
+    (should (git-gutter:in-git-repository-p))))
 
 (ert-deftest git-gutter ()
   "Should return nil if buffer does not related with file or file is not existed"

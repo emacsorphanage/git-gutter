@@ -5,7 +5,9 @@
 which is a plugin of Sublime Text2.
 
 
-If you use fringe style(not linum style), please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe)
+`git-gutter.el` does not work well with `linum-mode`. If you use `linum-mode`,
+please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe).
+`git-gutter-fringe` can work with `linum-mode`.
 
 
 ## Screenshot

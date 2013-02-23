@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.17 2013/02/23 syohex
+   - Implement 'git-gutter:next-diff' and 'git-gutter:previous-diff'
+
 Revision 0.16 2013/02/16 syohex
    - Fixed 'git commit -v' problem
 

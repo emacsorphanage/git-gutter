@@ -28,13 +28,6 @@ You can install `git-gutter.el` from [MELPA](https://github.com/milkypostman/mel
 And you can also install it with [el-get](https://github.com/dimitri/el-get).
 
 
-## Similar Project
-
-* [diff-hl](https://github.com/dgutov/diff-hl)
-
-`diff-hl` has more features than `git-gutter.el`.
-
-
 ## Global Minor Mode and Minor Mode
 
 `git-gutter.el` provides global minor-mode(`global-git-gutter-mode`) and minor-mode(`git-gutter-mode`).
@@ -71,6 +64,14 @@ Toggle git-gutter
 
     M-x git-gutter:toggle
 
+ Jump to next diff
+
+    M-x git-gutter:next-diff
+
+ Jump to previous diff
+
+    M-x git-gutter:previous-diff
+
 
 ## Sample Configuration
 
@@ -85,6 +86,10 @@ Toggle git-gutter
 
 ;; bind git-gutter toggle command
 (global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
+
+;; Jump to next/previous diff
+(global-set-key (kbd "C-x p") 'git-gutter:previous-diff)
+(global-set-key (kbd "C-x n") 'git-gutter:next-diff)
 ````
 
 
@@ -144,6 +149,8 @@ character.
 ## Implement your own git-gutter
 
 You can create your own git-gutter to implement 2 functions.
+[git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe) is sample implementation.
+
 
 ### view function
 
@@ -170,6 +177,17 @@ Clear function takes no arguments.
 Set clear function variable `git-gutter:view-diff-function`.
 
 
-## Sample implementation
+## See Also
 
-* [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe).
+
+### [GitGutter](https://github.com/jisaacks/GitGutter)
+
+GitGutter is Sublime text2 plugin
+
+### [diff-hl](https://github.com/dgutov/diff-hl)
+
+`diff-hl` has more features than `git-gutter.el`.
+
+### [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+
+Vim version of GitGutter

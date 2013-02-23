@@ -80,7 +80,15 @@ character for signs of changes"
   "Face of deleted"
   :group 'git-gutter)
 
+(defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
+  "Function of viewing changes")
+
+(defvar git-gutter:clear-function #'git-gutter:clear-overlays
+  "Function of clear changes")
+
+(defvar git-gutter:enabled nil)
 (defvar git-gutter:overlays nil)
+(defvar git-gutter:diffinfos nil)
 
 (defun git-gutter:in-git-repository-p ()
   (with-temp-buffer
@@ -206,20 +214,43 @@ character for signs of changes"
   (let ((curwin (get-buffer-window)))
     (set-window-margins curwin 0 (cdr (window-margins curwin)))))
 
-(defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
-  "Function of viewing changes")
-
-(defvar git-gutter:clear-function #'git-gutter:clear-overlays
-  "Function of clear changes")
-
 (defun git-gutter:process-diff (curfile)
   (let ((diffinfos (git-gutter:diff curfile)))
+    (setq git-gutter:diffinfos diffinfos)
     (funcall git-gutter:view-diff-function diffinfos)))
 
 (defun git-gutter:clear-overlays ()
   (git-gutter:delete-overlay))
 
-(defvar git-gutter:enabled nil)
+(defun git-gutter:search-near-diff-index (diffinfos is-reverse)
+  (loop with current-line = (line-number-at-pos)
+        with cmp-fn = (if is-reverse '> '<)
+        for diffinfo in (if is-reverse (reverse diffinfos) diffinfos)
+        for index = 0 then (1+ index)
+        for start-line = (plist-get diffinfo :start-line)
+        when (funcall cmp-fn current-line start-line)
+        return (if is-reverse
+                   (1- (- (length diffinfos) index))
+                 index)))
+
+(defun git-gutter:next-diff (arg)
+  (interactive "p")
+  (when git-gutter:diffinfos
+    (let* ((is-reverse (< arg 0))
+           (diffinfos git-gutter:diffinfos)
+           (len (length diffinfos))
+           (index (git-gutter:search-near-diff-index diffinfos is-reverse))
+           (real-index (if index
+                           (let ((next (if is-reverse (1+ index) (1- index))))
+                             (mod (+ arg next) len))
+                         (if is-reverse (1- (length diffinfos)) 0)))
+           (diffinfo (nth real-index diffinfos)))
+      (goto-char (point-min))
+      (forward-line (1- (plist-get diffinfo :start-line))))))
+
+(defun git-gutter:previous-diff (arg)
+  (interactive "p")
+  (git-gutter:next-diff (- arg)))
 
 ;;;###autoload
 (defun git-gutter ()
@@ -263,6 +294,7 @@ character for signs of changes"
           (progn
             (make-local-variable 'git-gutter:overlays)
             (make-local-variable 'git-gutter:enabled)
+            (make-local-variable 'git-gutter:diffinfos)
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)
             (add-hook 'change-major-mode-hook 'git-gutter nil t)

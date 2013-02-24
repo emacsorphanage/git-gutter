@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.18 2013/02/24 syohex
+   - Implement for viewing unchanged line
+   - Implement flag of 'always show gutter'
+
 Revision 0.17 2013/02/23 syohex
    - Implement 'git-gutter:next-diff' and 'git-gutter:previous-diff'
 

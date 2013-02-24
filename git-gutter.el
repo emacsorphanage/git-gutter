@@ -60,6 +60,11 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:unchanged-sign nil
+  "Deleted sign"
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:lighter " GitGutter"
   "Minor mode lighter in mode-line"
   :type 'string
@@ -78,6 +83,11 @@ character for signs of changes"
 (defface git-gutter:deleted
     '((t (:foreground "red" :weight bold)))
   "Face of deleted"
+  :group 'git-gutter)
+
+(defface git-gutter:unchanged
+    '((t (:background "yellow")))
+  "Face of unchanged"
   :group 'git-gutter)
 
 (defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
@@ -197,16 +207,30 @@ character for signs of changes"
   (let ((signs (list git-gutter:modified-sign
                      git-gutter:added-sign
                      git-gutter:deleted-sign)))
+    (when git-gutter:unchanged-sign
+      (add-to-list 'signs git-gutter:unchanged-sign))
     (apply #'max (mapcar #'git-gutter:sign-width signs))))
+
+(defun git-gutter:view-for-unchanged ()
+  (save-excursion
+    (let ((sign (propertize git-gutter:unchanged-sign
+                            'face 'git-gutter:unchanged)))
+      (goto-char (point-min))
+      (while (not (eobp))
+        (git-gutter:view-at-pos sign (point))
+        (forward-line 1)))))
 
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((curwin (get-buffer-window))
         (win-width (or git-gutter:window-width
                        (git-gutter:longest-sign-width))))
-    (save-excursion
-      (when diffinfos
-        (mapc #'git-gutter:view-diff-info diffinfos)
-        (set-window-margins curwin win-width (cdr (window-margins curwin)))))))
+    (when git-gutter:unchanged-sign
+      (git-gutter:view-for-unchanged))
+    (when diffinfos
+      (save-excursion
+        (mapc #'git-gutter:view-diff-info diffinfos)))
+    (when (or diffinfos git-gutter:unchanged-sign)
+      (set-window-margins curwin win-width (cdr (window-margins curwin))))))
 
 (defun git-gutter:delete-overlay ()
   (mapc #'delete-overlay git-gutter:overlays)

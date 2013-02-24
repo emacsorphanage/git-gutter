@@ -5,15 +5,14 @@
 which is a plugin of Sublime Text2.
 
 
-`git-gutter.el` does not work well with `linum-mode`. If you use `linum-mode`,
-
-please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe).
-`git-gutter-fringe` can work with `linum-mode`.
+`git-gutter.el` does not work well with `linum-mode`.
+Please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe)
+which can work with `linum-mode`, if you use `linum-mode`.
 
 
 ## Screenshot
 
-![git-gutter.el](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter1.png)
+![git-gutter.el](image/git-gutter1.png)
 
 
 ## Requirements
@@ -95,12 +94,9 @@ Toggle git-gutter
 
 ## Customize
 
-You can pass `git diff` option to set `git-gutter:diff-option`.
+### Look and feel
 
-````elisp
-;; ignore all spaces
-(setq git-gutter:diff-option "-w")
-````
+![git-gutter-multichar](image/git-gutter-multichar.png)
 
 You can change the signs and those faces.
 
@@ -122,12 +118,10 @@ Default is " GitGutter"
 (setq git-gutter:lighter " GG")
 ````
 
-### Screenshot of above customization
-
-![git-gutter-multichar](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-multichar.png)
-
 
 ### Using full width characters
+
+![git-gutter-fullwidth](image/git-gutter-fullwidth.png)
 
 Emacs has `char-width` function which returns character width.
 `git-gutter.el` uses it for calculating character length of the signs.
@@ -142,47 +136,42 @@ character.
 (setq git-gutter:deleted-sign "☂")
 ````
 
-### Screenshot of above customization
-![git-gutter-fullwidth](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-fullwidth.png)
+### Show Unchanged Information
+
+![git-gutter-unchanged](image/git-gutter-unchanged.png)
+
+`git-gutter.el` can view unchanged information by setting `git-gutter:unchanged-sign`.
+Like following.
+
+````elisp
+(setq git-gutter:unchanged-sign "  ")
+(set-face-foreground 'git-gutter:unchanged "yellow")
+````
+
+### Always Show Gutter
+
+Always show gutter if `git-gutter:always-show-gutter` is non-nil.
+
+````elisp
+(setq git-gutter:always-show-gutter t)
+````
 
 
-## Implement your own git-gutter
+### Pass option to 'git diff' command
 
-You can create your own git-gutter to implement 2 functions.
-[git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe) is sample implementation.
+You can pass `git diff` option to set `git-gutter:diff-option`.
 
-
-### view function
-
-View function view diff informations to current buffer.
-View function takes list of diff informations(`diffinfos`). `diffinfos`
-are list of plist(`diffinfo`).  `diffinfo` has following property.
-
-
-property    | about
-------------|-------------------------------------------------------
-:type       | diff type('added, 'deleted, 'modified)
-:start-line | line number of changed start
-:end-line   | line number of changed end(Only 'added and 'modified)
-
-
-Set view function variable `git-gutter:view-diff-function`.
-
-
-### clear function
-
-Clear function clears diff informations.
-Clear function takes no arguments.
-
-Set clear function variable `git-gutter:view-diff-function`.
+````elisp
+;; ignore all spaces
+(setq git-gutter:diff-option "-w")
+````
 
 
 ## See Also
 
-
 ### [GitGutter](https://github.com/jisaacks/GitGutter)
 
-GitGutter is Sublime text2 plugin
+GitGutter is Sublime text2 plugin.
 
 ### [diff-hl](https://github.com/dgutov/diff-hl)
 
@@ -191,3 +180,7 @@ GitGutter is Sublime text2 plugin
 ### [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
 
 Vim version of GitGutter
+
+### Another implementation of git-gutter.el
+
+[How to write another implementation](wiki/Write-another-git-gutter.el-implementation)

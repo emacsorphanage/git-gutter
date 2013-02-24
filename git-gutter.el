@@ -65,6 +65,11 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:always-show-gutter nil
+  "Always show gutter"
+  :type 'boolean
+  :group 'git-gutter)
+
 (defcustom git-gutter:lighter " GitGutter"
   "Minor mode lighter in mode-line"
   :type 'string
@@ -229,7 +234,7 @@ character for signs of changes"
     (when diffinfos
       (save-excursion
         (mapc #'git-gutter:view-diff-info diffinfos)))
-    (when (or diffinfos git-gutter:unchanged-sign)
+    (when (or git-gutter:always-show-gutter diffinfos git-gutter:unchanged-sign)
       (set-window-margins curwin win-width (cdr (window-margins curwin))))))
 
 (defun git-gutter:delete-overlay ()

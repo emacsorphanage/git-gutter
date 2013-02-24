@@ -13,7 +13,7 @@ please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe
 
 ## Screenshot
 
-![git-gutter.el](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter1.png)
+![git-gutter.el](image/git-gutter1.png)
 
 
 ## Requirements
@@ -124,7 +124,7 @@ Default is " GitGutter"
 
 ### Screenshot of above customization
 
-![git-gutter-multichar](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-multichar.png)
+![git-gutter-multichar](image/git-gutter-multichar.png)
 
 
 ### Using full width characters
@@ -143,7 +143,7 @@ character.
 ````
 
 ### Screenshot of above customization
-![git-gutter-fullwidth](https://github.com/syohex/emacs-git-gutter/raw/master/image/git-gutter-fullwidth.png)
+![git-gutter-fullwidth](image/git-gutter-fullwidth.png)
 
 
 ## Implement your own git-gutter

@@ -144,13 +144,15 @@ character.
 Like following.
 
 ````elisp
-(setq git-gutter:unchanged-sign "  ")
-(set-face-foreground 'git-gutter:unchanged "yellow")
+(setq git-gutter:unchanged-sign " ")
+(set-face-background 'git-gutter:unchanged "yellow")
 ````
+
+Default value of `git-gutter:unchanged-sign` is `nil`.
 
 ### Always Show Gutter
 
-Always show gutter if `git-gutter:always-show-gutter` is non-nil.
+Always show gutter if `git-gutter:always-show-gutter` is non-nil. (Default is `nil`)
 
 ````elisp
 (setq git-gutter:always-show-gutter t)

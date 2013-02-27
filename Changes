@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.19 2013/02/27 syohex
+   - add autoload cookies
+   - improve case expression
+
 Revision 0.18 2013/02/24 syohex
    - Implement for viewing unchanged line
    - Implement flag of 'always show gutter'

@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.18
+;; Version: 0.19
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -199,8 +199,7 @@ character for signs of changes"
          (type (plist-get diffinfo :type))
          (sign (git-gutter:propertized-sign type)))
     (case type
-      (modified (git-gutter:view-region sign start-line end-line))
-      (added (git-gutter:view-region sign start-line end-line))
+      ((modified added) (git-gutter:view-region sign start-line end-line))
       (deleted (git-gutter:view-at-pos
                 sign (git-gutter:line-to-pos start-line))))))
 
@@ -262,6 +261,7 @@ character for signs of changes"
                    (1- (- (length diffinfos) index))
                  index)))
 
+;;;###autoload
 (defun git-gutter:next-diff (arg)
   (interactive "p")
   (when git-gutter:diffinfos
@@ -277,6 +277,7 @@ character for signs of changes"
       (goto-char (point-min))
       (forward-line (1- (plist-get diffinfo :start-line))))))
 
+;;;###autoload
 (defun git-gutter:previous-diff (arg)
   (interactive "p")
   (git-gutter:next-diff (- arg)))

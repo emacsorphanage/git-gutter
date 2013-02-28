@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.20 2013/02/28 syohex
+   - [EXPERIMENTAL] Implement 'git-gutter:popup-diff'
+
 Revision 0.19 2013/02/27 syohex
    - add autoload cookies
    - improve case expression

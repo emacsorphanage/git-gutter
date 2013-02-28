@@ -105,6 +105,8 @@ character for signs of changes"
 (defvar git-gutter:overlays nil)
 (defvar git-gutter:diffinfos nil)
 
+(defvar git-gutter:popup-buffer "*git-gutter:diff*")
+
 (defun git-gutter:in-git-repository-p ()
   (with-temp-buffer
     (let ((cmd "git rev-parse --is-inside-work-tree"))
@@ -130,8 +132,18 @@ character for signs of changes"
       1
     (string-to-number str)))
 
-(defun git-gutter:make-diffinfo (type start &optional end)
-  (list :type type :start-line start :end-line end))
+(defun git-gutter:make-diffinfo (type content start &optional end)
+  (list :type type :content content :start-line start :end-line end))
+
+(defun git-gutter:diff-content ()
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (let ((curpoint (point)))
+      (forward-line 1)
+      (if (re-search-forward "^@@" nil t)
+          (backward-char 3) ;; for '@@'
+        (goto-char (point-max)))
+      (buffer-substring curpoint (point)))))
 
 (defun git-gutter:diff (curfile)
   (let ((cmd (format "git diff --no-ext-diff -U0 %s %s" git-gutter:diff-option curfile))
@@ -147,13 +159,14 @@ character for signs of changes"
             for orig-changes = (git-gutter:changes-to-number (match-string 2))
             for new-changes = (git-gutter:changes-to-number (match-string 4))
             for end-line = (1- (+ new-line new-changes))
+            for content = (git-gutter:diff-content)
             collect
             (cond ((zerop orig-changes)
-                   (git-gutter:make-diffinfo 'added new-line end-line))
+                   (git-gutter:make-diffinfo 'added content new-line end-line))
                   ((zerop new-changes)
-                   (git-gutter:make-diffinfo 'deleted (1- orig-line)))
+                   (git-gutter:make-diffinfo 'deleted content (1- orig-line)))
                   (t
-                   (git-gutter:make-diffinfo 'modified new-line end-line)))))))
+                   (git-gutter:make-diffinfo 'modified content new-line end-line)))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -260,6 +273,28 @@ character for signs of changes"
         return (if is-reverse
                    (1- (- (length diffinfos) index))
                  index)))
+
+(defun git-gutter:search-here-diff (diffinfos)
+  (loop with current-line = (line-number-at-pos)
+        for diffinfo in diffinfos
+        for start = (plist-get diffinfo :start-line)
+        for end   = (or (plist-get diffinfo :end-line) (1+ start))
+        when (and (>= current-line start) (<= current-line end))
+        return (plist-get diffinfo :content)))
+
+;;;###autoload
+(defun git-gutter:popup-diff ()
+  (interactive)
+  (let ((diff-content (git-gutter:search-here-diff git-gutter:diffinfos)))
+    (unless diff-content
+      (error "Here is not changed!!"))
+    (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
+      (erase-buffer)
+      (insert diff-content)
+      (insert "\n")
+      (goto-char (point-min))
+      (diff-mode)
+      (pop-to-buffer (current-buffer)))))
 
 ;;;###autoload
 (defun git-gutter:next-diff (arg)

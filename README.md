@@ -71,6 +71,10 @@ Toggle git-gutter
 
     M-x git-gutter:previous-diff
 
+ Popup diff of current position
+
+    M-x git-gutter:popup-diff
+
 
 ## Sample Configuration
 
@@ -83,8 +87,8 @@ Toggle git-gutter
 ;; If you enable git-gutter-mode for some modes
 (add-hook 'ruby-mode-hook 'git-gutter-mode)
 
-;; bind git-gutter toggle command
 (global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
+(global-set-key (kbd "C-x v =") 'git-gutter:popup-diff)
 
 ;; Jump to next/previous diff
 (global-set-key (kbd "C-x p") 'git-gutter:previous-diff)

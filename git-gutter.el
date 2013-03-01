@@ -107,6 +107,12 @@ character for signs of changes"
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 
+(defmacro git-gutter:awhen (test &rest body)
+  "Anaphoric when."
+  (declare (indent 1))
+  `(let ((it ,test))
+     (when it ,@body)))
+
 (defun git-gutter:in-git-repository-p ()
   (with-temp-buffer
     (let ((cmd "git rev-parse --is-inside-work-tree"))
@@ -119,13 +125,11 @@ character for signs of changes"
   (with-temp-buffer
     (let* ((cmd "git rev-parse --show-toplevel")
            (ret (call-process-shell-command cmd nil t)))
-      (unless (zerop ret)
-        (error "Here is not git repository!!"))
-      (goto-char (point-min))
-      (let ((root (buffer-substring-no-properties (point) (line-end-position))))
-        (when (string= root "")
-          (error "You maybe be in '.git/' directory"))
-        (file-name-as-directory root)))))
+      (when (zerop ret)
+        (goto-char (point-min))
+        (let ((root (buffer-substring-no-properties (point) (line-end-position))))
+          (unless (string= root "")
+            (file-name-as-directory root)))))))
 
 (defun git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -149,24 +153,23 @@ character for signs of changes"
   (let ((cmd (format "git diff --no-ext-diff -U0 %s %s" git-gutter:diff-option curfile))
         (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
     (with-temp-buffer
-      (let ((ret (call-process-shell-command cmd nil t)))
-        (unless (or (zerop ret))
-          (error (format "Failed '%s'" cmd))))
-      (goto-char (point-min))
-      (loop while (re-search-forward regexp nil t)
-            for orig-line = (string-to-number (match-string 1))
-            for new-line  = (string-to-number (match-string 3))
-            for orig-changes = (git-gutter:changes-to-number (match-string 2))
-            for new-changes = (git-gutter:changes-to-number (match-string 4))
-            for end-line = (1- (+ new-line new-changes))
-            for content = (git-gutter:diff-content)
-            collect
-            (cond ((zerop orig-changes)
-                   (git-gutter:make-diffinfo 'added content new-line end-line))
-                  ((zerop new-changes)
-                   (git-gutter:make-diffinfo 'deleted content (1- orig-line)))
-                  (t
-                   (git-gutter:make-diffinfo 'modified content new-line end-line)))))))
+      (when (zerop (call-process-shell-command cmd nil t))
+        (goto-char (point-min))
+        (loop while (re-search-forward regexp nil t)
+              for orig-line = (string-to-number (match-string 1))
+              for new-line  = (string-to-number (match-string 3))
+              for orig-changes = (git-gutter:changes-to-number (match-string 2))
+              for new-changes = (git-gutter:changes-to-number (match-string 4))
+              for end-line = (1- (+ new-line new-changes))
+              for content = (git-gutter:diff-content)
+              collect
+              (cond ((zerop orig-changes)
+                     (git-gutter:make-diffinfo 'added content new-line end-line))
+                    ((zerop new-changes)
+                     (git-gutter:make-diffinfo 'deleted content (1- orig-line)))
+                    (t
+                     (git-gutter:make-diffinfo
+                      'modified content new-line end-line))))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -257,8 +260,9 @@ character for signs of changes"
 
 (defun git-gutter:process-diff (curfile)
   (let ((diffinfos (git-gutter:diff curfile)))
-    (setq git-gutter:diffinfos diffinfos)
-    (funcall git-gutter:view-diff-function diffinfos)))
+    (when diffinfos
+      (setq git-gutter:diffinfos diffinfos)
+      (funcall git-gutter:view-diff-function diffinfos))))
 
 (defun git-gutter:clear-overlays ()
   (git-gutter:delete-overlay))
@@ -285,16 +289,15 @@ character for signs of changes"
 ;;;###autoload
 (defun git-gutter:popup-diff ()
   (interactive)
-  (let ((diff-content (git-gutter:search-here-diff git-gutter:diffinfos)))
-    (unless diff-content
-      (error "Here is not changed!!"))
-    (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
-      (erase-buffer)
-      (insert diff-content)
-      (insert "\n")
-      (goto-char (point-min))
-      (diff-mode)
-      (pop-to-buffer (current-buffer)))))
+  (git-gutter:awhen (git-gutter:search-here-diff git-gutter:diffinfos)
+    (save-selected-window
+      (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
+        (erase-buffer)
+        (insert it)
+        (insert "\n")
+        (goto-char (point-min))
+        (diff-mode)
+        (pop-to-buffer (current-buffer))))))
 
 ;;;###autoload
 (defun git-gutter:next-diff (arg)
@@ -323,11 +326,11 @@ character for signs of changes"
   (git-gutter:delete-overlay)
   (let ((file (buffer-file-name)))
     (when (and file (file-exists-p file))
-      (let* ((gitroot (git-gutter:root-directory))
-             (default-directory gitroot)
-             (current-file (file-relative-name file gitroot)))
-        (git-gutter:process-diff current-file)
-        (setq git-gutter:enabled t)))))
+      (git-gutter:awhen (git-gutter:root-directory)
+        (let ((default-directory it)
+              (current-file (file-relative-name file it)))
+          (git-gutter:process-diff current-file)
+          (setq git-gutter:enabled t))))))
 
 ;;;###autoload
 (defun git-gutter:clear ()

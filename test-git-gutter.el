@@ -35,11 +35,11 @@
 
   ;; temporary directory maybe be version-controled
   (let ((default-directory temporary-file-directory))
-    (should-error (git-gutter:root-directory)))
+    (should (null (git-gutter:root-directory))))
 
   ;; Files in .git/ directory are not version-controled
   (let ((default-directory (concat default-directory ".git/")))
-    (should-error (git-gutter:root-directory))))
+    (should (null (git-gutter:root-directory)))))
 
 (ert-deftest git-gutter:sign-width ()
   "helper function `git-gutter:sign-width'"

@@ -313,7 +313,10 @@ character for signs of changes"
                          (if is-reverse (1- (length diffinfos)) 0)))
            (diffinfo (nth real-index diffinfos)))
       (goto-char (point-min))
-      (forward-line (1- (plist-get diffinfo :start-line))))))
+      (forward-line (1- (plist-get diffinfo :start-line)))
+      (when (buffer-live-p (get-buffer git-gutter:popup-buffer))
+        (save-window-excursion
+          (git-gutter:popup-diff))))))
 
 ;;;###autoload
 (defun git-gutter:previous-diff (arg)

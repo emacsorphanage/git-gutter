@@ -331,10 +331,11 @@ character for signs of changes"
 ;;;###autoload
 (defun git-gutter:clear ()
   (interactive)
-  (remove-overlays (point-min) (point-max) 'git-gutter t)
   (when git-gutter:clear-function
     (funcall git-gutter:clear-function))
-  (setq git-gutter:enabled nil)
+  (remove-overlays (point-min) (point-max) 'git-gutter t)
+  (setq git-gutter:enabled nil
+        git-gutter:diffinfos nil)
   (unless git-gutter:always-show-gutter
     (let ((curwin (get-buffer-window)))
       (set-window-margins curwin 0 (cdr (window-margins curwin))))))

@@ -1,5 +1,10 @@
 Revision history for git-gutter.el
 
+Revision 0.22 2013/03/02 syohex
+   - Improve deleting overlays
+   - Fix viewing deleted hunk
+   - Modernize code
+
 Revision 0.21 2013/03/02 syohex
    - Remove 'error' calls
    - Don't switch popup diff buffer

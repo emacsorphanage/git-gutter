@@ -101,6 +101,9 @@ character for signs of changes"
 (defvar git-gutter:clear-function 'git-gutter:clear-overlays
   "Function of clear changes")
 
+(defvar git-gutter:init-function 'nil
+  "Function of initialize")
+
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:overlays nil)
 (defvar git-gutter:diffinfos nil)
@@ -363,7 +366,8 @@ character for signs of changes"
       (if (and (git-gutter:check-file-and-directory)
                (git-gutter:in-git-repository-p))
           (progn
-            (make-local-variable 'git-gutter:overlays)
+            (when git-gutter:init-function
+              (funcall git-gutter:init-function))
             (make-local-variable 'git-gutter:enabled)
             (make-local-variable 'git-gutter:diffinfos)
             (add-hook 'after-save-hook 'git-gutter nil t)

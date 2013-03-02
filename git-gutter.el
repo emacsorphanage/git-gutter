@@ -98,14 +98,13 @@ character for signs of changes"
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
-(defvar git-gutter:clear-function 'git-gutter:clear-overlays
+(defvar git-gutter:clear-function nil
   "Function of clear changes")
 
 (defvar git-gutter:init-function 'nil
   "Function of initialize")
 
 (defvar git-gutter:enabled nil)
-(defvar git-gutter:overlays nil)
 (defvar git-gutter:diffinfos nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
@@ -210,7 +209,7 @@ character for signs of changes"
 (defun git-gutter:view-at-pos (sign pos)
   (let ((ov (make-overlay pos pos)))
     (overlay-put ov 'before-string (git-gutter:before-string sign))
-    (push ov git-gutter:overlays)))
+    (overlay-put ov 'git-gutter t)))
 
 (defun git-gutter:view-diff-info (diffinfo)
   (let* ((start-line (plist-get diffinfo :start-line))
@@ -255,20 +254,11 @@ character for signs of changes"
     (when (or git-gutter:always-show-gutter diffinfos git-gutter:unchanged-sign)
       (set-window-margins curwin win-width (cdr (window-margins curwin))))))
 
-(defun git-gutter:delete-overlay ()
-  (mapc 'delete-overlay git-gutter:overlays)
-  (setq git-gutter:overlays nil)
-  (let ((curwin (get-buffer-window)))
-    (set-window-margins curwin 0 (cdr (window-margins curwin)))))
-
 (defun git-gutter:process-diff (curfile)
   (let ((diffinfos (git-gutter:diff curfile)))
     (when diffinfos
       (setq git-gutter:diffinfos diffinfos)
       (funcall git-gutter:view-diff-function diffinfos))))
-
-(defun git-gutter:clear-overlays ()
-  (git-gutter:delete-overlay))
 
 (defun git-gutter:search-near-diff-index (diffinfos is-reverse)
   (loop with current-line = (line-number-at-pos)
@@ -329,7 +319,7 @@ character for signs of changes"
 ;;;###autoload
 (defun git-gutter ()
   (interactive)
-  (git-gutter:delete-overlay)
+  (git-gutter:clear)
   (let ((file (buffer-file-name)))
     (when (and file (file-exists-p file))
       (git-gutter:awhen (git-gutter:root-directory)
@@ -341,8 +331,13 @@ character for signs of changes"
 ;;;###autoload
 (defun git-gutter:clear ()
   (interactive)
-  (funcall git-gutter:clear-function)
-  (setq git-gutter:enabled nil))
+  (remove-overlays (point-min) (point-max) 'git-gutter t)
+  (when git-gutter:clear-function
+    (funcall git-gutter:clear-function))
+  (setq git-gutter:enabled nil)
+  (unless git-gutter:always-show-gutter
+    (let ((curwin (get-buffer-window)))
+      (set-window-margins curwin 0 (cdr (window-margins curwin))))))
 
 ;;;###autoload
 (defun git-gutter:toggle ()

@@ -166,7 +166,7 @@ character for signs of changes"
               (cond ((zerop orig-changes)
                      (git-gutter:make-diffinfo 'added content new-line end-line))
                     ((zerop new-changes)
-                     (git-gutter:make-diffinfo 'deleted content (1- orig-line)))
+                     (git-gutter:make-diffinfo 'deleted content new-line))
                     (t
                      (git-gutter:make-diffinfo
                       'modified content new-line end-line))))))))

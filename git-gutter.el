@@ -231,7 +231,7 @@ character for signs of changes"
                      git-gutter:deleted-sign)))
     (when git-gutter:unchanged-sign
       (add-to-list 'signs git-gutter:unchanged-sign))
-    (apply #'max (mapcar #'git-gutter:sign-width signs))))
+    (apply 'max (mapcar 'git-gutter:sign-width signs))))
 
 (defun git-gutter:view-for-unchanged ()
   (save-excursion
@@ -250,7 +250,7 @@ character for signs of changes"
       (git-gutter:view-for-unchanged))
     (when diffinfos
       (save-excursion
-        (mapc #'git-gutter:view-diff-info diffinfos)))
+        (mapc 'git-gutter:view-diff-info diffinfos)))
     (when (or git-gutter:always-show-gutter diffinfos git-gutter:unchanged-sign)
       (set-window-margins curwin win-width (cdr (window-margins curwin))))))
 

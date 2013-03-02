@@ -95,10 +95,10 @@ character for signs of changes"
   "Face of unchanged"
   :group 'git-gutter)
 
-(defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
+(defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
-(defvar git-gutter:clear-function #'git-gutter:clear-overlays
+(defvar git-gutter:clear-function 'git-gutter:clear-overlays
   "Function of clear changes")
 
 (defvar git-gutter:enabled nil)
@@ -253,7 +253,7 @@ character for signs of changes"
       (set-window-margins curwin win-width (cdr (window-margins curwin))))))
 
 (defun git-gutter:delete-overlay ()
-  (mapc #'delete-overlay git-gutter:overlays)
+  (mapc 'delete-overlay git-gutter:overlays)
   (setq git-gutter:overlays nil)
   (let ((curwin (get-buffer-window)))
     (set-window-margins curwin 0 (cdr (window-margins curwin)))))

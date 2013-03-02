@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.23 2013/03/03 syohex
+   - Fix for cleanup
+
 Revision 0.22 2013/03/02 syohex
    - Improve deleting overlays
    - Fix viewing deleted hunk

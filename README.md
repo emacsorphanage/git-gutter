@@ -17,7 +17,7 @@ which can work with `linum-mode`, if you use `linum-mode`.
 
 ## Requirements
 
-* Emacs 24 or higher
+* Emacs 23 or higher
 
 ## Installation
 

@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.24 2013/03/03 syohex
+   - Fix bug that works with linum-mode for git-gutter-fringe
+
 Revision 0.23 2013/03/03 syohex
    - Fix for cleanup
 

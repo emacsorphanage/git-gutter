@@ -63,13 +63,13 @@ Toggle git-gutter
 
     M-x git-gutter:toggle
 
- Jump to next diff
+ Jump to next hunk(alias `git-gutter:next-diff`)
 
-    M-x git-gutter:next-diff
+    M-x git-gutter:next-hunk
 
- Jump to previous diff
+ Jump to previous hunk(alias `git-gutter:previous-diff`)
 
-    M-x git-gutter:previous-diff
+    M-x git-gutter:previous-hunk
 
  Popup diff of current position
 
@@ -91,8 +91,8 @@ Toggle git-gutter
 (global-set-key (kbd "C-x v =") 'git-gutter:popup-diff)
 
 ;; Jump to next/previous diff
-(global-set-key (kbd "C-x p") 'git-gutter:previous-diff)
-(global-set-key (kbd "C-x n") 'git-gutter:next-diff)
+(global-set-key (kbd "C-x p") 'git-gutter:previous-hunk)
+(global-set-key (kbd "C-x n") 'git-gutter:next-hunk)
 ````
 
 

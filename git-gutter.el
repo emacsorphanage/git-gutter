@@ -272,28 +272,68 @@ character for signs of changes"
                    (1- (- (length diffinfos) index))
                  index)))
 
-(defun git-gutter:search-here-diff (diffinfos)
+(defun git-gutter:search-here-diffinfo (diffinfos)
   (loop with current-line = (line-number-at-pos)
         for diffinfo in diffinfos
         for start = (plist-get diffinfo :start-line)
         for end   = (or (plist-get diffinfo :end-line) (1+ start))
         when (and (>= current-line start) (<= current-line end))
-        return (plist-get diffinfo :content)))
-  "Revert current hunk"
+        return diffinfo))
+
+(defun git-gutter:collect-deleted-line (str)
+  (with-temp-buffer
+    (insert str)
+    (goto-char (point-min))
+    (loop while (re-search-forward "^-\\(.*?\\)$" nil t)
+          collect (match-string 1) into deleted-lines
+          finally return deleted-lines)))
+
+(defun git-gutter:delete-added-lines (start-line end-line)
+  (forward-line (1- start-line))
+  (let ((start-point (point)))
+    (forward-line (1+ (- end-line start-line)))
+    (delete-region start-point (point))))
+
+(defun git-gutter:insert-deleted-lines (content)
+  (dolist (line (git-gutter:collect-deleted-line content))
+    (insert (concat line "\n"))))
+
+;;;###autoload
+(defun git-gutter:revert-hunk ()
+  "Revert current hunk."
+  (interactive)
+  (git-gutter:awhen (git-gutter:popup-diff)
+    (when (yes-or-no-p "Revert current hunk ?")
+      (save-excursion
+        (goto-char (point-min))
+        (let ((start-line (plist-get it :start-line))
+              (end-line (plist-get it :end-line))
+              (content (plist-get it :content)))
+          (case (plist-get it :type)
+            (added (git-gutter:delete-added-lines start-line end-line))
+            (deleted (forward-line start-line)
+                     (git-gutter:insert-deleted-lines content))
+            (modified (git-gutter:delete-added-lines start-line end-line)
+                      (git-gutter:insert-deleted-lines content))))
+        (save-buffer)
+        (unless git-gutter-mode
+          (git-gutter))))
+    (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer)))))
 
 ;;;###autoload
 (defun git-gutter:popup-diff ()
   "popup current diff hunk"
   (interactive)
-  (git-gutter:awhen (git-gutter:search-here-diff git-gutter:diffinfos)
+  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
     (save-selected-window
       (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
         (erase-buffer)
-        (insert it)
+        (insert (plist-get it :content))
         (insert "\n")
         (goto-char (point-min))
         (diff-mode)
-        (pop-to-buffer (current-buffer))))))
+        (pop-to-buffer (current-buffer))
+        it))))
 
 ;;;###autoload
 (defun git-gutter:next-hunk (arg)

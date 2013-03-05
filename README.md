@@ -63,17 +63,21 @@ Toggle git-gutter
 
     M-x git-gutter:toggle
 
- Jump to next hunk(alias `git-gutter:next-diff`)
+Jump to next hunk(alias `git-gutter:next-diff`)
 
     M-x git-gutter:next-hunk
 
- Jump to previous hunk(alias `git-gutter:previous-diff`)
+Jump to previous hunk(alias `git-gutter:previous-diff`)
 
     M-x git-gutter:previous-hunk
 
- Popup diff of current position
+Popup diff of current position
 
     M-x git-gutter:popup-diff
+
+Revert current hunk
+
+    M-x git-gutter:revert-hunk
 
 
 ## Sample Configuration

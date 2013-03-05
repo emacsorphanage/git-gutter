@@ -107,4 +107,22 @@
     (with-current-buffer buf
       (should (null (git-gutter))))))
 
+(ert-deftest git-gutter:collect-deleted-line ()
+  "Should return lines which start with '-'"
+  (let* ((input (mapconcat 'identity
+                           (list "-apple" "-melon" "+orange")
+                           "\n"))
+         (got (git-gutter:collect-deleted-line input)))
+    (should (equal got '("apple" "melon")))))
+
+(ert-deftest git-gutter:insert-deleted-lines ()
+  "Should insert deleted line"
+  (let ((input (mapconcat 'identity
+                          (list "-apple" "-melon" "+orange")
+                          "\n")))
+    (with-temp-buffer
+      (git-gutter:insert-deleted-lines input)
+      (should (string= (buffer-string)
+                       "apple\nmelon\n")))))
+
 ;;; test-git-gutter.el end here

@@ -278,9 +278,11 @@ character for signs of changes"
         for end   = (or (plist-get diffinfo :end-line) (1+ start))
         when (and (>= current-line start) (<= current-line end))
         return (plist-get diffinfo :content)))
+  "Revert current hunk"
 
 ;;;###autoload
 (defun git-gutter:popup-diff ()
+  "popup current diff hunk"
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diff git-gutter:diffinfos)
     (save-selected-window
@@ -294,6 +296,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:next-hunk (arg)
+  "Move to next diff hunk"
   (interactive "p")
   (when git-gutter:diffinfos
     (let* ((is-reverse (< arg 0))
@@ -313,6 +316,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:previous-hunk (arg)
+  "Move to previous diff hunk"
   (interactive "p")
   (git-gutter:next-diff (- arg)))
 
@@ -321,6 +325,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter ()
+  "Show diff information in gutter"
   (interactive)
   (git-gutter:clear)
   (let ((file (buffer-file-name)))
@@ -338,6 +343,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:clear ()
+  "clear diff information in gutter"
   (interactive)
   (when git-gutter:clear-function
     (funcall git-gutter:clear-function))
@@ -347,6 +353,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:toggle ()
+  "toggle to show diff information"
   (interactive)
   (if git-gutter:enabled
       (git-gutter:clear)

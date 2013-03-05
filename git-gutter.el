@@ -293,7 +293,7 @@ character for signs of changes"
         (pop-to-buffer (current-buffer))))))
 
 ;;;###autoload
-(defun git-gutter:next-diff (arg)
+(defun git-gutter:next-hunk (arg)
   (interactive "p")
   (when git-gutter:diffinfos
     (let* ((is-reverse (< arg 0))
@@ -312,9 +312,12 @@ character for signs of changes"
           (git-gutter:popup-diff))))))
 
 ;;;###autoload
-(defun git-gutter:previous-diff (arg)
+(defun git-gutter:previous-hunk (arg)
   (interactive "p")
   (git-gutter:next-diff (- arg)))
+
+(defalias 'git-gutter:next-diff 'git-gutter:next-hunk)
+(defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)
 
 ;;;###autoload
 (defun git-gutter ()

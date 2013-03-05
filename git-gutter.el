@@ -105,6 +105,7 @@ character for signs of changes"
   "Function of initialize")
 
 (defvar git-gutter:enabled nil)
+(defvar git-gutter:toggle-flag t)
 (defvar git-gutter:diffinfos nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
@@ -324,17 +325,18 @@ character for signs of changes"
 (defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)
 
 ;;;###autoload
-(defun git-gutter ()
+(defun git-gutter (&optional force)
   "Show diff information in gutter"
   (interactive)
   (git-gutter:clear)
-  (let ((file (buffer-file-name)))
-    (when (and file (file-exists-p file))
-      (git-gutter:awhen (git-gutter:root-directory)
-        (let ((default-directory it)
-              (current-file (file-relative-name file it)))
-          (git-gutter:process-diff current-file)
-          (setq git-gutter:enabled t))))))
+  (when (or force git-gutter:toggle-flag)
+    (let ((file (buffer-file-name)))
+      (when (and file (file-exists-p file))
+        (git-gutter:awhen (git-gutter:root-directory)
+          (let ((default-directory it)
+                (current-file (file-relative-name file it)))
+            (git-gutter:process-diff current-file)
+            (setq git-gutter:enabled t)))))))
 
 (defun git-gutter:reset-window-margin ()
   (unless git-gutter:always-show-gutter
@@ -357,7 +359,8 @@ character for signs of changes"
   (interactive)
   (if git-gutter:enabled
       (git-gutter:clear)
-    (git-gutter)))
+    (git-gutter t))
+  (setq git-gutter:toggle-flag git-gutter:enabled))
 
 (defun git-gutter:check-file-and-directory ()
   (and (buffer-file-name)
@@ -377,6 +380,7 @@ character for signs of changes"
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
             (make-local-variable 'git-gutter:enabled)
+            (make-local-variable 'git-gutter:toggle-flag)
             (make-local-variable 'git-gutter:diffinfos)
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)

@@ -94,9 +94,12 @@ Revert current hunk
 (global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
 (global-set-key (kbd "C-x v =") 'git-gutter:popup-diff)
 
-;; Jump to next/previous diff
+;; Jump to next/previous hunk
 (global-set-key (kbd "C-x p") 'git-gutter:previous-hunk)
 (global-set-key (kbd "C-x n") 'git-gutter:next-hunk)
+
+;; Revert current hunk
+(global-set-key (kbd "C-x r") 'git-gutter:revert-hunk)
 ````
 
 

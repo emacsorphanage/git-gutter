@@ -29,17 +29,18 @@
 
 (ert-deftest git-gutter:root-directory ()
   "helper function `git-gutter:root-directory'"
-  (let ((expected (expand-file-name default-directory))
-        (got (git-gutter:root-directory)))
-    (should (string= expected got)))
+  (let ((file (buffer-file-name)))
+    (let ((expected (expand-file-name default-directory))
+          (got (git-gutter:root-directory file)))
+      (should (string= expected got)))
 
-  ;; temporary directory maybe be version-controled
-  (let ((default-directory temporary-file-directory))
-    (should (null (git-gutter:root-directory))))
+    ;; temporary directory maybe be version-controled
+    (let ((default-directory temporary-file-directory))
+      (should (null (git-gutter:root-directory file))))
 
-  ;; Files in .git/ directory are not version-controled
-  (let ((default-directory (concat default-directory ".git/")))
-    (should (null (git-gutter:root-directory)))))
+    ;; Files in .git/ directory are not version-controled
+    (let ((default-directory (concat default-directory ".git/")))
+      (should (null (git-gutter:root-directory file))))))
 
 (ert-deftest git-gutter:sign-width ()
   "helper function `git-gutter:sign-width'"
@@ -92,12 +93,13 @@
   "Should return nil if default-directory does not exist"
 
   ;; In git repository, but here is '.git'
-  (let ((buf (find-file-noselect ".git/config")))
-    (with-current-buffer buf
-      (should (null (git-gutter:in-git-repository-p)))))
+  (let ((file (buffer-file-name)))
+    (let ((buf (find-file-noselect ".git/config")))
+      (with-current-buffer buf
+        (should (null (git-gutter:in-git-repository-p file)))))
 
-  (let ((default-directory (file-name-directory (locate-library "git-gutter"))))
-    (should (git-gutter:in-git-repository-p))))
+    (let ((default-directory (file-name-directory (locate-library "git-gutter"))))
+      (should (git-gutter:in-git-repository-p file)))))
 
 (ert-deftest git-gutter ()
   "Should return nil if buffer does not related with file or file is not existed"
@@ -124,5 +126,25 @@
       (git-gutter:insert-deleted-lines input)
       (should (string= (buffer-string)
                        "apple\nmelon\n")))))
+
+(ert-deftest git-gutter:diff-content ()
+  "Should return diff hunk"
+  (let* ((input "@@-1,1+1,1@@
+foo
+bar
+@@ -2,2 +2,2 @@")
+         (got (with-temp-buffer
+                (insert input)
+                (goto-char (point-min))
+                (goto-char (line-end-position))
+                (git-gutter:diff-content))))
+    (should (string= got "@@-1,1+1,1@@\nfoo\nbar"))))
+
+(ert-deftest git-gutter:diff-command ()
+  "Should return git diff command"
+  (let ((git-gutter:diff-option "--binary"))
+    (let ((got (git-gutter:diff-command "emacs/git.el"))
+          (expected "git --no-pager diff --no-color --no-ext-diff -U0 --binary emacs/git.el"))
+      (should (string= got expected)))))
 
 ;;; test-git-gutter.el end here

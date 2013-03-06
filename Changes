@@ -1,5 +1,12 @@
 Revision history for git-gutter.el
 
+Revision 0.25 2013/03/07 syohex
+   - [EXPERIMENTAL] Support tramp
+   - fix git-gutter:toggle problem
+   - implement git-gutter:revert-hunk
+   - change name next-diff, previous-diff => next-hunk, previous-hunk
+     Add aliases for compatibility
+
 Revision 0.24 2013/03/03 syohex
    - Fix bug that works with linum-mode for git-gutter-fringe
 

@@ -28,6 +28,8 @@
 (eval-when-compile
   (require 'cl))
 
+(require 'tramp)
+
 (defgroup git-gutter nil
   "Port GitGutter"
   :prefix "git-gutter:"
@@ -117,18 +119,23 @@ character for signs of changes"
   `(let ((it ,test))
      (when it ,@body)))
 
-(defun git-gutter:in-git-repository-p ()
+(defun git-gutter:execute-command (cmd file)
+  (if (not (tramp-connectable-p file))
+      (call-process-shell-command cmd nil t)
+    (process-file-shell-command cmd nil t)))
+
+(defun git-gutter:in-git-repository-p (file)
   (with-temp-buffer
     (let ((cmd "git rev-parse --is-inside-work-tree"))
-      (when (zerop (call-process-shell-command cmd nil t))
+      (when (zerop (git-gutter:execute-command cmd file))
         (goto-char (point-min))
         (string= "true" (buffer-substring-no-properties
                          (point) (line-end-position)))))))
 
-(defun git-gutter:root-directory ()
+(defun git-gutter:root-directory (file)
   (with-temp-buffer
     (let* ((cmd "git rev-parse --show-toplevel")
-           (ret (call-process-shell-command cmd nil t)))
+           (ret (git-gutter:execute-command cmd file)))
       (when (zerop ret)
         (goto-char (point-min))
         (let ((root (buffer-substring-no-properties (point) (line-end-position))))
@@ -153,11 +160,16 @@ character for signs of changes"
         (goto-char (point-max)))
       (buffer-substring curpoint (point)))))
 
+(defun git-gutter:diff-command (file)
+  (format "git --no-pager diff --no-color --no-ext-diff -U0 %s %s"
+          git-gutter:diff-option file))
+
 (defun git-gutter:diff (curfile)
-  (let ((cmd (format "git diff --no-ext-diff -U0 %s %s" git-gutter:diff-option curfile))
-        (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
+  (let ((cmd (git-gutter:diff-command curfile))
+        (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@")
+        (file (buffer-file-name))) ;; for tramp
     (with-temp-buffer
-      (when (zerop (call-process-shell-command cmd nil t))
+      (when (zerop (git-gutter:execute-command cmd file))
         (goto-char (point-min))
         (loop while (re-search-forward regexp nil t)
               for orig-line = (string-to-number (match-string 1))
@@ -317,7 +329,7 @@ character for signs of changes"
             (modified (git-gutter:delete-added-lines start-line end-line)
                       (git-gutter:insert-deleted-lines content))))
         (save-buffer)
-        (unless git-gutter-mode
+        (when (assoc 'git-gutter-mode minor-mode-alist)
           (git-gutter))))
     (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer)))))
 
@@ -365,6 +377,21 @@ character for signs of changes"
 (defalias 'git-gutter:next-diff 'git-gutter:next-hunk)
 (defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)
 
+(defun git-gutter:default-directory (dir curfile)
+  (if (not (tramp-connectable-p curfile))
+      dir
+    (let* ((vec (tramp-dissect-file-name curfile))
+           (method (aref vec 0))
+           (user (aref vec 1))
+           (host (aref vec 2)))
+      (format "/%s:%s%s:%s" method (if user (concat user "@") "") host dir))))
+
+(defun git-gutter:relative-path (dir curfile)
+  (if (not (tramp-connectable-p curfile))
+      (file-relative-name curfile dir)
+    (let ((file (aref (tramp-dissect-file-name curfile) 3)))
+      (replace-regexp-in-string (concat "\\`" dir) "" curfile))))
+
 ;;;###autoload
 (defun git-gutter ()
   "Show diff information in gutter"
@@ -373,10 +400,10 @@ character for signs of changes"
   (when (or git-gutter:force git-gutter:toggle-flag)
     (let ((file (buffer-file-name)))
       (when (and file (file-exists-p file))
-        (git-gutter:awhen (git-gutter:root-directory)
-          (let ((default-directory it)
-                (current-file (file-relative-name file it)))
-            (git-gutter:process-diff current-file)
+        (git-gutter:awhen (git-gutter:root-directory file)
+          (let* ((default-directory (git-gutter:default-directory it file))
+                 (curfile (git-gutter:relative-path default-directory file)))
+            (git-gutter:process-diff curfile)
             (setq git-gutter:enabled t)))))))
 
 (defun git-gutter:reset-window-margin ()
@@ -417,7 +444,7 @@ character for signs of changes"
   :lighter    git-gutter:lighter
   (if git-gutter-mode
       (if (and (git-gutter:check-file-and-directory)
-               (git-gutter:in-git-repository-p))
+               (git-gutter:in-git-repository-p (buffer-file-name)))
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))

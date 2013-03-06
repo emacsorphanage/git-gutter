@@ -21,7 +21,7 @@
 
 ;;; Commentary:
 ;;
-;; Port of GitGutter which is a plugin of Sublime Text2
+;; Port of GitGutter which is a plugin of Sublime Text
 
 ;;; Code:
 

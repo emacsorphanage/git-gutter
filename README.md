@@ -2,7 +2,7 @@
 
 ## Introduction
 `git-gutter.el` is port of [GitGutter](https://github.com/jisaacks/GitGutter)
-which is a plugin of Sublime Text2.
+which is a plugin of Sublime Text.
 
 
 `git-gutter.el` does not work well with `linum-mode`.
@@ -184,7 +184,7 @@ You can pass `git diff` option to set `git-gutter:diff-option`.
 
 ### [GitGutter](https://github.com/jisaacks/GitGutter)
 
-GitGutter is Sublime text2 plugin.
+GitGutter is Sublime Text plugin.
 
 ### [diff-hl](https://github.com/dgutov/diff-hl)
 

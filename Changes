@@ -1,7 +1,7 @@
 Revision history for git-gutter.el
 
 Revision 0.26 2013/03/07 syohex
-   - Add hook git-gutter-mode-on-hook and git-
+   - Add hook git-gutter-mode-on-hook and git-gutter-off-hook
 
 Revision 0.25 2013/03/07 syohex
    - [EXPERIMENTAL] Support tramp

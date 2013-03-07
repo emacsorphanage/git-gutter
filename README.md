@@ -5,6 +5,9 @@
 which is a plugin of Sublime Text.
 
 
+`git-gutter.el` also supports TRAMP so you can use `git-gutter.el` for remote files.
+
+
 `git-gutter.el` does not work well with `linum-mode`.
 Please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe)
 which can work with `linum-mode`, if you use `linum-mode`.
@@ -18,6 +21,8 @@ which can work with `linum-mode`, if you use `linum-mode`.
 ## Requirements
 
 * Emacs 23 or higher
+* [Git](http://git-scm.com/)
+
 
 ## Installation
 
@@ -74,6 +79,9 @@ Jump to previous hunk(alias `git-gutter:previous-diff`)
 Popup diff of current position
 
     M-x git-gutter:popup-diff
+
+`git-gutter:next-hunk` and `git-gutter:previous-hunk` update content
+of buffer popuped by `git-gutter:popup-diff` to current hunk.
 
 Revert current hunk
 
@@ -178,6 +186,12 @@ You can pass `git diff` option to set `git-gutter:diff-option`.
 ;; ignore all spaces
 (setq git-gutter:diff-option "-w")
 ````
+
+
+### Run hook
+
+Run hook `git-gutter-mode-on-hook` when `git-gutter-mode` is turn on, and
+run hook `git-gutter-mode-off-hook` when `git-gutter-mode` is turn off.
 
 
 ## See Also

@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.25
+;; Version: 0.26
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -105,6 +105,16 @@ character for signs of changes"
 
 (defvar git-gutter:init-function 'nil
   "Function of initialize")
+
+(defcustom git-gutter-mode-on-hook nil
+  "Hook run when git-gutter mode enable"
+  :type 'hook
+  :group 'git-gutter)
+
+(defcustom git-gutter-mode-off-hook nil
+  "Hook run when git-gutter mode disable"
+  :type 'hook
+  :group 'git-gutter)
 
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:toggle-flag t)

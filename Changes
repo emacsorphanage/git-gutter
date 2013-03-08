@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.27 2013/03/08 syohex
+   - Cleanup code
+
 Revision 0.26 2013/03/07 syohex
    - Add hook git-gutter-mode-on-hook and git-gutter-off-hook
 

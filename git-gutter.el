@@ -440,10 +440,14 @@ character for signs of changes"
   "toggle to show diff information"
   (interactive)
   (let ((git-gutter:force t))
-    (if git-gutter:enabled
-        (git-gutter:clear)
-      (git-gutter)))
-  (setq git-gutter:toggle-flag git-gutter:enabled))
+    (cond (git-gutter:enabled
+	   (git-gutter:clear)
+	   (setq git-gutter-mode nil))
+	  (t
+	   (git-gutter)
+	   (setq git-gutter-mode t)))
+  (setq git-gutter:toggle-flag git-gutter:enabled)
+  (force-mode-line-update)))
 
 (defun git-gutter:check-file-and-directory ()
   (and (buffer-file-name)

@@ -450,7 +450,7 @@ character for signs of changes"
        default-directory (file-directory-p default-directory)))
 
 ;;;###autoload
-(define-minor-mode git-gutter-mode ()
+(define-minor-mode git-gutter-mode
   "Git-Gutter mode"
   :group      'git-gutter
   :init-value nil

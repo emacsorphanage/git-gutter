@@ -1,5 +1,11 @@
 Revision history for git-gutter.el
 
+Revision 0.28 2013/03/08 syohex
+   - Fix minor-mode definition(Thanks sabof)
+   - Fix typo in documentation(Thanks f-frhs)
+   - Fix git-gutter:toggle issue that doest not toggle git-gutter-mode
+     (Thanks f-frhs)
+
 Revision 0.27 2013/03/08 syohex
    - Cleanup code
 

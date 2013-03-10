@@ -63,7 +63,7 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defcustom git-gutter:unchanged-sign nil
-  "Deleted sign"
+  "Unchanged sign"
   :type 'string
   :group 'git-gutter)
 

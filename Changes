@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.31 2013/03/11 syohex
+   - Fix git-gutter:always-show-gutter bug
+   - Update unit tests
+
 Revision 0.30 2013/03/11 syohex
    - Quote the filename for files which include spaces. (Thanks paradoxxxzero)
 

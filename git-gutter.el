@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.28
+;; Version: 0.29
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -435,20 +435,6 @@ character for signs of changes"
   (setq git-gutter:enabled nil
         git-gutter:diffinfos nil))
 
-;;;###autoload
-(defun git-gutter:toggle ()
-  "toggle to show diff information"
-  (interactive)
-  (let ((git-gutter:force t))
-    (cond (git-gutter:enabled
-	   (git-gutter:clear)
-	   (setq git-gutter-mode nil))
-	  (t
-	   (git-gutter)
-	   (setq git-gutter-mode t)))
-  (setq git-gutter:toggle-flag git-gutter:enabled)
-  (force-mode-line-update)))
-
 (defun git-gutter:check-file-and-directory ()
   (and (buffer-file-name)
        default-directory (file-directory-p default-directory)))
@@ -481,6 +467,20 @@ character for signs of changes"
     (remove-hook 'change-major-mode-hook 'git-gutter t)
     (remove-hook 'window-configuration-change-hook 'git-gutter t)
     (git-gutter:clear)))
+
+;;;###autoload
+(defun git-gutter:toggle ()
+  "toggle to show diff information"
+  (interactive)
+  (let ((git-gutter:force t))
+    (if git-gutter:enabled
+        (progn
+          (git-gutter:clear)
+          (setq git-gutter-mode nil))
+      (git-gutter)
+      (setq git-gutter-mode t))
+    (setq git-gutter:toggle-flag git-gutter:enabled)
+    (force-mode-line-update)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode

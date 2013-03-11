@@ -171,7 +171,7 @@ character for signs of changes"
       (buffer-substring curpoint (point)))))
 
 (defun git-gutter:diff-command (file)
-  (format "git --no-pager diff --no-color --no-ext-diff -U0 %s %s"
+  (format "git --no-pager diff --no-color --no-ext-diff -U0 %s \"%s\""
           git-gutter:diff-option file))
 
 (defun git-gutter:diff (curfile)

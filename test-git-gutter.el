@@ -147,4 +147,10 @@ bar
           (expected "git --no-pager diff --no-color --no-ext-diff -U0 --binary \"emacs/git.el\""))
       (should (string= got expected)))))
 
+(ert-deftest git-gutter:set-window-margin ()
+  "Should change window margin"
+  (git-gutter:set-window-margin 4)
+  (let ((got (car (window-margins))))
+    (should (= got 4))))
+
 ;;; test-git-gutter.el end here

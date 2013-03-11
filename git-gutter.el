@@ -266,9 +266,12 @@ character for signs of changes"
         (git-gutter:view-at-pos sign (point))
         (forward-line 1)))))
 
+(defun git-gutter:set-window-margin (width)
+  (let ((curwin (get-buffer-window)))
+    (set-window-margins curwin width (cdr (window-margins curwin)))))
+
 (defun git-gutter:view-diff-infos (diffinfos)
-  (let ((curwin (get-buffer-window))
-        (win-width (or git-gutter:window-width
+  (let ((win-width (or git-gutter:window-width
                        (git-gutter:longest-sign-width))))
     (when git-gutter:unchanged-sign
       (git-gutter:view-for-unchanged))
@@ -276,13 +279,12 @@ character for signs of changes"
       (save-excursion
         (mapc 'git-gutter:view-diff-info diffinfos)))
     (when (or git-gutter:always-show-gutter diffinfos git-gutter:unchanged-sign)
-      (set-window-margins curwin win-width (cdr (window-margins curwin))))))
+      (git-gutter:set-window-margin win-width))))
 
 (defun git-gutter:process-diff (curfile)
   (let ((diffinfos (git-gutter:diff curfile)))
-    (when diffinfos
-      (setq git-gutter:diffinfos diffinfos)
-      (funcall git-gutter:view-diff-function diffinfos))))
+    (setq git-gutter:diffinfos diffinfos)
+    (funcall git-gutter:view-diff-function diffinfos)))
 
 (defun git-gutter:search-near-diff-index (diffinfos is-reverse)
   (loop with current-line = (line-number-at-pos)

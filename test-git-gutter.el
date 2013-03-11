@@ -144,7 +144,7 @@ bar
   "Should return git diff command"
   (let ((git-gutter:diff-option "--binary"))
     (let ((got (git-gutter:diff-command "emacs/git.el"))
-          (expected "git --no-pager diff --no-color --no-ext-diff -U0 --binary emacs/git.el"))
+          (expected "git --no-pager diff --no-color --no-ext-diff -U0 --binary \"emacs/git.el\""))
       (should (string= got expected)))))
 
 ;;; test-git-gutter.el end here

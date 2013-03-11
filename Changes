@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.30 2013/03/11 syohex
+   - Quote the filename for files which include spaces. (Thanks paradoxxxzero)
+
 Revision 0.29 2013/03/11 syohex
    - Fix for byte-compile
 

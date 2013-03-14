@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.31
+;; Version: 0.32
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -341,7 +341,7 @@ character for signs of changes"
   "Revert current hunk."
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (git-gutter:popup-diff it)
+    (git-gutter:popup-hunk it)
     (when (yes-or-no-p "Revert current hunk ?")
       (git-gutter:do-revert-hunk it)
       (save-buffer)
@@ -350,7 +350,7 @@ character for signs of changes"
     (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer)))))
 
 ;;;###autoload
-(defun git-gutter:popup-diff (&optional diffinfo)
+(defun git-gutter:popup-hunk (&optional diffinfo)
   "popup current diff hunk"
   (interactive)
   (git-gutter:awhen (or diffinfo
@@ -382,7 +382,7 @@ character for signs of changes"
       (forward-line (1- (plist-get diffinfo :start-line)))
       (when (buffer-live-p (get-buffer git-gutter:popup-buffer))
         (save-window-excursion
-          (git-gutter:popup-diff))))))
+          (git-gutter:popup-hunk))))))
 
 ;;;###autoload
 (defun git-gutter:previous-hunk (arg)
@@ -392,6 +392,7 @@ character for signs of changes"
 
 (defalias 'git-gutter:next-diff 'git-gutter:next-hunk)
 (defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)
+(defalias 'git-gutter:popup-diff 'git-gutter:popup-hunk)
 
 (defun git-gutter:default-directory (dir curfile)
   (if (not (tramp-connectable-p curfile))

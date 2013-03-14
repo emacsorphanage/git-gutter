@@ -76,9 +76,9 @@ Jump to previous hunk(alias `git-gutter:previous-diff`)
 
     M-x git-gutter:previous-hunk
 
-Popup diff of current position
+Popup current diff hunk
 
-    M-x git-gutter:popup-diff
+    M-x git-gutter:popup-hunk(alias `git-gutter:popup-diff`)
 
 `git-gutter:next-hunk` and `git-gutter:previous-hunk` update content
 of buffer popuped by `git-gutter:popup-diff` to current hunk.
@@ -100,7 +100,7 @@ Revert current hunk
 (add-hook 'ruby-mode-hook 'git-gutter-mode)
 
 (global-set-key (kbd "C-x C-g") 'git-gutter:toggle)
-(global-set-key (kbd "C-x v =") 'git-gutter:popup-diff)
+(global-set-key (kbd "C-x v =") 'git-gutter:popup-hunk)
 
 ;; Jump to next/previous hunk
 (global-set-key (kbd "C-x p") 'git-gutter:previous-hunk)

@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.32 2013/03/14 syohex
+   - Rename git-gutter:popup-diff to git-gutter:popup-hunk
+     User can use old function name as alias
+
 Revision 0.31 2013/03/11 syohex
    - Fix git-gutter:always-show-gutter bug
    - Update unit tests

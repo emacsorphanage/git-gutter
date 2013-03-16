@@ -152,7 +152,7 @@ character for signs of changes"
           (unless (string= root "")
             (file-name-as-directory root)))))))
 
-(defun git-gutter:changes-to-number (str)
+(defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
       1
     (string-to-number str)))
@@ -170,7 +170,7 @@ character for signs of changes"
         (goto-char (point-max)))
       (buffer-substring curpoint (point)))))
 
-(defun git-gutter:diff-command (file)
+(defsubst git-gutter:diff-command (file)
   (format "git --no-pager diff --no-color --no-ext-diff -U0 %s \"%s\""
           git-gutter:diff-option file))
 
@@ -206,13 +206,13 @@ character for signs of changes"
 (defmacro git-gutter:before-string (sign)
   `(propertize " " 'display `((margin left-margin) ,sign)))
 
-(defun git-gutter:select-face (type)
+(defsubst git-gutter:select-face (type)
   (case type
     (added 'git-gutter:added)
     (modified 'git-gutter:modified)
     (deleted 'git-gutter:deleted)))
 
-(defun git-gutter:select-sign (type)
+(defsubst git-gutter:select-sign (type)
   (case type
     (added git-gutter:added-sign)
     (modified git-gutter:modified-sign)
@@ -438,7 +438,7 @@ character for signs of changes"
   (setq git-gutter:enabled nil
         git-gutter:diffinfos nil))
 
-(defun git-gutter:check-file-and-directory ()
+(defsubst git-gutter:check-file-and-directory ()
   (and (buffer-file-name)
        default-directory (file-directory-p default-directory)))
 

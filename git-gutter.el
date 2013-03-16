@@ -188,14 +188,11 @@ character for signs of changes"
               for new-changes = (git-gutter:changes-to-number (match-string 4))
               for end-line = (1- (+ new-line new-changes))
               for content = (git-gutter:diff-content)
+              for type = (cond ((zerop orig-changes) 'added)
+                               ((zerop new-changes) 'deleted)
+                               (t 'modified))
               collect
-              (cond ((zerop orig-changes)
-                     (git-gutter:make-diffinfo 'added content new-line end-line))
-                    ((zerop new-changes)
-                     (git-gutter:make-diffinfo 'deleted content new-line))
-                    (t
-                     (git-gutter:make-diffinfo
-                      'modified content new-line end-line))))))))
+              (git-gutter:make-diffinfo type content new-line end-line))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion

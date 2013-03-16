@@ -460,13 +460,11 @@ character for signs of changes"
             (make-local-variable 'git-gutter:diffinfos)
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)
-            (add-hook 'change-major-mode-hook 'git-gutter nil t)
             (add-hook 'window-configuration-change-hook 'git-gutter nil t))
         (message "Here is not Git work tree")
         (git-gutter-mode -1))
     (remove-hook 'after-save-hook 'git-gutter t)
     (remove-hook 'after-revert-hook 'git-gutter t)
-    (remove-hook 'change-major-mode-hook 'git-gutter t)
     (remove-hook 'window-configuration-change-hook 'git-gutter t)
     (git-gutter:clear)))
 

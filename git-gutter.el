@@ -456,7 +456,7 @@ character for signs of changes"
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
             (make-local-variable 'git-gutter:enabled)
-            (make-local-variable 'git-gutter:toggle-flag)
+            (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)

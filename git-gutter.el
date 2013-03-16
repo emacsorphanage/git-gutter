@@ -157,7 +157,7 @@ character for signs of changes"
       1
     (string-to-number str)))
 
-(defun git-gutter:make-diffinfo (type content start &optional end)
+(defsubst git-gutter:make-diffinfo (type content start end)
   (list :type type :content content :start-line start :end-line end))
 
 (defun git-gutter:diff-content ()

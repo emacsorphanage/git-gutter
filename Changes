@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.33 2013/03/16 syohex
+   - Fix toggle flag bug
+   - leaf functions are redefined as inline function
+
 Revision 0.32 2013/03/14 syohex
    - Rename git-gutter:popup-diff to git-gutter:popup-hunk
      User can use old function name as alias

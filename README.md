@@ -155,6 +155,27 @@ character.
 (setq git-gutter:deleted-sign "☂")
 ````
 
+### If You Feel git-gutter is Slow
+
+`git-gutter.el` updates gutter at hooks below
+
+* `after-save-hook`
+* `after-revert-hook`
+* `window-configuration-change-hook`
+
+`window-configuration-change-hook` is run N times if you show N windows,
+so you may feel git-gutter is slow if you show many windows.
+
+In such case, please remove `window-configuration-change-hook` to update points
+as below and instead you update `M-x git-gutter` manually when needed.
+
+````
+(setq git-gutter:update-hooks '(after-save-hook after-revert-hook))
+````
+
+You can also add other hook points by setting `git-gutter:update-hooks`.
+
+
 ### Show Unchanged Information
 
 ![git-gutter-unchanged](image/git-gutter-unchanged.png)

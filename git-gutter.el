@@ -47,6 +47,13 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:update-hooks
+  '(after-save-hook after-revert-hook window-configuration-change-hook)
+  "hook points of updating gutter"
+  :type '(list (hook :tag "HookPoint")
+               (repeat :inline t (hook :tag "HookPoint")))
+  :group 'git-gutter)
+
 (defcustom git-gutter:modified-sign "="
   "Modified sign"
   :type 'string
@@ -455,14 +462,12 @@ character for signs of changes"
             (make-local-variable 'git-gutter:enabled)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
-            (add-hook 'after-save-hook 'git-gutter nil t)
-            (add-hook 'after-revert-hook 'git-gutter nil t)
-            (add-hook 'window-configuration-change-hook 'git-gutter nil t))
+            (dolist (hook git-gutter:update-hooks)
+              (add-hook hook 'git-gutter nil t)))
         (message "Here is not Git work tree")
         (git-gutter-mode -1))
-    (remove-hook 'after-save-hook 'git-gutter t)
-    (remove-hook 'after-revert-hook 'git-gutter t)
-    (remove-hook 'window-configuration-change-hook 'git-gutter t)
+    (dolist (hook git-gutter:update-hooks)
+      (remove-hook hook 'git-gutter t))
     (git-gutter:clear)))
 
 ;;;###autoload

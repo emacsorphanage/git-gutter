@@ -1,5 +1,10 @@
 Revision history for git-gutter.el
 
+Revision 0.34 2013/03/17 syohex
+   - Remove unneed hook
+   - Clean up codes
+   - Users can customize update points.
+
 Revision 0.33 2013/03/16 syohex
    - Fix toggle flag bug
    - leaf functions are redefined as inline function

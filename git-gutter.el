@@ -47,6 +47,13 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:update-hooks
+  '(after-save-hook after-revert-hook window-configuration-change-hook)
+  "hook points of updating gutter"
+  :type '(list (hook :tag "HookPoint")
+               (repeat :inline t (hook :tag "HookPoint")))
+  :group 'git-gutter)
+
 (defcustom git-gutter:modified-sign "="
   "Modified sign"
   :type 'string
@@ -157,7 +164,7 @@ character for signs of changes"
       1
     (string-to-number str)))
 
-(defun git-gutter:make-diffinfo (type content start &optional end)
+(defsubst git-gutter:make-diffinfo (type content start end)
   (list :type type :content content :start-line start :end-line end))
 
 (defun git-gutter:diff-content ()
@@ -188,14 +195,11 @@ character for signs of changes"
               for new-changes = (git-gutter:changes-to-number (match-string 4))
               for end-line = (1- (+ new-line new-changes))
               for content = (git-gutter:diff-content)
+              for type = (cond ((zerop orig-changes) 'added)
+                               ((zerop new-changes) 'deleted)
+                               (t 'modified))
               collect
-              (cond ((zerop orig-changes)
-                     (git-gutter:make-diffinfo 'added content new-line end-line))
-                    ((zerop new-changes)
-                     (git-gutter:make-diffinfo 'deleted content new-line))
-                    (t
-                     (git-gutter:make-diffinfo
-                      'modified content new-line end-line))))))))
+              (git-gutter:make-diffinfo type content new-line end-line))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -403,9 +407,9 @@ character for signs of changes"
            (host (aref vec 2)))
       (format "/%s:%s%s:%s" method (if user (concat user "@") "") host dir))))
 
-(defun git-gutter:relative-path (dir curfile)
+(defun git-gutter:file-path (dir curfile)
   (if (not (tramp-connectable-p curfile))
-      (file-relative-name curfile dir)
+      curfile
     (let ((file (aref (tramp-dissect-file-name curfile) 3)))
       (replace-regexp-in-string (concat "\\`" dir) "" curfile))))
 
@@ -419,7 +423,7 @@ character for signs of changes"
       (when (and file (file-exists-p file))
         (git-gutter:awhen (git-gutter:root-directory file)
           (let* ((default-directory (git-gutter:default-directory it file))
-                 (curfile (git-gutter:relative-path default-directory file)))
+                 (curfile (git-gutter:file-path default-directory file)))
             (git-gutter:process-diff curfile)
             (setq git-gutter:enabled t)))))))
 
@@ -458,16 +462,12 @@ character for signs of changes"
             (make-local-variable 'git-gutter:enabled)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
-            (add-hook 'after-save-hook 'git-gutter nil t)
-            (add-hook 'after-revert-hook 'git-gutter nil t)
-            (add-hook 'change-major-mode-hook 'git-gutter nil t)
-            (add-hook 'window-configuration-change-hook 'git-gutter nil t))
+            (dolist (hook git-gutter:update-hooks)
+              (add-hook hook 'git-gutter nil t)))
         (message "Here is not Git work tree")
         (git-gutter-mode -1))
-    (remove-hook 'after-save-hook 'git-gutter t)
-    (remove-hook 'after-revert-hook 'git-gutter t)
-    (remove-hook 'change-major-mode-hook 'git-gutter t)
-    (remove-hook 'window-configuration-change-hook 'git-gutter t)
+    (dolist (hook git-gutter:update-hooks)
+      (remove-hook hook 'git-gutter t))
     (git-gutter:clear)))
 
 ;;;###autoload

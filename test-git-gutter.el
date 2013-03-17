@@ -77,7 +77,7 @@
 (ert-deftest git-gutter:make-diffinfo ()
   "helper function `git-gutter:make-diffinfo'"
   (let ((diffinfo1 (git-gutter:make-diffinfo 'added "diff1" 10 20))
-        (diffinfo2 (git-gutter:make-diffinfo 'deleted "diff2" 5)))
+        (diffinfo2 (git-gutter:make-diffinfo 'deleted "diff2" 5 nil)))
     (loop for (prop . expected) in '((:type . added)
                                      (:start-line . 10) (:end-line . 20))
           do
@@ -152,5 +152,11 @@ bar
   (git-gutter:set-window-margin 4)
   (let ((got (car (window-margins))))
     (should (= got 4))))
+
+(ert-deftest git-gutter:file-path ()
+  "Should return file path which is passed to 'git diff'"
+  (let ((expected (buffer-file-name))
+        (got (git-gutter:file-path default-directory (buffer-file-name))))
+    (should (string= got expected))))
 
 ;;; test-git-gutter.el end here

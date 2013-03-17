@@ -21,7 +21,7 @@ which can work with `linum-mode`, if you use `linum-mode`.
 ## Requirements
 
 * Emacs 23 or higher
-* [Git](http://git-scm.com/)
+* [Git](http://git-scm.com/) 1.7.0 or higher
 
 
 ## Installation

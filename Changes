@@ -1,5 +1,11 @@
 Revision history for git-gutter.el
 
+Revision 0.35 2013/03/18 syohex
+   [INCOMPATIBLE CHANGE]
+   - Remove git-gutter:always-show-gutter and introduce git-gutter:hide-gutter
+   - Always show gutter if global-git-gutter is enable.
+   - Show message at git-gutter:{next,previous}-hunk if there are no changes.
+
 Revision 0.34 2013/03/17 syohex
    - Remove unneed hook
    - Clean up codes

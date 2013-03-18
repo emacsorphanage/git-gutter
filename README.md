@@ -190,14 +190,15 @@ Like following.
 
 Default value of `git-gutter:unchanged-sign` is `nil`.
 
-### Always Show Gutter
 
-Always show gutter if `git-gutter:always-show-gutter` is non-nil. (Default is `nil`)
+### Hide gutter if there are no changes
+
+Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.
+(Default is nil)
 
 ````elisp
-(setq git-gutter:always-show-gutter t)
+(setq git-gutter:hide-gutter t)
 ````
-
 
 ### Pass option to 'git diff' command
 

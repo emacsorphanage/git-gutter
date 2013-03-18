@@ -74,8 +74,8 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
-(defcustom git-gutter:always-show-gutter nil
-  "Always show gutter"
+(defcustom git-gutter:hide-gutter nil
+  "Hide gutter if there are no changes"
   :type 'boolean
   :group 'git-gutter)
 
@@ -274,9 +274,10 @@ character for signs of changes"
   (let ((curwin (get-buffer-window)))
     (set-window-margins curwin width (cdr (window-margins curwin)))))
 
-(defmacro git-gutter:show-gutter-p (diffinfos)
-  `(or global-git-gutter-mode git-gutter:always-show-gutter
-       ,diffinfos git-gutter:unchanged-sign))
+(defsubst git-gutter:show-gutter-p (diffinfos)
+  (if git-gutter:hide-gutter
+      (or diffinfos git-gutter:unchanged-sign)
+    (or global-git-gutter-mode git-gutter:unchanged-sign diffinfos)))
 
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((win-width (or git-gutter:window-width
@@ -433,14 +434,13 @@ character for signs of changes"
             (setq git-gutter:enabled t)))))))
 
 (defsubst git-gutter:reset-window-margin-p ()
-  `(or git-gutter:force
-       (not global-git-gutter-mode)
-       (not git-gutter:always-show-gutter)))
+  (or git-gutter:force
+      git-gutter:hide-gutter
+      (not global-git-gutter-mode)))
 
 (defun git-gutter:reset-window-margin ()
   (when (git-gutter:reset-window-margin-p)
-    (let ((curwin (get-buffer-window)))
-      (set-window-margins curwin 0 (cdr (window-margins curwin))))))
+    (git-gutter:set-window-margin 0)))
 
 ;;;###autoload
 (defun git-gutter:clear ()

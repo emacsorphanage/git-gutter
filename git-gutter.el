@@ -376,7 +376,8 @@ character for signs of changes"
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"
   (interactive "p")
-  (when git-gutter:diffinfos
+  (if (not git-gutter:diffinfos)
+      (message "There are no changes!!")
     (let* ((is-reverse (< arg 0))
            (diffinfos git-gutter:diffinfos)
            (len (length diffinfos))

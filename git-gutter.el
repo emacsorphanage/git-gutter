@@ -274,6 +274,10 @@ character for signs of changes"
   (let ((curwin (get-buffer-window)))
     (set-window-margins curwin width (cdr (window-margins curwin)))))
 
+(defmacro git-gutter:show-gutter-p (diffinfos)
+  `(or global-git-gutter-mode git-gutter:always-show-gutter
+       ,diffinfos git-gutter:unchanged-sign))
+
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((win-width (or git-gutter:window-width
                        (git-gutter:longest-sign-width))))
@@ -282,7 +286,7 @@ character for signs of changes"
     (when diffinfos
       (save-excursion
         (mapc 'git-gutter:view-diff-info diffinfos)))
-    (when (or git-gutter:always-show-gutter diffinfos git-gutter:unchanged-sign)
+    (when (git-gutter:show-gutter-p diffinfos)
       (git-gutter:set-window-margin win-width))))
 
 (defun git-gutter:process-diff (curfile)
@@ -427,8 +431,13 @@ character for signs of changes"
             (git-gutter:process-diff curfile)
             (setq git-gutter:enabled t)))))))
 
+(defsubst git-gutter:reset-window-margin-p ()
+  `(or git-gutter:force
+       (not global-git-gutter-mode)
+       (not git-gutter:always-show-gutter)))
+
 (defun git-gutter:reset-window-margin ()
-  (when (or git-gutter:force (not git-gutter:always-show-gutter))
+  (when (git-gutter:reset-window-margin-p)
     (let ((curwin (get-buffer-window)))
       (set-window-margins curwin 0 (cdr (window-margins curwin))))))
 

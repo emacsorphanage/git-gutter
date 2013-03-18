@@ -74,8 +74,8 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
-(defcustom git-gutter:always-show-gutter nil
-  "Always show gutter"
+(defcustom git-gutter:hide-gutter nil
+  "Hide gutter if there are no changes"
   :type 'boolean
   :group 'git-gutter)
 
@@ -274,6 +274,11 @@ character for signs of changes"
   (let ((curwin (get-buffer-window)))
     (set-window-margins curwin width (cdr (window-margins curwin)))))
 
+(defsubst git-gutter:show-gutter-p (diffinfos)
+  (if git-gutter:hide-gutter
+      (or diffinfos git-gutter:unchanged-sign)
+    (or global-git-gutter-mode git-gutter:unchanged-sign diffinfos)))
+
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((win-width (or git-gutter:window-width
                        (git-gutter:longest-sign-width))))
@@ -282,7 +287,7 @@ character for signs of changes"
     (when diffinfos
       (save-excursion
         (mapc 'git-gutter:view-diff-info diffinfos)))
-    (when (or git-gutter:always-show-gutter diffinfos git-gutter:unchanged-sign)
+    (when (git-gutter:show-gutter-p diffinfos)
       (git-gutter:set-window-margin win-width))))
 
 (defun git-gutter:process-diff (curfile)
@@ -372,7 +377,8 @@ character for signs of changes"
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"
   (interactive "p")
-  (when git-gutter:diffinfos
+  (if (not git-gutter:diffinfos)
+      (message "There are no changes!!")
     (let* ((is-reverse (< arg 0))
            (diffinfos git-gutter:diffinfos)
            (len (length diffinfos))
@@ -427,10 +433,14 @@ character for signs of changes"
             (git-gutter:process-diff curfile)
             (setq git-gutter:enabled t)))))))
 
+(defsubst git-gutter:reset-window-margin-p ()
+  (or git-gutter:force
+      git-gutter:hide-gutter
+      (not global-git-gutter-mode)))
+
 (defun git-gutter:reset-window-margin ()
-  (when (or git-gutter:force (not git-gutter:always-show-gutter))
-    (let ((curwin (get-buffer-window)))
-      (set-window-margins curwin 0 (cdr (window-margins curwin))))))
+  (when (git-gutter:reset-window-margin-p)
+    (git-gutter:set-window-margin 0)))
 
 ;;;###autoload
 (defun git-gutter:clear ()

@@ -54,6 +54,11 @@ character for signs of changes"
                (repeat :inline t (hook :tag "HookPoint")))
   :group 'git-gutter)
 
+(defcustom git-gutter:separator-sign nil
+  "Separator sign"
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:modified-sign "="
   "Modified sign"
   :type 'string
@@ -82,6 +87,11 @@ character for signs of changes"
 (defcustom git-gutter:lighter " GitGutter"
   "Minor mode lighter in mode-line"
   :type 'string
+  :group 'git-gutter)
+
+(defface git-gutter:separator
+    '((t (:foreground "cyan" :weight bold)))
+  "Face of separator"
   :group 'git-gutter)
 
 (defface git-gutter:modified
@@ -208,7 +218,11 @@ character for signs of changes"
     (point)))
 
 (defmacro git-gutter:before-string (sign)
-  `(propertize " " 'display `((margin left-margin) ,sign)))
+  (let* ((sep-sign git-gutter:separator-sign)
+         (sep-face 'git-gutter:separator)
+         (sep (when sep-sign (propertize sep-sign
+                                         'face sep-face))))
+    `(propertize " " 'display `((margin left-margin) ,(concat ,sign ,sep)))))
 
 (defsubst git-gutter:select-face (type)
   (case type
@@ -259,12 +273,15 @@ character for signs of changes"
                      git-gutter:deleted-sign)))
     (when git-gutter:unchanged-sign
       (add-to-list 'signs git-gutter:unchanged-sign))
-    (apply 'max (mapcar 'git-gutter:sign-width signs))))
+    (+ (apply 'max (mapcar 'git-gutter:sign-width signs))
+       (git-gutter:sign-width git-gutter:separator-sign))))
 
 (defun git-gutter:view-for-unchanged ()
   (save-excursion
-    (let ((sign (propertize git-gutter:unchanged-sign
-                            'face 'git-gutter:unchanged)))
+    (let ((sign (if git-gutter:unchanged-sign
+                    (propertize git-gutter:unchanged-sign
+                                'face 'git-gutter:unchanged)
+                  " ")))
       (goto-char (point-min))
       (while (not (eobp))
         (git-gutter:view-at-pos sign (point))
@@ -282,7 +299,8 @@ character for signs of changes"
 (defun git-gutter:view-diff-infos (diffinfos)
   (let ((win-width (or git-gutter:window-width
                        (git-gutter:longest-sign-width))))
-    (when git-gutter:unchanged-sign
+    (when (or git-gutter:unchanged-sign
+              git-gutter:separator-sign)
       (git-gutter:view-for-unchanged))
     (when diffinfos
       (save-excursion

@@ -192,6 +192,8 @@ Default value of `git-gutter:unchanged-sign` is `nil`.
 
 ### Show a separator column
 
+![git-gutter-separator](image/git-gutter-separator.png)
+
 `git-gutter.el` can display an additional separator character at the right of the changed
 signs. This is mostly useful when running emacs in a console.
 

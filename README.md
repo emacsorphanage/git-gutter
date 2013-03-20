@@ -190,6 +190,17 @@ Like following.
 
 Default value of `git-gutter:unchanged-sign` is `nil`.
 
+### Show a separator column
+
+`git-gutter.el` can display an additional separator character at the right of the changed
+signs. This is mostly useful when running emacs in a console.
+
+````elisp
+(setq git-gutter:separator-sign "|")
+(set-face-foreground 'git-gutter:separator "yellow")
+````
+
+Default value of `git-gutter:separator-sign` is `nil`.
 
 ### Hide gutter if there are no changes
 

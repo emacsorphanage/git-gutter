@@ -8,11 +8,6 @@ which is a plugin of Sublime Text.
 `git-gutter.el` also supports TRAMP so you can use `git-gutter.el` for remote files.
 
 
-`git-gutter.el` does not work well with `linum-mode`.
-Please see [git-gutter-fringe](https://github.com/syohex/emacs-git-gutter-fringe)
-which can work with `linum-mode`, if you use `linum-mode`.
-
-
 ## Screenshot
 
 ![git-gutter.el](image/git-gutter1.png)
@@ -22,6 +17,22 @@ which can work with `linum-mode`, if you use `linum-mode`.
 
 * Emacs 23 or higher
 * [Git](http://git-scm.com/) 1.7.0 or higher
+
+
+## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
+
+### git-gutter.el
+
+* Work in tty frame
+* Not work with `linum-mode`
+* More configurable
+
+### git-gutter-fringe.el
+
+* Not Work in tty frame
+* Work with `linum-mode`
+* Less configurable
+* Show diff information on right side
 
 
 ## Installation

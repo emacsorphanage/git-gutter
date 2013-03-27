@@ -233,6 +233,14 @@ You can pass `git diff` option to set `git-gutter:diff-option`.
 (setq git-gutter:diff-option "-w")
 ````
 
+### Log/Message Level
+
+````elisp
+;; Don't need log/message.
+(setq git-gutter:verbosity 0)
+````
+
+Default value is 4(`0` is lowest, `4` is highest).
 
 ### Run hook
 

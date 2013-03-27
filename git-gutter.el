@@ -89,6 +89,11 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:verbosity 4
+  "Log/message level. 4 means all, 0 nothing."
+  :type 'integer
+  :group 'git-guter)
+
 (defface git-gutter:separator
     '((t (:foreground "cyan" :weight bold)))
   "Face of separator"
@@ -313,7 +318,8 @@ character for signs of changes"
             (make-local-variable 'git-gutter:diffinfos)
             (dolist (hook git-gutter:update-hooks)
               (add-hook hook 'git-gutter nil t)))
-        (message "Here is not Git work tree")
+        (when (> git-gutter:verbosity 2)
+          (message "Here is not Git work tree"))
         (git-gutter-mode -1))
     (dolist (hook git-gutter:update-hooks)
       (remove-hook hook 'git-gutter t))
@@ -432,7 +438,8 @@ character for signs of changes"
   "Move to next diff hunk"
   (interactive "p")
   (if (not git-gutter:diffinfos)
-      (message "There are no changes!!")
+      (when (> git-gutter:verbosity 3)
+        (message "There are no changes!!"))
     (let* ((is-reverse (< arg 0))
            (diffinfos git-gutter:diffinfos)
            (len (length diffinfos))

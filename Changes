@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.38 2013/03/27 syohex
+   - Added customization for log level verbosity(by thomasf)
+
 Revision 0.37 2013/03/27 syohex
    - Fix bug
      git-gutter:popup-hunk does not work at deleted hunk.

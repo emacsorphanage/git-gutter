@@ -203,11 +203,13 @@ character for signs of changes"
               for new-line  = (string-to-number (match-string 3))
               for orig-changes = (git-gutter:changes-to-number (match-string 2))
               for new-changes = (git-gutter:changes-to-number (match-string 4))
-              for end-line = (1- (+ new-line new-changes))
-              for content = (git-gutter:diff-content)
               for type = (cond ((zerop orig-changes) 'added)
                                ((zerop new-changes) 'deleted)
                                (t 'modified))
+              for end-line = (if (eq type 'deleted)
+                                 new-line
+                               (1- (+ new-line new-changes)))
+              for content = (git-gutter:diff-content)
               collect
               (git-gutter:make-diffinfo type content new-line end-line))))))
 

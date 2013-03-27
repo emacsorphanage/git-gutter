@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.37 2013/03/27 syohex
+   - Fix bug
+     git-gutter:popup-hunk does not work at deleted hunk.
+
 Revision 0.36 2013/03/20 syohex
    - Implement separator charactor(by sdelafond)
      It is useful in no-window Emacs

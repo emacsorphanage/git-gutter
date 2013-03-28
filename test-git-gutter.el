@@ -27,6 +27,9 @@
 (require 'ert)
 (require 'git-gutter)
 
+;; suppress log message
+(setq git-gutter:verbosity 0)
+
 (ert-deftest git-gutter:root-directory ()
   "helper function `git-gutter:root-directory'"
   (let ((file (buffer-file-name)))
@@ -163,7 +166,7 @@ bar
   "Case global-git-gutter-mode enabled"
   (with-current-buffer (find-file-noselect "test-git-gutter.el")
     (global-git-gutter-mode t)
-    (should (eq git-gutter-mode t)))
+    (should git-gutter-mode))
 
   (kill-buffer "test-git-gutter.el"))
 
@@ -172,12 +175,12 @@ bar
 
   (with-temp-buffer
     (global-git-gutter-mode t)
-    (should (eq git-gutter-mode nil)))
+    (should (not git-gutter-mode)))
 
   (let ((git-gutter:disabled-modes '(emacs-lisp-mode)))
     (with-current-buffer (find-file-noselect "test-git-gutter.el")
       (global-git-gutter-mode t)
-      (should (eq git-gutter-mode nil))))
+      (should (not git-gutter-mode))))
 
   (kill-buffer "test-git-gutter.el"))
 

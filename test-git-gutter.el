@@ -162,6 +162,31 @@ bar
         (got (git-gutter:file-path default-directory (buffer-file-name))))
     (should (string= got expected))))
 
+(ert-deftest git-gutter-mode-success ()
+  "Case git-gutter-mode enabled"
+  (with-current-buffer (find-file-noselect "test-git-gutter.el")
+    (git-gutter-mode 1)
+    (should git-gutter-mode))
+  (kill-buffer "test-git-gutter.el"))
+
+(ert-deftest git-gutter-mode-failed ()
+  "Case git-gutter-mode disabled"
+  (with-temp-buffer
+    (git-gutter-mode 1)
+    (should (eq git-gutter-mode nil)))
+
+  (let ((default-directory nil))
+    (git-gutter-mode 1)
+    (should (not git-gutter-mode)))
+
+  (let ((default-directory "foo"))
+    (git-gutter-mode 1)
+    (should (not git-gutter-mode)))
+
+  (with-current-buffer (find-file-noselect ".git/config")
+    (git-gutter-mode 1)
+    (should (not git-gutter-mode))))
+
 (ert-deftest global-git-gutter-mode-success ()
   "Case global-git-gutter-mode enabled"
   (with-current-buffer (find-file-noselect "test-git-gutter.el")

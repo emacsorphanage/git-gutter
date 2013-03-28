@@ -186,6 +186,18 @@ as below and instead you update `M-x git-gutter` manually when needed.
 
 You can also add other hook points by setting `git-gutter:update-hooks`.
 
+### Disabled modes
+
+If you use `global-git-gutter-mode`, you may want some modes to disable
+`git-gutter-mode`. You can make it by setting `git-gutter:disabled-modes`
+to `non-nil`.
+
+```elisp
+;; inactivate git-gutter-mode in asm-mode and image-mode
+(setq git-gutter:disabled-modes '(asm-mode image-mode))
+```
+
+Default is `nil`.
 
 ### Show Unchanged Information
 

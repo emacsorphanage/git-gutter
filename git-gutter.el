@@ -324,7 +324,9 @@ character for signs of changes"
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
             (dolist (hook git-gutter:update-hooks)
-              (add-hook hook 'git-gutter nil t)))
+              (add-hook hook 'git-gutter nil t))
+            (unless global-git-gutter-mode
+              (git-gutter)))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))

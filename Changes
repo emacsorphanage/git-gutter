@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.39 2013/03/28 syohex
+   - Implement disabled some modes
+
 Revision 0.38 2013/03/27 syohex
    - Added customization for log level verbosity(by thomasf)
 

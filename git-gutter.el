@@ -119,6 +119,11 @@ character for signs of changes"
   "Face of unchanged"
   :group 'git-gutter)
 
+(defcustom git-gutter:disabled-modes nil
+  "A list of modes which `global-git-gutter-mode' should be disabled."
+  :type '(repeat symbol)
+  :group 'git-gutter)
+
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
@@ -331,7 +336,8 @@ character for signs of changes"
 (define-global-minor-mode global-git-gutter-mode
   git-gutter-mode
   (lambda ()
-    (when (and (not (minibufferp)) (buffer-file-name))
+    (when (and (buffer-file-name)
+               (not (memq major-mode git-gutter:disabled-modes)))
       (git-gutter-mode 1)))
   :group 'git-gutter)
 

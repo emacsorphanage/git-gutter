@@ -21,18 +21,12 @@ which is a plugin of Sublime Text.
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
 
-### git-gutter.el
-
-* Work in tty frame
-* Not work with `linum-mode`
-* More configurable
-
-### git-gutter-fringe.el
-
-* Not Work in tty frame
-* Work with `linum-mode`
-* Less configurable
-* Show diff information on right side
+|                      | git-gutter.el | git-gutter-fringe.el |
+|:---------------------|:-------------:|:--------------------:|
+| Work in tty frame    | OK            | NG                   |
+| Work with linum-mode | NG            | OK                   |
+| Show on right side   | NG            | OK                   |
+| More configurable    | OK            | NG                   |
 
 
 ## Installation

@@ -61,10 +61,6 @@ Following example of enabling `git-gutter` for some mode.
 
 `git-gutter.el` provides following commands.
 
-#### `git-gutter`
-
-Show changes from last commit or Update change information.
-
 #### `git-gutter:next-hunk`
 
 Jump to next hunk(alias `git-gutter:next-diff`)
@@ -83,6 +79,10 @@ of buffer popuped by `git-gutter:popup-diff` to current hunk.
 #### `git-gutter:revert-hunk`
 
 Revert current hunk
+
+#### `git-gutter`
+
+Show changes from last commit or Update change information.
 
 #### `git-gutter:clear`
 

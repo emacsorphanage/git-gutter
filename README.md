@@ -57,40 +57,40 @@ Following example of enabling `git-gutter` for some mode.
 ```
 
 
-## Basic Usage
+## Commands
 
 `git-gutter.el` provides following commands.
 
+#### `git-gutter`
+
 Show changes from last commit or Update change information.
 
-    M-x git-gutter
-
-Clear changes
-
-    M-x git-gutter:clear
-
-Toggle git-gutter
-
-    M-x git-gutter:toggle
+#### `git-gutter:next-hunk`
 
 Jump to next hunk(alias `git-gutter:next-diff`)
 
-    M-x git-gutter:next-hunk
+#### `git-gutter:previous-hunk`
 
 Jump to previous hunk(alias `git-gutter:previous-diff`)
 
-    M-x git-gutter:previous-hunk
+#### `git-gutter:popup-hunk`
 
-Popup current diff hunk
-
-    M-x git-gutter:popup-hunk(alias `git-gutter:popup-diff`)
+Popup current diff hunk(alias `git-gutter:popup-diff`)
 
 `git-gutter:next-hunk` and `git-gutter:previous-hunk` update content
 of buffer popuped by `git-gutter:popup-diff` to current hunk.
 
+#### `git-gutter:revert-hunk`
+
 Revert current hunk
 
-    M-x git-gutter:revert-hunk
+#### `git-gutter:clear`
+
+Clear changes
+
+#### `git-gutter:toggle`
+
+Toggle git-gutter
 
 
 ## Sample Configuration

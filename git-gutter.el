@@ -124,6 +124,11 @@ character for signs of changes"
   :type '(repeat symbol)
   :group 'git-gutter)
 
+(defcustom git-gutter:update-threshold 1
+  "Minimal update interval for `window-configuration-change-hook'"
+  :type 'integer
+  :group 'git-gutter)
+
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
@@ -147,6 +152,7 @@ character for signs of changes"
 (defvar git-gutter:toggle-flag t)
 (defvar git-gutter:force nil)
 (defvar git-gutter:diffinfos nil)
+(defvar git-gutter:last-update (make-hash-table :test 'equal))
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 
@@ -308,6 +314,19 @@ character for signs of changes"
   (and (or global-git-gutter-mode (buffer-file-name))
        default-directory (file-directory-p default-directory)))
 
+(defun git-gutter:from-wcc-hook ()
+  (let* ((current (float-time))
+         (key (buffer-file-name))
+         (last-update-time (gethash key git-gutter:last-update)))
+    (when (or (not last-update-time)
+              (not git-gutter:update-threshold)
+              (>= current (+ git-gutter:update-threshold last-update-time)))
+      (puthash key current git-gutter:last-update)
+      (git-gutter))))
+
+(defun git-gutter:at-kill ()
+  (remhash (buffer-file-name) git-gutter:last-update))
+
 ;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
@@ -325,14 +344,20 @@ character for signs of changes"
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
             (dolist (hook git-gutter:update-hooks)
-              (add-hook hook 'git-gutter nil t))
+              (if (eq hook 'window-configuration-change-hook)
+                  (add-hook hook 'git-gutter:from-wcc-hook nil t)
+                (add-hook hook 'git-gutter nil t)))
+            (add-hook 'kill-buffer-hook 'git-gutter:at-kill nil t)
             (unless global-git-gutter-mode
               (git-gutter)))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))
     (dolist (hook git-gutter:update-hooks)
-      (remove-hook hook 'git-gutter t))
+      (if (eq hook 'window-configuration-change-hook)
+          (remove-hook hook 'git-gutter:from-wcc-hook t)
+        (remove-hook hook 'git-gutter t)))
+    (remove-hook 'kill-buffer-hook t)
     (git-gutter:clear)))
 
 ;;;###autoload

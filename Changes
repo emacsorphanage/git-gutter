@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.40 2013/04/14 syohex
+   - Improve for window-configuration-change-hook.
+     (Update function is called too many times at this hook point)
+
 Revision 0.39 2013/03/28 syohex
    - Implement disabled some modes
 

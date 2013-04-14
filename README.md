@@ -168,13 +168,21 @@ character.
 * `after-revert-hook`
 * `window-configuration-change-hook`
 
-`window-configuration-change-hook` is run N times if you show N windows,
-so you may feel git-gutter is slow if you show many windows.
+`window-configuration-change-hook` is run at buffer updated, window construction
+changed etc. But it's hook is called a lot of times and it makes Emacs slow.
+Additionally it is difficult to control(Update function is called (2 * N)
+times if you show N windows in frame).
 
-In such case, please remove `window-configuration-change-hook` to update points
-as below and instead you update `M-x git-gutter` manually when needed.
+So `git-gutter.el` does not call update function within `git-gutter:update-threshold`
+second(Default is 1 second) at `window-configuration-change-hook`. Please set longer
+time if you feel slow yet.
+
+If you even feel Emacs slow, please remove `window-configuration-change-hook` to
+update points as below and instead you update `M-x git-gutter` manually when needed.
 
 ```elisp
+(setq git-gutter:update-threshold 2)
+
 (setq git-gutter:update-hooks '(after-save-hook after-revert-hook))
 ```
 

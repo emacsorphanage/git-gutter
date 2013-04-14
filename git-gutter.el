@@ -125,8 +125,8 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defcustom git-gutter:update-threshold 1
-  "Minimal interval"
-  :type 'int
+  "Minimal update interval for `window-configuration-change-hook'"
+  :type 'integer
   :group 'git-gutter)
 
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos

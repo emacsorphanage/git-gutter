@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.41 2013/04/15 syohex
+   - Fix tramp problem lower than Emacs 23.3(Reported by @hirose31)
+     (Thanks thierryvolpiatto for good advice)
+
 Revision 0.40 2013/04/14 syohex
    - Improve for window-configuration-change-hook.
      (Update function is called too many times at this hook point)

@@ -175,7 +175,8 @@ times if you show N windows in frame).
 
 So `git-gutter.el` does not call update function within `git-gutter:update-threshold`
 second(Default is 1 second) at `window-configuration-change-hook`. Please set longer
-time if you feel slow yet.
+time if you feel slow yet. Update function is always called if `git-gutter:update-threshold`
+is nil.
 
 If you even feel Emacs slow, please remove `window-configuration-change-hook` to
 update points as below and instead you update `M-x git-gutter` manually when needed.

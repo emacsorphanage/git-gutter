@@ -163,7 +163,7 @@ character for signs of changes"
      (when it ,@body)))
 
 (defun git-gutter:execute-command (cmd file)
-  (if (not (tramp-connectable-p file))
+  (if (not (file-remote-p file))
       (call-process-shell-command cmd nil t)
     (process-file-shell-command cmd nil t)))
 
@@ -502,7 +502,7 @@ character for signs of changes"
 (defalias 'git-gutter:popup-diff 'git-gutter:popup-hunk)
 
 (defun git-gutter:default-directory (dir curfile)
-  (if (not (tramp-connectable-p curfile))
+  (if (not (file-remote-p curfile))
       dir
     (let* ((vec (tramp-dissect-file-name curfile))
            (method (aref vec 0))
@@ -511,7 +511,7 @@ character for signs of changes"
       (format "/%s:%s%s:%s" method (if user (concat user "@") "") host dir))))
 
 (defun git-gutter:file-path (dir curfile)
-  (if (not (tramp-connectable-p curfile))
+  (if (not (file-remote-p curfile))
       curfile
     (let ((file (aref (tramp-dissect-file-name curfile) 3)))
       (replace-regexp-in-string (concat "\\`" dir) "" curfile))))

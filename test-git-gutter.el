@@ -32,7 +32,7 @@
 
 (ert-deftest git-gutter:root-directory ()
   "helper function `git-gutter:root-directory'"
-  (let ((file (buffer-file-name)))
+  (let ((file (concat default-directory "test-git-gutter.el")))
     (let ((expected (expand-file-name default-directory))
           (got (git-gutter:root-directory file)))
       (should (string= expected got)))
@@ -96,7 +96,7 @@
   "Should return nil if default-directory does not exist"
 
   ;; In git repository, but here is '.git'
-  (let ((file (buffer-file-name)))
+  (let ((file (concat default-directory "test-git-gutter.el")))
     (let ((buf (find-file-noselect ".git/config")))
       (with-current-buffer buf
         (should (null (git-gutter:in-git-repository-p file)))))
@@ -158,8 +158,9 @@ bar
 
 (ert-deftest git-gutter:file-path ()
   "Should return file path which is passed to 'git diff'"
-  (let ((expected (buffer-file-name))
-        (got (git-gutter:file-path default-directory (buffer-file-name))))
+  (let* ((file (concat default-directory "test-git-gutter.el"))
+         (expected file)
+         (got (git-gutter:file-path default-directory file)))
     (should (string= got expected))))
 
 (ert-deftest git-gutter-mode-success ()

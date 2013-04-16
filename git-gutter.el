@@ -185,6 +185,9 @@ character for signs of changes"
           (unless (string= root "")
             (file-name-as-directory root)))))))
 
+(defun git-gutter:buffer-file-name ()
+  (buffer-file-name (buffer-base-buffer)))
+
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
       1
@@ -210,7 +213,7 @@ character for signs of changes"
 (defun git-gutter:diff (curfile)
   (let ((cmd (git-gutter:diff-command curfile))
         (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@")
-        (file (buffer-file-name))) ;; for tramp
+        (file (git-gutter:buffer-file-name))) ;; for tramp
     (with-temp-buffer
       (when (zerop (git-gutter:execute-command cmd file))
         (goto-char (point-min))
@@ -310,13 +313,13 @@ character for signs of changes"
     (set-window-margins curwin width (cdr (window-margins curwin)))))
 
 (defsubst git-gutter:check-file-and-directory ()
-  ;; global-git-gutter-mode already check `buffer-file-name' returns t.
-  (and (or global-git-gutter-mode (buffer-file-name))
+  ;; global-git-gutter-mode already check `git-gutter:buffer-file-name' returns t.
+  (and (or global-git-gutter-mode (git-gutter:buffer-file-name))
        default-directory (file-directory-p default-directory)))
 
 (defun git-gutter:from-wcc-hook ()
   (let* ((current (float-time))
-         (key (buffer-file-name))
+         (key (git-gutter:buffer-file-name))
          (last-update-time (gethash key git-gutter:last-update)))
     (when (or (not last-update-time)
               (not git-gutter:update-threshold)
@@ -325,7 +328,7 @@ character for signs of changes"
       (git-gutter))))
 
 (defun git-gutter:at-kill ()
-  (remhash (buffer-file-name) git-gutter:last-update))
+  (remhash (git-gutter:buffer-file-name) git-gutter:last-update))
 
 ;;;###autoload
 (define-minor-mode git-gutter-mode
@@ -336,7 +339,7 @@ character for signs of changes"
   :lighter    git-gutter:lighter
   (if git-gutter-mode
       (if (and (git-gutter:check-file-and-directory)
-               (git-gutter:in-git-repository-p (buffer-file-name)))
+               (git-gutter:in-git-repository-p (git-gutter:buffer-file-name)))
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
@@ -364,7 +367,7 @@ character for signs of changes"
 (define-global-minor-mode global-git-gutter-mode
   git-gutter-mode
   (lambda ()
-    (when (and (buffer-file-name)
+    (when (and (git-gutter:buffer-file-name)
                (not (memq major-mode git-gutter:disabled-modes)))
       (git-gutter-mode 1)))
   :group 'git-gutter)
@@ -518,19 +521,27 @@ character for signs of changes"
     (let ((file (aref (tramp-dissect-file-name curfile) 3)))
       (replace-regexp-in-string (concat "\\`" dir) "" curfile))))
 
+(defun git-gutter:find-indirect-buffers ()
+  (remove-if-not #'(lambda (buf)
+                     (string= (git-gutter:buffer-file-name)
+                              (buffer-file-name (buffer-base-buffer buf))))
+                 (buffer-list)))
+
 ;;;###autoload
 (defun git-gutter ()
   "Show diff information in gutter"
   (interactive)
-  (git-gutter:clear)
-  (when (or git-gutter:force git-gutter:toggle-flag)
-    (let ((file (buffer-file-name)))
-      (when (and file (file-exists-p file))
-        (git-gutter:awhen (git-gutter:root-directory file)
-          (let* ((default-directory (git-gutter:default-directory it file))
-                 (curfile (git-gutter:file-path default-directory file)))
-            (git-gutter:process-diff curfile)
-            (setq git-gutter:enabled t)))))))
+  (dolist (buf (git-gutter:find-indirect-buffers))
+    (with-current-buffer buf
+      (git-gutter:clear)
+      (when (or git-gutter:force git-gutter:toggle-flag)
+        (let ((file (git-gutter:buffer-file-name)))
+          (when (and file (file-exists-p file))
+            (git-gutter:awhen (git-gutter:root-directory file)
+              (let* ((default-directory (git-gutter:default-directory it file))
+                     (curfile (git-gutter:file-path default-directory file)))
+                (git-gutter:process-diff curfile)
+                (setq git-gutter:enabled t)))))))))
 
 (defsubst git-gutter:reset-window-margin-p ()
   (or git-gutter:force

@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.42 2013/04/16 syohex
+   - Fix problem of narrow-to-region(Reported by @ZaneA)
+
 Revision 0.41 2013/04/15 syohex
    - Fix tramp problem lower than Emacs 23.3(Reported by @hirose31)
      (Thanks thierryvolpiatto for good advice)

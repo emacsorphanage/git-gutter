@@ -389,7 +389,9 @@ character for signs of changes"
 (defun git-gutter:process-diff (curfile)
   (let ((diffinfos (git-gutter:diff curfile)))
     (setq git-gutter:diffinfos diffinfos)
-    (funcall git-gutter:view-diff-function diffinfos)))
+    (save-restriction
+      (widen)
+      (funcall git-gutter:view-diff-function diffinfos))))
 
 (defun git-gutter:search-near-diff-index (diffinfos is-reverse)
   (loop with current-line = (line-number-at-pos)
@@ -543,9 +545,11 @@ character for signs of changes"
 (defun git-gutter:clear ()
   "clear diff information in gutter"
   (interactive)
-  (when git-gutter:clear-function
-    (funcall git-gutter:clear-function))
-  (remove-overlays (point-min) (point-max) 'git-gutter t)
+  (save-restriction
+    (widen)
+    (when git-gutter:clear-function
+      (funcall git-gutter:clear-function))
+    (remove-overlays (point-min) (point-max) 'git-gutter t))
   (setq git-gutter:enabled nil
         git-gutter:diffinfos nil))
 

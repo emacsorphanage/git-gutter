@@ -117,11 +117,6 @@ character for signs of changes"
   :type '(repeat symbol)
   :group 'git-gutter)
 
-(defcustom git-gutter:update-threshold 1
-  "Minimal update interval for `window-configuration-change-hook'"
-  :type 'integer
-  :group 'git-gutter)
-
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
@@ -142,7 +137,6 @@ character for signs of changes"
 (defvar git-gutter:toggle-flag t)
 (defvar git-gutter:force nil)
 (defvar git-gutter:diffinfos nil)
-(defvar git-gutter:last-update (make-hash-table :test 'equal))
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 
@@ -304,19 +298,7 @@ character for signs of changes"
   (and (or global-git-gutter-mode (buffer-file-name))
        default-directory (file-directory-p default-directory)))
 
-(defun git-gutter:from-wcc-hook ()
-  (let* ((current (float-time))
-         (key (buffer-file-name))
-         (last-update-time (gethash key git-gutter:last-update)))
-    (when (or (not last-update-time)
-              (not git-gutter:update-threshold)
-              (>= current (+ git-gutter:update-threshold last-update-time)))
-      (puthash key current git-gutter:last-update)
-      (git-gutter))))
-
-(defun git-gutter:at-kill ()
-  (remhash (buffer-file-name) git-gutter:last-update))
-
+;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
   :group      'git-gutter
@@ -336,11 +318,11 @@ character for signs of changes"
             (run-with-idle-timer 0 nil 'git-gutter))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
-        (git-gutter-mode -1)))
-  (remove-hook 'after-save-hook 'git-gutter t)
-  (remove-hook 'after-revert-hook 'git-gutter t)
-  (remove-hook 'window-configuration-change-hook 'git-gutter t)
-  (git-gutter:clear)))
+        (git-gutter-mode -1))
+    (remove-hook 'after-save-hook 'git-gutter t)
+    (remove-hook 'after-revert-hook 'git-gutter t)
+    (remove-hook 'window-configuration-change-hook 'git-gutter t)
+    (git-gutter:clear)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode

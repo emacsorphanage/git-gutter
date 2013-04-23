@@ -398,12 +398,11 @@ character for signs of changes"
     (when (git-gutter:show-gutter-p diffinfos)
       (git-gutter:set-window-margin win-width))))
 
-(defun git-gutter:process-diff (curfile)
-  (let ((diffinfos (git-gutter:diff curfile)))
-    (setq git-gutter:diffinfos diffinfos)
-    (save-restriction
-      (widen)
-      (funcall git-gutter:view-diff-function diffinfos))))
+(defun git-gutter:update-diffinfo (diffinfos)
+  (setq git-gutter:diffinfos diffinfos)
+  (save-restriction
+    (widen)
+    (funcall git-gutter:view-diff-function diffinfos)))
 
 (defun git-gutter:search-near-diff-index (diffinfos is-reverse)
   (loop with current-line = (line-number-at-pos)
@@ -539,8 +538,7 @@ character for signs of changes"
         do
         (with-current-buffer buf
           (git-gutter:clear)
-          (setq git-gutter:diffinfos diffinfos)
-          (funcall git-gutter:view-diff-function diffinfos))))
+          (git-gutter:update-diffinfo diffinfos))))
 
 ;;;###autoload
 (defun git-gutter ()
@@ -552,8 +550,9 @@ character for signs of changes"
       (when (and file (file-exists-p file))
         (git-gutter:awhen (git-gutter:root-directory file)
           (let* ((default-directory (git-gutter:default-directory it file))
-                 (curfile (git-gutter:file-path default-directory file)))
-            (git-gutter:process-diff curfile)
+                 (curfile (git-gutter:file-path default-directory file))
+                 (diffinfos (git-gutter:diff curfile)))
+            (git-gutter:update-diffinfo diffinfos)
             (when (and git-gutter:has-indirect-buffers
                        (not git-gutter:from-wcc-hook-p))
               (git-gutter:update-indirect-buffers file))

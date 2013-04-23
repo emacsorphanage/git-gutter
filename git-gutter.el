@@ -47,13 +47,6 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
-(defcustom git-gutter:update-hooks
-  '(after-save-hook after-revert-hook window-configuration-change-hook)
-  "hook points of updating gutter"
-  :type '(list (hook :tag "HookPoint")
-               (repeat :inline t (hook :tag "HookPoint")))
-  :group 'git-gutter)
-
 (defcustom git-gutter:separator-sign nil
   "Separator sign"
   :type 'string
@@ -324,7 +317,6 @@ character for signs of changes"
 (defun git-gutter:at-kill ()
   (remhash (buffer-file-name) git-gutter:last-update))
 
-;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
   :group      'git-gutter
@@ -338,22 +330,17 @@ character for signs of changes"
             (make-local-variable 'git-gutter:enabled)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
-            (dolist (hook git-gutter:update-hooks)
-              (if (eq hook 'window-configuration-change-hook)
-                  (add-hook hook 'git-gutter:from-wcc-hook nil t)
-                (add-hook hook 'git-gutter nil t)))
-            (add-hook 'kill-buffer-hook 'git-gutter:at-kill nil t)
-            (unless global-git-gutter-mode
-              (git-gutter)))
+            (add-hook 'after-save-hook 'git-gutter nil t)
+            (add-hook 'after-revert-hook 'git-gutter nil t)
+            (add-hook 'window-configuration-change-hook 'git-gutter nil t)
+            (run-with-idle-timer 0 nil 'git-gutter))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
-        (git-gutter-mode -1))
-    (dolist (hook git-gutter:update-hooks)
-      (if (eq hook 'window-configuration-change-hook)
-          (remove-hook hook 'git-gutter:from-wcc-hook t)
-        (remove-hook hook 'git-gutter t)))
-    (remove-hook 'kill-buffer-hook t)
-    (git-gutter:clear)))
+        (git-gutter-mode -1)))
+  (remove-hook 'after-save-hook 'git-gutter t)
+  (remove-hook 'after-revert-hook 'git-gutter t)
+  (remove-hook 'window-configuration-change-hook 'git-gutter t)
+  (git-gutter:clear)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode

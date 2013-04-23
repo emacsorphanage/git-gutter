@@ -160,35 +160,6 @@ character.
 (setq git-gutter:deleted-sign "☂")
 ```
 
-### If You Feel git-gutter is Slow
-
-`git-gutter.el` updates gutter at hooks below
-
-* `after-save-hook`
-* `after-revert-hook`
-* `window-configuration-change-hook`
-
-`window-configuration-change-hook` is run at buffer updated, window construction
-changed etc. But it's hook is called a lot of times and it makes Emacs slow.
-Additionally it is difficult to control(Update function is called (2 * N)
-times if you show N windows in frame).
-
-So `git-gutter.el` does not call update function within `git-gutter:update-threshold`
-second(Default is 1 second) at `window-configuration-change-hook`. Please set longer
-time if you feel slow yet. Update function is always called if `git-gutter:update-threshold`
-is nil.
-
-If you even feel Emacs slow, please remove `window-configuration-change-hook` to
-update points as below and instead you update `M-x git-gutter` manually when needed.
-
-```elisp
-(setq git-gutter:update-threshold 2)
-
-(setq git-gutter:update-hooks '(after-save-hook after-revert-hook))
-```
-
-You can also add other hook points by setting `git-gutter:update-hooks`.
-
 ### Disabled modes
 
 If you use `global-git-gutter-mode`, you may want some modes to disable

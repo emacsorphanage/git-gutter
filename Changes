@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.43 2013/04/23 syohex
+   - Support indirect buffer(Reported by @ZaneA)
+
 Revision 0.42 2013/04/16 syohex
    - Fix problem of narrow-to-region(Reported by @ZaneA)
 

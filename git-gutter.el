@@ -512,9 +512,9 @@ character for signs of changes"
            (host (aref vec 2)))
       (format "/%s:%s%s:%s" method (if user (concat user "@") "") host dir))))
 
-(defun git-gutter:file-path (dir curfile)
+(defun git-gutter:relative-path (dir curfile)
   (if (not (file-remote-p curfile))
-      curfile
+      (file-relative-name curfile dir)
     (let ((file (aref (tramp-dissect-file-name curfile) 3)))
       (replace-regexp-in-string (concat "\\`" dir) "" curfile))))
 
@@ -528,7 +528,7 @@ character for signs of changes"
       (when (and file (file-exists-p file))
         (git-gutter:awhen (git-gutter:root-directory file)
           (let* ((default-directory (git-gutter:default-directory it file))
-                 (curfile (git-gutter:file-path default-directory file)))
+                 (curfile (git-gutter:relative-path default-directory file)))
             (git-gutter:process-diff curfile)
             (setq git-gutter:enabled t)))))))
 

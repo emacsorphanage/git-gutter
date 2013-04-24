@@ -303,16 +303,16 @@ character for signs of changes"
        default-directory (file-directory-p default-directory)))
 
 (defsubst git-gutter:add-local-hooks ()
-  (add-hook 'after-save-hook   'git-gutter nil t)
-  (add-hook 'after-revert-hook 'git-gutter nil t)
+  (add-hook 'after-save-hook        'git-gutter nil t)
+  (add-hook 'after-revert-hook      'git-gutter nil t)
   (add-hook 'change-major-mode-hook 'git-gutter:reenable-after-major-mode-change nil t)
   (if git-gutter:window-config-change-function
       (add-hook 'window-configuration-change-hook
                 git-gutter:window-config-change-function nil t)))
 
 (defsubst git-gutter:remove-local-hooks ()
-  (remove-hook 'after-save-hook   'git-gutter t)
-  (remove-hook 'after-revert-hook 'git-gutter t)
+  (remove-hook 'after-save-hook        'git-gutter t)
+  (remove-hook 'after-revert-hook      'git-gutter t)
   (remove-hook 'change-major-mode-hook 'git-gutter:reenable-after-major-mode-change t)
   (if git-gutter:window-config-change-function
       (remove-hook 'window-configuration-change-hook

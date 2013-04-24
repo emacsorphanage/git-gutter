@@ -142,6 +142,7 @@ character for signs of changes"
 (defvar git-gutter:diffinfos nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
+(defvar git-gutter:buffers-to-reenable nil)
 
 (defmacro git-gutter:awhen (test &rest body)
   "Anaphoric when."
@@ -304,6 +305,7 @@ character for signs of changes"
 (defsubst git-gutter:add-local-hooks ()
   (add-hook 'after-save-hook   'git-gutter nil t)
   (add-hook 'after-revert-hook 'git-gutter nil t)
+  (add-hook 'change-major-mode-hook 'git-gutter:reenable-after-major-mode-change nil t)
   (if git-gutter:window-config-change-function
       (add-hook 'window-configuration-change-hook
                 git-gutter:window-config-change-function nil t)))
@@ -311,6 +313,7 @@ character for signs of changes"
 (defsubst git-gutter:remove-local-hooks ()
   (remove-hook 'after-save-hook   'git-gutter t)
   (remove-hook 'after-revert-hook 'git-gutter t)
+  (remove-hook 'change-major-mode-hook 'git-gutter:reenable-after-major-mode-change t)
   (if git-gutter:window-config-change-function
       (remove-hook 'window-configuration-change-hook
                    git-gutter:window-config-change-function t)))
@@ -337,14 +340,49 @@ character for signs of changes"
     (git-gutter:remove-local-hooks)
     (git-gutter:clear)))
 
+(defmacro git-gutter:in-all-buffers (&rest body)
+  `(dolist (buf (buffer-list))
+     (with-current-buffer buf
+       ,@body)))
+
+(defun git-gutter:turn-on ()
+  (when (and (buffer-file-name)
+             (not (memq major-mode git-gutter:disabled-modes)))
+    (git-gutter-mode 1)))
+
+(defsubst git-gutter:turn-off ()
+  (if git-gutter-mode (git-gutter-mode -1)))
+
+;; When `define-globalized-minor-mode' is used to define `global-git-gutter-mode',
+;; `git-gutter-mode' and thus `git-gutter' get run twice when a new file is opened.
+;; (First for `fundamental-mode', then for the file-specific mode.)
+;; The following definition of `global-git-gutter-mode' avoids any redundant calls
+;; to `git-gutter'.
+
 ;;;###autoload
-(define-global-minor-mode global-git-gutter-mode
-  git-gutter-mode
-  (lambda ()
-    (when (and (buffer-file-name)
-               (not (memq major-mode git-gutter:disabled-modes)))
-      (git-gutter-mode 1)))
-  :group 'git-gutter)
+(define-minor-mode global-git-gutter-mode ()
+  "Global Git-Gutter mode"
+  :group      'git-gutter
+  :init-value nil
+  :global     t
+  (if global-git-gutter-mode
+      (progn
+        (add-hook 'find-file-hook 'git-gutter:turn-on)
+        (add-hook 'after-change-major-mode-hook 'git-gutter:reenable-buffers)
+        (git-gutter:in-all-buffers (git-gutter:turn-on)))
+    (remove-hook 'find-file-hook 'git-gutter:turn-on)
+    (remove-hook 'after-change-major-mode-hook 'git-gutter:reenable-buffers)
+    (git-gutter:in-all-buffers (git-gutter:turn-off))))
+
+(defun git-gutter:reenable-after-major-mode-change ()
+  (if global-git-gutter-mode
+      (add-to-list 'git-gutter:buffers-to-reenable (current-buffer))))
+
+(defun git-gutter:reenable-buffers ()
+  (dolist (buf git-gutter:buffers-to-reenable)
+    (with-current-buffer buf
+      (git-gutter:turn-on)))
+  (setq git-gutter:buffers-to-reenable nil))
 
 (defsubst git-gutter:show-gutter-p (diffinfos)
   (if git-gutter:hide-gutter

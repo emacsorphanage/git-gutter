@@ -315,7 +315,7 @@ character for signs of changes"
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)
             (add-hook 'window-configuration-change-hook 'git-gutter nil t)
-            (run-with-idle-timer 0 nil 'git-gutter))
+            (git-gutter))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))

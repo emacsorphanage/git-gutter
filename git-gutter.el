@@ -301,6 +301,20 @@ character for signs of changes"
   (and (or global-git-gutter-mode (buffer-file-name))
        default-directory (file-directory-p default-directory)))
 
+(defsubst git-gutter:add-local-hooks ()
+  (add-hook 'after-save-hook   'git-gutter nil t)
+  (add-hook 'after-revert-hook 'git-gutter nil t)
+  (if git-gutter:window-config-change-function
+      (add-hook 'window-configuration-change-hook
+                git-gutter:window-config-change-function nil t)))
+
+(defsubst git-gutter:remove-local-hooks ()
+  (remove-hook 'after-save-hook   'git-gutter t)
+  (remove-hook 'after-revert-hook 'git-gutter t)
+  (if git-gutter:window-config-change-function
+      (remove-hook 'window-configuration-change-hook
+                   git-gutter:window-config-change-function t)))
+
 ;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
@@ -315,21 +329,12 @@ character for signs of changes"
             (make-local-variable 'git-gutter:enabled)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
-            (add-hook 'after-save-hook 'git-gutter nil t)
-            (add-hook 'after-revert-hook 'git-gutter nil t)
-            (if git-gutter:window-config-change-function
-                (add-hook 'window-configuration-change-hook
-                          git-gutter:window-config-change-function nil t))
-
+            (git-gutter:add-local-hooks)
             (git-gutter))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))
-    (remove-hook 'after-save-hook 'git-gutter t)
-    (remove-hook 'after-revert-hook 'git-gutter t)
-    (if git-gutter:window-config-change-function
-        (remove-hook 'window-configuration-change-hook
-                     git-gutter:window-config-change-function t))
+    (git-gutter:remove-local-hooks)
     (git-gutter:clear)))
 
 ;;;###autoload

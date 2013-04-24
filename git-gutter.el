@@ -123,6 +123,9 @@ character for signs of changes"
 (defvar git-gutter:clear-function 'git-gutter:clear-diff-infos
   "Function of clear changes")
 
+(defvar git-gutter:window-config-change-function 'git-gutter:show-gutter
+  "Function to call when the buffer's local window configuration changes")
+
 (defcustom git-gutter-mode-on-hook nil
   "Hook run when git-gutter mode enable"
   :type 'hook
@@ -314,14 +317,19 @@ character for signs of changes"
             (make-local-variable 'git-gutter:diffinfos)
             (add-hook 'after-save-hook 'git-gutter nil t)
             (add-hook 'after-revert-hook 'git-gutter nil t)
-            (add-hook 'window-configuration-change-hook 'git-gutter nil t)
+            (if git-gutter:window-config-change-function
+                (add-hook 'window-configuration-change-hook
+                          git-gutter:window-config-change-function nil t))
+
             (git-gutter))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))
     (remove-hook 'after-save-hook 'git-gutter t)
     (remove-hook 'after-revert-hook 'git-gutter t)
-    (remove-hook 'window-configuration-change-hook 'git-gutter t)
+    (if git-gutter:window-config-change-function
+        (remove-hook 'window-configuration-change-hook
+                     git-gutter:window-config-change-function t))
     (git-gutter:clear)))
 
 ;;;###autoload
@@ -338,8 +346,8 @@ character for signs of changes"
       (or diffinfos git-gutter:unchanged-sign)
     (or global-git-gutter-mode git-gutter:unchanged-sign diffinfos)))
 
-(defun git-gutter:show-gutter (diffinfos)
-  (when (git-gutter:show-gutter-p diffinfos)
+(defun git-gutter:show-gutter (&optional diffinfos)
+  (when (git-gutter:show-gutter-p (or diffinfos git-gutter:diffinfos))
     (let ((win-width (or git-gutter:window-width
                          (git-gutter:longest-sign-width))))
       (git-gutter:set-window-margin win-width))))

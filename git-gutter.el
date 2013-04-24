@@ -199,6 +199,9 @@ character for signs of changes"
   (let ((cmd (git-gutter:diff-command curfile))
         (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@")
         (file (buffer-file-name))) ;; for tramp
+    (message "-> git-gutter:diff in %s (%s)"
+             (buffer-name)
+             (format-time-string "%H:%M:%S-%3N" (current-time)))
     (with-temp-buffer
       (when (zerop (git-gutter:execute-command cmd file))
         (goto-char (point-min))

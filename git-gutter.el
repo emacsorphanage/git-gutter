@@ -451,9 +451,7 @@ character for signs of changes"
     (git-gutter:popup-hunk it)
     (when (yes-or-no-p "Revert current hunk ?")
       (git-gutter:do-revert-hunk it)
-      (save-buffer)
-      (when (assoc 'git-gutter-mode minor-mode-alist)
-        (git-gutter)))
+      (save-buffer))
     (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer)))))
 
 ;;;###autoload

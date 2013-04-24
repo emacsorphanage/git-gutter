@@ -135,9 +135,6 @@ character for signs of changes"
 (defvar git-gutter:clear-function 'git-gutter:clear-diff-infos
   "Function of clear changes")
 
-(defvar git-gutter:init-function 'nil
-  "Function of initialize")
-
 (defcustom git-gutter-mode-on-hook nil
   "Hook run when git-gutter mode enable"
   :type 'hook
@@ -338,8 +335,6 @@ character for signs of changes"
       (if (and (git-gutter:check-file-and-directory)
                (git-gutter:in-git-repository-p (buffer-file-name)))
           (progn
-            (when git-gutter:init-function
-              (funcall git-gutter:init-function))
             (make-local-variable 'git-gutter:enabled)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)

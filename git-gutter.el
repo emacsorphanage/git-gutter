@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.43
+;; Version: 0.44
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -233,7 +233,9 @@ character for signs of changes"
                                (1- (+ new-line new-changes)))
               for content = (git-gutter:diff-content)
               collect
-              (git-gutter:make-diffinfo type content new-line end-line))))))
+              (let ((start (if (zerop new-line) 1 new-line))
+                    (end (if (zerop end-line) 1 end-line)))
+                (git-gutter:make-diffinfo type content start end)))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion

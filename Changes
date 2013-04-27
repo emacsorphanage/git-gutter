@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.44 2013/04/27 syohex
+   - Fix for deleted hunk at line 1
+
 Revision 0.43 2013/04/23 syohex
    - Support indirect buffer(Reported by @ZaneA)
 

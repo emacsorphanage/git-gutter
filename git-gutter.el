@@ -461,11 +461,12 @@ character for signs of changes"
   "Revert current hunk."
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (git-gutter:popup-hunk it)
-    (when (yes-or-no-p "Revert current hunk ?")
-      (git-gutter:do-revert-hunk it)
-      (save-buffer))
-    (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer)))))
+    (save-window-excursion
+      (git-gutter:popup-hunk it)
+      (when (yes-or-no-p "Revert current hunk ?")
+        (git-gutter:do-revert-hunk it)
+        (save-buffer))
+      (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer))))))
 
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)

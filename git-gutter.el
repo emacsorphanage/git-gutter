@@ -132,7 +132,7 @@ character for signs of changes"
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
-(defvar git-gutter:clear-function 'git-gutter:reset-window-margin
+(defvar git-gutter:clear-function 'git-gutter:clear-diff-infos
   "Function of clear changes")
 
 (defvar git-gutter:init-function 'nil
@@ -388,17 +388,25 @@ character for signs of changes"
       (or diffinfos git-gutter:unchanged-sign)
     (or global-git-gutter-mode git-gutter:unchanged-sign diffinfos)))
 
-(defun git-gutter:view-diff-infos (diffinfos)
-  (let ((win-width (or git-gutter:window-width
-                       (git-gutter:longest-sign-width))))
-    (when (or git-gutter:unchanged-sign
-              git-gutter:separator-sign)
-      (git-gutter:view-for-unchanged))
-    (when diffinfos
-      (save-excursion
-        (mapc 'git-gutter:view-diff-info diffinfos)))
-    (when (git-gutter:show-gutter-p diffinfos)
+(defun git-gutter:show-gutter (diffinfos)
+  (when (git-gutter:show-gutter-p diffinfos)
+    (let ((win-width (or git-gutter:window-width
+                         (git-gutter:longest-sign-width))))
       (git-gutter:set-window-margin win-width))))
+
+(defun git-gutter:view-diff-infos (diffinfos)
+  (when (or git-gutter:unchanged-sign
+            git-gutter:separator-sign)
+    (git-gutter:view-for-unchanged))
+  (when diffinfos
+    (save-excursion
+      (mapc 'git-gutter:view-diff-info diffinfos)))
+  (git-gutter:show-gutter diffinfos))
+
+(defun git-gutter:clear-diff-infos ()
+  (when (git-gutter:reset-window-margin-p)
+    (git-gutter:set-window-margin 0))
+  (remove-overlays (point-min) (point-max) 'git-gutter t))
 
 (defun git-gutter:update-diffinfo (diffinfos)
   (setq git-gutter:diffinfos diffinfos)
@@ -461,13 +469,12 @@ character for signs of changes"
   "Revert current hunk."
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (git-gutter:popup-hunk it)
-    (when (yes-or-no-p "Revert current hunk ?")
-      (git-gutter:do-revert-hunk it)
-      (save-buffer)
-      (when (assoc 'git-gutter-mode minor-mode-alist)
-        (git-gutter)))
-    (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer)))))
+    (save-window-excursion
+      (git-gutter:popup-hunk it)
+      (when (yes-or-no-p "Revert current hunk ?")
+        (git-gutter:do-revert-hunk it)
+        (save-buffer))
+      (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer))))))
 
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)
@@ -569,10 +576,6 @@ character for signs of changes"
   (when (and git-gutter-mode (not (buffer-base-buffer)))
     (setq git-gutter:has-indirect-buffers t)))
 
-(defun git-gutter:reset-window-margin ()
-  (when (git-gutter:reset-window-margin-p)
-    (git-gutter:set-window-margin 0)))
-
 ;;;###autoload
 (defun git-gutter:clear ()
   "clear diff information in gutter"
@@ -580,8 +583,7 @@ character for signs of changes"
   (save-restriction
     (widen)
     (when git-gutter:clear-function
-      (funcall git-gutter:clear-function))
-    (remove-overlays (point-min) (point-max) 'git-gutter t))
+      (funcall git-gutter:clear-function)))
   (setq git-gutter:enabled nil
         git-gutter:diffinfos nil))
 

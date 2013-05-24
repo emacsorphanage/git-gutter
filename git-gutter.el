@@ -388,17 +388,20 @@ character for signs of changes"
       (or diffinfos git-gutter:unchanged-sign)
     (or global-git-gutter-mode git-gutter:unchanged-sign diffinfos)))
 
-(defun git-gutter:view-diff-infos (diffinfos)
-  (let ((win-width (or git-gutter:window-width
-                       (git-gutter:longest-sign-width))))
-    (when (or git-gutter:unchanged-sign
-              git-gutter:separator-sign)
-      (git-gutter:view-for-unchanged))
-    (when diffinfos
-      (save-excursion
-        (mapc 'git-gutter:view-diff-info diffinfos)))
-    (when (git-gutter:show-gutter-p diffinfos)
+(defun git-gutter:show-gutter (diffinfos)
+  (when (git-gutter:show-gutter-p diffinfos)
+    (let ((win-width (or git-gutter:window-width
+                         (git-gutter:longest-sign-width))))
       (git-gutter:set-window-margin win-width))))
+
+(defun git-gutter:view-diff-infos (diffinfos)
+  (when (or git-gutter:unchanged-sign
+            git-gutter:separator-sign)
+    (git-gutter:view-for-unchanged))
+  (when diffinfos
+    (save-excursion
+      (mapc 'git-gutter:view-diff-info diffinfos)))
+  (git-gutter:show-gutter diffinfos))
 
 (defun git-gutter:clear-diff-infos ()
   (when (git-gutter:reset-window-margin-p)

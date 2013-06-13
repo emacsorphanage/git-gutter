@@ -403,6 +403,11 @@ character for signs of changes"
       (mapc 'git-gutter:view-diff-info diffinfos)))
   (git-gutter:show-gutter diffinfos))
 
+(defsubst git-gutter:reset-window-margin-p ()
+  (or git-gutter:force
+      git-gutter:hide-gutter
+      (not global-git-gutter-mode)))
+
 (defun git-gutter:clear-diff-infos ()
   (when (git-gutter:reset-window-margin-p)
     (git-gutter:set-window-margin 0))
@@ -569,11 +574,6 @@ character for signs of changes"
                        (not git-gutter:from-wcc-hook-p))
               (git-gutter:update-indirect-buffers file))
             (setq git-gutter:enabled t)))))))
-
-(defsubst git-gutter:reset-window-margin-p ()
-  (or git-gutter:force
-      git-gutter:hide-gutter
-      (not global-git-gutter-mode)))
 
 (defadvice make-indirect-buffer (before git-gutter:has-indirect-buffers activate)
   (when (and git-gutter-mode (not (buffer-base-buffer)))

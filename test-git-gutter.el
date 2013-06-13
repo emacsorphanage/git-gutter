@@ -147,8 +147,11 @@ bar
   "Should return git diff command"
   (let ((git-gutter:diff-option "--binary"))
     (let ((got (git-gutter:diff-command "emacs/git.el"))
-          (expected "git --no-pager diff --no-color --no-ext-diff -U0 --binary \"emacs/git.el\""))
-      (should (string= got expected)))))
+          (expected "git --no-pager diff --no-color --no-ext-diff -U0 --binary emacs/git.el"))
+      (should (string= got expected))))
+  (let ((got (git-gutter:diff-command "has space.txt"))
+        (expected "git --no-pager diff --no-color --no-ext-diff -U0  has\\ space.txt"))
+    (should (string= got expected))))
 
 (ert-deftest git-gutter:set-window-margin ()
   "Should change window margin"

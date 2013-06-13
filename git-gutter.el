@@ -210,8 +210,8 @@ character for signs of changes"
       (buffer-substring curpoint (point)))))
 
 (defsubst git-gutter:diff-command (file)
-  (format "git --no-pager diff --no-color --no-ext-diff -U0 %s \"%s\""
-          git-gutter:diff-option file))
+  (format "git --no-pager diff --no-color --no-ext-diff -U0 %s %s"
+          git-gutter:diff-option (shell-quote-argument file)))
 
 (defun git-gutter:diff (curfile)
   (let ((cmd (git-gutter:diff-command curfile))

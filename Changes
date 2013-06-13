@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.47 2013/06/13 syohex
+   - Fix for byte compiling warning
+   - Shell Quote file name in command.
+
 Revision 0.46 2013/05/25 syohex
    - Fix for Mingw Emacs + Cygwin git environment(Thanks "Cornelius Mika")
 

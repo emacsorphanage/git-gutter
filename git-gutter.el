@@ -92,7 +92,7 @@ character for signs of changes"
 (defcustom git-gutter:verbosity 4
   "Log/message level. 4 means all, 0 nothing."
   :type 'integer
-  :group 'git-guter)
+  :group 'git-gutter)
 
 (defface git-gutter:separator
     '((t (:foreground "cyan" :weight bold)))

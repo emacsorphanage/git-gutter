@@ -160,6 +160,22 @@ character.
 (setq git-gutter:deleted-sign "☂")
 ```
 
+
+### For MacOSX Users
+
+`git-gutter.el` with GUI Emacs on MacOSX makes display strange.
+This issues is only GUI mode.(If you have use CUI mode(`emacs -nw`),
+it may be no problems)
+
+You can avoid this issue by adding additional space to each diff signs like below.
+
+```elisp
+(setq git-gutter:added-sign "+ ")
+(setq git-gutter:deleted-sign "- ")
+(setq git-gutter:modified-sign "= ")
+```
+
+
 ### If You Feel git-gutter is Slow
 
 `git-gutter.el` updates gutter at hooks below

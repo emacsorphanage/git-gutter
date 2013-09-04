@@ -285,13 +285,18 @@ run hook `git-gutter-mode-off-hook` when `git-gutter-mode` is turn off.
 
 GitGutter is Sublime Text plugin.
 
+### [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+
+Vim version of GitGutter
+
 ### [diff-hl](https://github.com/dgutov/diff-hl)
 
 `diff-hl` has more features than `git-gutter.el`.
 
-### [vim-gitgutter](https://github.com/airblade/vim-gitgutter)
+### [git-gutter-plus](https://github.com/nonsequitur/git-gutter-plus)
 
-Vim version of GitGutter
+Fork of `git-gutter.el`.
+
 
 ### Another implementation of git-gutter.el
 

@@ -217,25 +217,26 @@ character for signs of changes"
   (let ((cmd (git-gutter:diff-command curfile))
         (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@")
         (file (git-gutter:base-file))) ;; for tramp
-    (with-temp-buffer
-      (when (zerop (git-gutter:execute-command cmd file))
-        (goto-char (point-min))
-        (loop while (re-search-forward regexp nil t)
-              for orig-line = (string-to-number (match-string 1))
-              for new-line  = (string-to-number (match-string 3))
-              for orig-changes = (git-gutter:changes-to-number (match-string 2))
-              for new-changes = (git-gutter:changes-to-number (match-string 4))
-              for type = (cond ((zerop orig-changes) 'added)
-                               ((zerop new-changes) 'deleted)
-                               (t 'modified))
-              for end-line = (if (eq type 'deleted)
-                                 new-line
-                               (1- (+ new-line new-changes)))
-              for content = (git-gutter:diff-content)
-              collect
-              (let ((start (if (zerop new-line) 1 new-line))
-                    (end (if (zerop end-line) 1 end-line)))
-                (git-gutter:make-diffinfo type content start end)))))))
+    (when file
+      (with-temp-buffer
+        (when (zerop (git-gutter:execute-command cmd file))
+          (goto-char (point-min))
+          (loop while (re-search-forward regexp nil t)
+                for orig-line = (string-to-number (match-string 1))
+                for new-line  = (string-to-number (match-string 3))
+                for orig-changes = (git-gutter:changes-to-number (match-string 2))
+                for new-changes = (git-gutter:changes-to-number (match-string 4))
+                for type = (cond ((zerop orig-changes) 'added)
+                                 ((zerop new-changes) 'deleted)
+                                 (t 'modified))
+                for end-line = (if (eq type 'deleted)
+                                   new-line
+                                 (1- (+ new-line new-changes)))
+                for content = (git-gutter:diff-content)
+                collect
+                (let ((start (if (zerop new-line) 1 new-line))
+                      (end (if (zerop end-line) 1 end-line)))
+                  (git-gutter:make-diffinfo type content start end))))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion

@@ -45,7 +45,7 @@ If you want to use `git-gutter` for files in git repository.
 You add following s-exp in your configuration file(`~/.emacs.d/init.el` or `~/.emacs`).
 
 ```elisp
-(global-git-gutter-mode t)
+(global-git-gutter-mode +1)
 ```
 
 Other case, you want to use `git-gutter` for some files, you can use `git-gutter-mode`.

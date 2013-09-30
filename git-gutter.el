@@ -457,6 +457,9 @@ character for signs of changes"
   (dolist (line (git-gutter:collect-deleted-line content))
     (insert (concat line "\n"))))
 
+(defsubst git-gutter:delete-from-first-line-p (start-line end-line)
+  (and (not (= start-line 1)) (not (= end-line 1))))
+
 (defun git-gutter:do-revert-hunk (diffinfo)
   (save-excursion
     (goto-char (point-min))
@@ -465,7 +468,8 @@ character for signs of changes"
           (content (plist-get diffinfo :content)))
       (case (plist-get diffinfo :type)
         (added (git-gutter:delete-added-lines start-line end-line))
-        (deleted (forward-line start-line)
+        (deleted (when (git-gutter:delete-from-first-line-p start-line end-line)
+                   (forward-line start-line))
                  (git-gutter:insert-deleted-lines content))
         (modified (git-gutter:delete-added-lines start-line end-line)
                   (git-gutter:insert-deleted-lines content))))))

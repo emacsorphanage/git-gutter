@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.50 2013/09/30 syohex
+   - Fix git-gutter:revert-hunk at first line
+
 Revision 0.49 2013/09/19 syohex
    - Fix ediff-mode issue(Thanks hanabokuro)
 

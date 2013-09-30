@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.51 2013/10/01 syohex
+   - Suppress byte-compile warnings
+
 Revision 0.50 2013/09/30 syohex
    - Fix git-gutter:revert-hunk at first line
 

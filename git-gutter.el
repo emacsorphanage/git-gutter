@@ -475,6 +475,9 @@ character for signs of changes"
         (modified (git-gutter:delete-added-lines start-line end-line)
                   (git-gutter:insert-deleted-lines content))))))
 
+(defsubst git-gutter:popup-buffer-window ()
+  (get-buffer-window (get-buffer git-gutter:popup-buffer)))
+
 ;;;###autoload
 (defun git-gutter:revert-hunk ()
   "Revert current hunk."
@@ -485,7 +488,49 @@ character for signs of changes"
       (when (yes-or-no-p "Revert current hunk ?")
         (git-gutter:do-revert-hunk it)
         (save-buffer))
-      (delete-window (get-buffer-window (get-buffer git-gutter:popup-buffer))))))
+      (delete-window (git-gutter:popup-buffer-window)))))
+
+(defun git-gutter:current-file-path ()
+  (let ((file (or git-gutter:base-file-name (git-gutter:base-file))))
+    (git-gutter:file-path default-directory file)))
+
+(defun git-gutter:diff-header-index-info (path)
+  (with-temp-buffer
+    (let ((cmd (format "git diff %s" path)))
+      (when (zerop (git-gutter:execute-command cmd path))
+        (goto-char (point-min))
+        (forward-line 4)
+        (buffer-substring-no-properties (point-min) (point))))))
+
+(defun git-gutter:hunk-diff-header ()
+  (git-gutter:awhen (git-gutter:current-file-path)
+    (git-gutter:diff-header-index-info it)))
+
+(defun git-gutter:do-stage-hunk (diff-info)
+  (let ((content (plist-get diff-info :content))
+        (header (git-gutter:hunk-diff-header))
+        (patch (make-temp-name "git-gutter")))
+    (when header
+      (with-temp-file patch
+        (insert header)
+        (insert content))
+      (let ((cmd (concat "git apply --cached --unidiff-zero " patch)))
+        (unless (zerop (call-process-shell-command cmd))
+          (message "Failed: %s" cmd))
+        (delete-file patch)))))
+
+;;;###autoload
+(defun git-gutter:stage-hunk ()
+  "Stage this hunk like 'git add -p'"
+  (interactive)
+  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
+    (save-window-excursion
+      (git-gutter:popup-hunk it)
+      (when (yes-or-no-p "Stage current hunk ?")
+        (git-gutter:do-stage-hunk it)
+        (save-buffer)
+        (git-gutter))
+      (delete-window (git-gutter:popup-buffer-window)))))
 
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)

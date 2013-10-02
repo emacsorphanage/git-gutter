@@ -76,6 +76,10 @@ Popup current diff hunk(alias `git-gutter:popup-diff`)
 `git-gutter:next-hunk` and `git-gutter:previous-hunk` update content
 of buffer popuped by `git-gutter:popup-diff` to current hunk.
 
+#### `git-gutter:stage-hunk`
+
+Stage current hunk. You can use this command like `git add -p`.
+
 #### `git-gutter:revert-hunk`
 
 Revert current hunk
@@ -111,8 +115,11 @@ Toggle git-gutter
 (global-set-key (kbd "C-x p") 'git-gutter:previous-hunk)
 (global-set-key (kbd "C-x n") 'git-gutter:next-hunk)
 
+;; Stage current hunk
+(global-set-key (kbd "C-x v s") 'git-gutter:stage-hunk)
+
 ;; Revert current hunk
-(global-set-key (kbd "C-x r") 'git-gutter:revert-hunk)
+(global-set-key (kbd "C-x v r") 'git-gutter:revert-hunk)
 ```
 
 

@@ -525,9 +525,8 @@ character for signs of changes"
   "Stage this hunk like 'git add -p'"
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (save-window-excursion
-      (git-gutter:do-stage-hunk it)
-      (git-gutter))))
+    (git-gutter:do-stage-hunk it)
+    (git-gutter)))
 
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)

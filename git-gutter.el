@@ -513,8 +513,9 @@ character for signs of changes"
     (when header
       (with-temp-file patch
         (insert header)
-        (insert content))
-      (let ((cmd (concat "git apply --cached --unidiff-zero " patch)))
+        (insert content)
+        (insert "\n"))
+      (let ((cmd (concat "git apply --unidiff-zero --cached " patch)))
         (unless (zerop (call-process-shell-command cmd))
           (message "Failed: %s" cmd))
         (delete-file patch)))))
@@ -525,12 +526,8 @@ character for signs of changes"
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
     (save-window-excursion
-      (git-gutter:popup-hunk it)
-      (when (yes-or-no-p "Stage current hunk ?")
-        (git-gutter:do-stage-hunk it)
-        (save-buffer)
-        (git-gutter))
-      (delete-window (git-gutter:popup-buffer-window)))))
+      (git-gutter:do-stage-hunk it)
+      (git-gutter))))
 
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)

@@ -44,14 +44,14 @@ And you can also install it with [el-get](https://github.com/dimitri/el-get).
 If you want to use `git-gutter` for files in git repository.
 You add following s-exp in your configuration file(`~/.emacs.d/init.el` or `~/.emacs`).
 
-```elisp
+```lisp
 (global-git-gutter-mode +1)
 ```
 
 Other case, you want to use `git-gutter` for some files, you can use `git-gutter-mode`.
 Following example of enabling `git-gutter` for some mode.
 
-```elisp
+```lisp
 (add-hook 'ruby-mode-hook 'git-gutter-mode)
 (add-hook 'python-mode-hook 'git-gutter-mode)
 ```
@@ -99,7 +99,7 @@ Toggle git-gutter
 
 ## Sample Configuration
 
-```elisp
+```lisp
 (require 'git-gutter)
 
 ;; If you enable global minor mode
@@ -131,7 +131,7 @@ Toggle git-gutter
 
 You can change the signs and those faces.
 
-```elisp
+```lisp
 (setq git-gutter:modified-sign "  ") ;; two space
 (setq git-gutter:added-sign "++")    ;; multiple character is OK
 (setq git-gutter:deleted-sign "--")
@@ -144,7 +144,7 @@ You can change the signs and those faces.
 You can change minor-mode name in mode-line to set `git-gutter:lighter`.
 Default is " GitGutter"
 
-```elisp
+```lisp
 ;; first character should be a space
 (setq git-gutter:lighter " GG")
 ```
@@ -160,7 +160,7 @@ But `char-width` does not work for some full-width characters.
 So you should explicitly specify window width, if you use full-width
 character.
 
-```elisp
+```lisp
 (setq git-gutter:window-width 2)
 (setq git-gutter:modified-sign "☁")
 (setq git-gutter:added-sign "☀")
@@ -176,7 +176,7 @@ it may be no problems)
 
 You can avoid this issue by adding additional space to each diff signs like below.
 
-```elisp
+```lisp
 (setq git-gutter:added-sign "+ ")
 (setq git-gutter:deleted-sign "- ")
 (setq git-gutter:modified-sign "= ")
@@ -204,7 +204,7 @@ is nil.
 If you even feel Emacs slow, please remove `window-configuration-change-hook` to
 update points as below and instead you update `M-x git-gutter` manually when needed.
 
-```elisp
+```lisp
 (setq git-gutter:update-threshold 2)
 
 (setq git-gutter:update-hooks '(after-save-hook after-revert-hook))
@@ -218,7 +218,7 @@ If you use `global-git-gutter-mode`, you may want some modes to disable
 `git-gutter-mode`. You can make it by setting `git-gutter:disabled-modes`
 to `non-nil`.
 
-```elisp
+```lisp
 ;; inactivate git-gutter-mode in asm-mode and image-mode
 (setq git-gutter:disabled-modes '(asm-mode image-mode))
 ```
@@ -232,7 +232,7 @@ Default is `nil`.
 `git-gutter.el` can view unchanged information by setting `git-gutter:unchanged-sign`.
 Like following.
 
-```elisp
+```lisp
 (setq git-gutter:unchanged-sign " ")
 (set-face-background 'git-gutter:unchanged "yellow")
 ```
@@ -246,7 +246,7 @@ Default value of `git-gutter:unchanged-sign` is `nil`.
 `git-gutter.el` can display an additional separator character at the right of the changed
 signs. This is mostly useful when running emacs in a console.
 
-```elisp
+```lisp
 (setq git-gutter:separator-sign "|")
 (set-face-foreground 'git-gutter:separator "yellow")
 ```
@@ -266,14 +266,14 @@ Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.
 
 You can pass `git diff` option to set `git-gutter:diff-option`.
 
-```elisp
+```lisp
 ;; ignore all spaces
 (setq git-gutter:diff-option "-w")
 ```
 
 ### Log/Message Level
 
-```elisp
+```lisp
 ;; Don't need log/message.
 (setq git-gutter:verbosity 0)
 ```

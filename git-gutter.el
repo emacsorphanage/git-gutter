@@ -536,11 +536,13 @@ character for signs of changes"
                         (git-gutter:search-here-diffinfo git-gutter:diffinfos))
     (save-selected-window
       (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
+        (view-mode -1)
         (erase-buffer)
         (insert (plist-get it :content))
         (insert "\n")
         (goto-char (point-min))
         (diff-mode)
+        (view-mode +1)
         (pop-to-buffer (current-buffer))))))
 
 ;;;###autoload

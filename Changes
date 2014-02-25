@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.54 2014/02/26 syohex
+   - Fix invalid remove-hook
+     Thanks m2ym!!
+
 Revision 0.53 2014/01/16 syohex
    - Enable view-mode in popup buffer
 

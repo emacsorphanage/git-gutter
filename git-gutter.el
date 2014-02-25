@@ -373,7 +373,7 @@ character for signs of changes"
       (if (eq hook 'window-configuration-change-hook)
           (remove-hook hook 'git-gutter:from-wcc-hook t)
         (remove-hook hook 'git-gutter t)))
-    (remove-hook 'kill-buffer-hook t)
+    (remove-hook 'kill-buffer-hook 'git-gutter:at-kill t)
     (git-gutter:clear)))
 
 ;;;###autoload

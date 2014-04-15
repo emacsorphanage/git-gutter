@@ -301,7 +301,7 @@ character for signs of changes"
                      git-gutter:added-sign
                      git-gutter:deleted-sign)))
     (when git-gutter:unchanged-sign
-      (add-to-list 'signs git-gutter:unchanged-sign))
+      (push git-gutter:unchanged-sign signs))
     (+ (apply 'max (mapcar 'git-gutter:sign-width signs))
        (git-gutter:sign-width git-gutter:separator-sign))))
 

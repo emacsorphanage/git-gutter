@@ -5,6 +5,7 @@
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
 ;; Version: 0.55
+;; Package-Requires: ((cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,9 +27,9 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl)
   (defvar global-git-gutter-mode))
 
+(require 'cl-lib)
 (require 'tramp)
 
 (defgroup git-gutter nil
@@ -222,22 +223,22 @@ character for signs of changes"
       (with-temp-buffer
         (when (zerop (git-gutter:execute-command cmd file))
           (goto-char (point-min))
-          (loop while (re-search-forward regexp nil t)
-                for orig-line = (string-to-number (match-string 1))
-                for new-line  = (string-to-number (match-string 3))
-                for orig-changes = (git-gutter:changes-to-number (match-string 2))
-                for new-changes = (git-gutter:changes-to-number (match-string 4))
-                for type = (cond ((zerop orig-changes) 'added)
-                                 ((zerop new-changes) 'deleted)
-                                 (t 'modified))
-                for end-line = (if (eq type 'deleted)
-                                   new-line
-                                 (1- (+ new-line new-changes)))
-                for content = (git-gutter:diff-content)
-                collect
-                (let ((start (if (zerop new-line) 1 new-line))
-                      (end (if (zerop end-line) 1 end-line)))
-                  (git-gutter:make-diffinfo type content start end))))))))
+          (cl-loop while (re-search-forward regexp nil t)
+                   for orig-line = (string-to-number (match-string 1))
+                   for new-line  = (string-to-number (match-string 3))
+                   for orig-changes = (git-gutter:changes-to-number (match-string 2))
+                   for new-changes = (git-gutter:changes-to-number (match-string 4))
+                   for type = (cond ((zerop orig-changes) 'added)
+                                    ((zerop new-changes) 'deleted)
+                                    (t 'modified))
+                   for end-line = (if (eq type 'deleted)
+                                      new-line
+                                    (1- (+ new-line new-changes)))
+                   for content = (git-gutter:diff-content)
+                   collect
+                   (let ((start (if (zerop new-line) 1 new-line))
+                         (end (if (zerop end-line) 1 end-line)))
+                     (git-gutter:make-diffinfo type content start end))))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -253,13 +254,13 @@ character for signs of changes"
     (propertize " " 'display `((margin left-margin) ,gutter-sep))))
 
 (defsubst git-gutter:select-face (type)
-  (case type
+  (cl-case type
     (added 'git-gutter:added)
     (modified 'git-gutter:modified)
     (deleted 'git-gutter:deleted)))
 
 (defsubst git-gutter:select-sign (type)
-  (case type
+  (cl-case type
     (added git-gutter:added-sign)
     (modified git-gutter:modified-sign)
     (deleted git-gutter:deleted-sign)))
@@ -286,14 +287,14 @@ character for signs of changes"
          (end-line (plist-get diffinfo :end-line))
          (type (plist-get diffinfo :type))
          (sign (git-gutter:propertized-sign type)))
-    (case type
+    (cl-case type
       ((modified added) (git-gutter:view-region sign start-line end-line))
       (deleted (git-gutter:view-at-pos
                 sign (git-gutter:line-to-pos start-line))))))
 
 (defun git-gutter:sign-width (sign)
-  (loop for s across sign
-        sum (char-width s)))
+  (cl-loop for s across sign
+           sum (char-width s)))
 
 (defun git-gutter:longest-sign-width ()
   (let ((signs (list git-gutter:modified-sign
@@ -422,31 +423,31 @@ character for signs of changes"
     (funcall git-gutter:view-diff-function diffinfos)))
 
 (defun git-gutter:search-near-diff-index (diffinfos is-reverse)
-  (loop with current-line = (line-number-at-pos)
-        with cmp-fn = (if is-reverse '> '<)
-        for diffinfo in (if is-reverse (reverse diffinfos) diffinfos)
-        for index = 0 then (1+ index)
-        for start-line = (plist-get diffinfo :start-line)
-        when (funcall cmp-fn current-line start-line)
-        return (if is-reverse
-                   (1- (- (length diffinfos) index))
-                 index)))
+  (cl-loop with current-line = (line-number-at-pos)
+           with cmp-fn = (if is-reverse '> '<)
+           for diffinfo in (if is-reverse (reverse diffinfos) diffinfos)
+           for index = 0 then (1+ index)
+           for start-line = (plist-get diffinfo :start-line)
+           when (funcall cmp-fn current-line start-line)
+           return (if is-reverse
+                      (1- (- (length diffinfos) index))
+                    index)))
 
 (defun git-gutter:search-here-diffinfo (diffinfos)
-  (loop with current-line = (line-number-at-pos)
-        for diffinfo in diffinfos
-        for start = (plist-get diffinfo :start-line)
-        for end   = (or (plist-get diffinfo :end-line) (1+ start))
-        when (and (>= current-line start) (<= current-line end))
-        return diffinfo))
+  (cl-loop with current-line = (line-number-at-pos)
+           for diffinfo in diffinfos
+           for start = (plist-get diffinfo :start-line)
+           for end   = (or (plist-get diffinfo :end-line) (1+ start))
+           when (and (>= current-line start) (<= current-line end))
+           return diffinfo))
 
 (defun git-gutter:collect-deleted-line (str)
   (with-temp-buffer
     (insert str)
     (goto-char (point-min))
-    (loop while (re-search-forward "^-\\(.*?\\)$" nil t)
-          collect (match-string 1) into deleted-lines
-          finally return deleted-lines)))
+    (cl-loop while (re-search-forward "^-\\(.*?\\)$" nil t)
+             collect (match-string 1) into deleted-lines
+             finally return deleted-lines)))
 
 (defun git-gutter:delete-added-lines (start-line end-line)
   (forward-line (1- start-line))
@@ -467,7 +468,7 @@ character for signs of changes"
     (let ((start-line (plist-get diffinfo :start-line))
           (end-line (plist-get diffinfo :end-line))
           (content (plist-get diffinfo :content)))
-      (case (plist-get diffinfo :type)
+      (cl-case (plist-get diffinfo :type)
         (added (git-gutter:delete-added-lines start-line end-line))
         (deleted (when (git-gutter:delete-from-first-line-p start-line end-line)
                    (forward-line start-line))
@@ -600,15 +601,15 @@ character for signs of changes"
       (replace-regexp-in-string (concat "\\`" dir) "" curfile))))
 
 (defun git-gutter:update-indirect-buffers (orig-file)
-  (loop with diffinfos = git-gutter:diffinfos
-        for win in (window-list)
-        for buf  = (window-buffer win)
-        for base = (buffer-base-buffer buf)
-        when (and base (string= (buffer-file-name base) orig-file))
-        do
-        (with-current-buffer buf
-          (git-gutter:clear)
-          (git-gutter:update-diffinfo diffinfos))))
+  (cl-loop with diffinfos = git-gutter:diffinfos
+           for win in (window-list)
+           for buf  = (window-buffer win)
+           for base = (buffer-base-buffer buf)
+           when (and base (string= (buffer-file-name base) orig-file))
+           do
+           (with-current-buffer buf
+             (git-gutter:clear)
+             (git-gutter:update-diffinfo diffinfos))))
 
 ;;;###autoload
 (defun git-gutter ()

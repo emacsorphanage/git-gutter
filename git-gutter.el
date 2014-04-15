@@ -592,12 +592,12 @@ character for signs of changes"
 
 (defun git-gutter:file-path (dir curfile)
   (if (not (file-remote-p curfile))
-      ; Cygwin can't handle Windows absolute path(Case: Mingw Emacs + Cygwin git)
+      ;; Cygwin can't handle Windows absolute path(Case: Mingw Emacs + Cygwin git)
       (if (memq system-type '(windows-nt ms-dos))
           (file-relative-name curfile dir)
         curfile)
     (let ((file (aref (tramp-dissect-file-name curfile) 3)))
-      (replace-regexp-in-string (concat "\\`" dir) "" curfile))))
+      (replace-regexp-in-string (concat "\\`" dir) "" file))))
 
 (defun git-gutter:update-indirect-buffers (orig-file)
   (cl-loop with diffinfos = git-gutter:diffinfos

@@ -217,17 +217,16 @@ character for signs of changes"
 
 (defun git-gutter:diff (curfile)
   (let ((cmd (git-gutter:diff-command curfile))
-        (regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@")
+        (regexp "^@@ -\\(?:[0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@")
         (file (git-gutter:base-file))) ;; for tramp
     (when file
       (with-temp-buffer
         (when (zerop (git-gutter:execute-command cmd file))
           (goto-char (point-min))
           (cl-loop while (re-search-forward regexp nil t)
-                   for orig-line = (string-to-number (match-string 1))
-                   for new-line  = (string-to-number (match-string 3))
-                   for orig-changes = (git-gutter:changes-to-number (match-string 2))
-                   for new-changes = (git-gutter:changes-to-number (match-string 4))
+                   for new-line  = (string-to-number (match-string 2))
+                   for orig-changes = (git-gutter:changes-to-number (match-string 1))
+                   for new-changes = (git-gutter:changes-to-number (match-string 3))
                    for type = (cond ((zerop orig-changes) 'added)
                                     ((zerop new-changes) 'deleted)
                                     (t 'modified))

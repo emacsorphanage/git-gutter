@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.56 2014/04/16 syohex
+   - Switch to cl-lib
+   - Fix some bugs
+
 Revision 0.55 2014/03/23 syohex
    - Query before staging hunk
 

@@ -8,7 +8,7 @@ env:
     - CASK=$HOME/.cask/bin/cask
 matrix:
   allow_failures:
-    - env: EMACS=emacs-snapshot
+    - env: EMACS=emacs
 before_install:
   - sudo add-apt-repository -y ppa:cassou/emacs
   - sudo apt-get update -qq

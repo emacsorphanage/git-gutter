@@ -541,6 +541,7 @@ character for signs of changes"
     (save-selected-window
       (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
         (view-mode -1)
+        (setq buffer-read-only nil)
         (erase-buffer)
         (insert (plist-get it :content))
         (insert "\n")

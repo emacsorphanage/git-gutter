@@ -392,7 +392,7 @@ character for signs of changes"
   (lambda ()
     (when (and (buffer-file-name)
                (not (memq major-mode git-gutter:disabled-modes)))
-      (git-gutter-mode 1)))
+      (git-gutter-mode 'global)))
   :group 'git-gutter)
 
 (defsubst git-gutter:show-gutter-p (diffinfos)

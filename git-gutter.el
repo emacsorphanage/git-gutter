@@ -155,7 +155,6 @@ character for signs of changes"
 (defvar git-gutter:toggle-flag t)
 (defvar git-gutter:force nil)
 (defvar git-gutter:diffinfos nil)
-(defvar git-gutter:base-file-name nil)
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
 
@@ -341,7 +340,7 @@ character for signs of changes"
     (set-window-margins curwin width (cdr (window-margins curwin)))))
 
 (defsubst git-gutter:check-file-and-directory ()
-  (and (or git-gutter:base-file-name (git-gutter:base-file))
+  (and (git-gutter:base-file)
        default-directory (file-directory-p default-directory)))
 
 (defsubst git-gutter:window-margin ()
@@ -363,26 +362,24 @@ character for signs of changes"
   :global     nil
   :lighter    git-gutter:lighter
   (if git-gutter-mode
-      (let ((basefile (git-gutter:base-file)))
-        (if (and (git-gutter:check-file-and-directory)
-                 (git-gutter:in-git-repository-p basefile))
-            (progn
-              (when git-gutter:init-function
-                (funcall git-gutter:init-function))
-              (make-local-variable 'git-gutter:enabled)
-              (set (make-local-variable 'git-gutter:has-indirect-buffers) nil)
-              (set (make-local-variable 'git-gutter:base-file-name) basefile)
-              (set (make-local-variable 'git-gutter:toggle-flag) t)
-              (make-local-variable 'git-gutter:diffinfos)
-              (add-hook 'pre-command-hook 'git-gutter:pre-command-hook nil t)
-              (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
-              (dolist (hook git-gutter:update-hooks)
-                (add-hook hook 'git-gutter nil t))
-              (unless global-git-gutter-mode
-                (git-gutter)))
-          (when (> git-gutter:verbosity 2)
-            (message "Here is not Git work tree"))
-          (git-gutter-mode -1)))
+      (if (and (git-gutter:check-file-and-directory)
+               (git-gutter:in-git-repository-p (git-gutter:base-file)))
+          (progn
+            (when git-gutter:init-function
+              (funcall git-gutter:init-function))
+            (make-local-variable 'git-gutter:enabled)
+            (set (make-local-variable 'git-gutter:has-indirect-buffers) nil)
+            (set (make-local-variable 'git-gutter:toggle-flag) t)
+            (make-local-variable 'git-gutter:diffinfos)
+            (add-hook 'pre-command-hook 'git-gutter:pre-command-hook nil t)
+            (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
+            (dolist (hook git-gutter:update-hooks)
+              (add-hook hook 'git-gutter nil t))
+            (unless (eq git-gutter-mode 'global)
+              (git-gutter)))
+        (when (> git-gutter:verbosity 2)
+          (message "Here is not Git work tree"))
+        (git-gutter-mode -1))
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook t)
     (remove-hook 'post-command-hook 'git-gutter:post-command-hook t)
     (dolist (hook git-gutter:update-hooks)
@@ -503,9 +500,8 @@ character for signs of changes"
         (save-buffer))
       (delete-window (git-gutter:popup-buffer-window)))))
 
-(defun git-gutter:current-file-path ()
-  (let ((file (or git-gutter:base-file-name (git-gutter:base-file))))
-    (git-gutter:file-path default-directory file)))
+(defsubst git-gutter:current-file-path ()
+  (git-gutter:file-path default-directory (git-gutter:base-file)))
 
 (defun git-gutter:diff-header-index-info (path)
   (with-temp-buffer
@@ -633,7 +629,7 @@ character for signs of changes"
   (interactive)
   (git-gutter:clear)
   (when (or git-gutter:force git-gutter:toggle-flag)
-    (let ((file (or git-gutter:base-file-name (git-gutter:base-file))))
+    (let ((file (git-gutter:base-file)))
       (when (and file (file-exists-p file))
         (git-gutter:awhen (git-gutter:root-directory file)
           (let* ((default-directory (git-gutter:default-directory it file))

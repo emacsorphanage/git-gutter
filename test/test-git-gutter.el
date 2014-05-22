@@ -1,6 +1,6 @@
 ;;; test-git-gutter.el --- Test for git-gutter.el
 
-;; Copyright (C) 2013 by Syohei YOSHIDA
+;; Copyright (C) 2014 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 
@@ -20,9 +20,6 @@
 ;;; Commentary:
 
 ;;; Code:
-
-(eval-when-compile
-  (require 'cl))
 
 (require 'ert)
 (require 'git-gutter)
@@ -55,18 +52,18 @@
 
 (ert-deftest git-gutter:select-face ()
   "helper function `git-gutter:select-face'"
-  (loop for (type . expected) in '((added . git-gutter:added)
-                                   (modified . git-gutter:modified)
-                                   (deleted . git-gutter:deleted))
-        do
-        (should (eq (git-gutter:select-face type) expected)))
+  (cl-loop for (type . expected) in '((added . git-gutter:added)
+                                      (modified . git-gutter:modified)
+                                      (deleted . git-gutter:deleted))
+           do
+           (should (eq (git-gutter:select-face type) expected)))
   (should-not (git-gutter:select-face 'not-found)))
 
 (ert-deftest git-gutter:select-sign ()
   "helper function `git-gutter:select-sign'"
-  (loop for (type . expected) in '((added . "+") (modified . "=") (deleted . "-"))
-        do
-        (should (string= (git-gutter:select-sign type) expected)))
+  (cl-loop for (type . expected) in '((added . "+") (modified . "=") (deleted . "-"))
+           do
+           (should (string= (git-gutter:select-sign type) expected)))
   (should-not (git-gutter:select-sign 'not-found)))
 
 (ert-deftest git-gutter:propertized-sign ()
@@ -82,15 +79,15 @@
   "helper function `git-gutter:make-diffinfo'"
   (let ((diffinfo1 (git-gutter:make-diffinfo 'added "diff1" 10 20))
         (diffinfo2 (git-gutter:make-diffinfo 'deleted "diff2" 5 nil)))
-    (loop for (prop . expected) in '((:type . added)
-                                     (:start-line . 10) (:end-line . 20))
-          do
-          (should (eql (plist-get diffinfo1 prop) expected)))
+    (cl-loop for (prop . expected) in '((:type . added)
+                                        (:start-line . 10) (:end-line . 20))
+             do
+             (should (eql (plist-get diffinfo1 prop) expected)))
     (should (string= (plist-get diffinfo1 :content) "diff1"))
-    (loop for (prop . expected) in '((:type . deleted)
-                                     (:start-line . 5) (:end-line . nil))
-          do
-          (should (eql (plist-get diffinfo2 prop) expected)))
+    (cl-loop for (prop . expected) in '((:type . deleted)
+                                        (:start-line . 5) (:end-line . nil))
+             do
+             (should (eql (plist-get diffinfo2 prop) expected)))
     (should (string= (plist-get diffinfo2 :content) "diff2"))))
 
 (ert-deftest git-gutter:in-git-repository-p ()
@@ -179,7 +176,7 @@ bar
   "Case git-gutter-mode disabled"
   (with-temp-buffer
     (git-gutter-mode 1)
-    (should (eq git-gutter-mode nil)))
+    (should-not git-gutter-mode))
 
   (let ((default-directory nil))
     (git-gutter-mode 1)

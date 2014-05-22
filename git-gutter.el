@@ -26,9 +26,6 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (defvar global-git-gutter-mode))
-
 (require 'cl-lib)
 (require 'tramp)
 

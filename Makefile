@@ -9,7 +9,7 @@ ELPA_DIR = \
 
 test: elpa
 	$(CASK) exec $(EMACS) -Q -batch $(LOADPATH) \
-		-l test-git-gutter.el -f ert-run-tests-batch-and-exit
+		-l test/test-git-gutter.el -f ert-run-tests-batch-and-exit
 
 elpa: $(ELPA_DIR)
 $(ELPA_DIR): Cask

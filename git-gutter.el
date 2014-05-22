@@ -648,6 +648,10 @@ character for signs of changes"
   (when (and git-gutter-mode (not (buffer-base-buffer)))
     (setq git-gutter:has-indirect-buffers t)))
 
+(defadvice quit-window (after git-gutter:quit-window activate)
+  (when git-gutter-mode
+    (git-gutter)))
+
 ;;;###autoload
 (defun git-gutter:clear ()
   "clear diff information in gutter"

@@ -15,7 +15,7 @@ which is a plugin of Sublime Text.
 
 ## Requirements
 
-* Emacs 23 or higher
+* Emacs 24 or higher
 * [Git](http://git-scm.com/) 1.7.0 or higher
 
 

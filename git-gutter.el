@@ -241,7 +241,8 @@ character for signs of changes"
            "git" "--no-pager" "diff" args)))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
-  (let ((file (git-gutter:base-file))) ;; for tramp
+  (let ((file (git-gutter:base-file)) ;; for tramp
+        (curbuf (current-buffer)))
     (when (and file (not (git-gutter:diff-process-live-p proc-buf)))
       (when (buffer-live-p proc-buf)
         (git-gutter:clear-buffer proc-buf))
@@ -251,7 +252,8 @@ character for signs of changes"
         (set-process-sentinel
          process
          (lambda (proc _event)
-           (when (eq (process-status proc) 'exit)
+           (when (and (eq (process-status proc) 'exit)
+                      (eq curbuf (current-buffer)))
              (let ((diffinfos (git-gutter:process-diff-output proc)))
                (git-gutter:update-diffinfo diffinfos)
                (when git-gutter:has-indirect-buffers

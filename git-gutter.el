@@ -226,6 +226,13 @@ character for signs of changes"
   (with-current-buffer buf
     (erase-buffer)))
 
+(defsubst git-gutter:window-margin ()
+  (or git-gutter:window-width (git-gutter:longest-sign-width)))
+
+(defun git-gutter:set-window-margin (width)
+  (let ((curwin (get-buffer-window)))
+    (set-window-margins curwin width (cdr (window-margins curwin)))))
+
 (defun git-gutter:start-git-diff-process (file proc-buf)
   (let ((args (list "--no-color" "--no-ext-diff" "--relative" "-U0" file)))
     (unless (string= git-gutter:diff-option "")
@@ -238,6 +245,7 @@ character for signs of changes"
     (when (and file (not (git-gutter:diff-process-live-p proc-buf)))
       (when (buffer-live-p proc-buf)
         (git-gutter:clear-buffer proc-buf))
+      (git-gutter:set-window-margin (git-gutter:window-margin))
       (let ((process (git-gutter:start-git-diff-process curfile proc-buf)))
         (set-process-query-on-exit-flag process nil)
         (set-process-sentinel
@@ -326,16 +334,9 @@ character for signs of changes"
         (git-gutter:view-at-pos sign (point))
         (forward-line 1)))))
 
-(defun git-gutter:set-window-margin (width)
-  (let ((curwin (get-buffer-window)))
-    (set-window-margins curwin width (cdr (window-margins curwin)))))
-
 (defsubst git-gutter:check-file-and-directory ()
   (and (git-gutter:base-file)
        default-directory (file-directory-p default-directory)))
-
-(defsubst git-gutter:window-margin ()
-  (or git-gutter:window-width (git-gutter:longest-sign-width)))
 
 (defun git-gutter:pre-command-hook ()
   (unless (memq this-command git-gutter:ignore-commands)
@@ -343,7 +344,6 @@ character for signs of changes"
 
 (defun git-gutter:post-command-hook ()
   (when (memq git-gutter:real-this-command git-gutter:update-commands)
-    (git-gutter:set-window-margin (git-gutter:window-margin))
     (git-gutter)))
 
 (defsubst git-gutter:diff-process-buffer (curfile)

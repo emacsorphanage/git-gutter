@@ -87,6 +87,7 @@ Revert current hunk
 #### `git-gutter`
 
 Show changes from last commit or Update change information.
+Please execute this command if diff information is not be updated.
 
 #### `git-gutter:clear`
 

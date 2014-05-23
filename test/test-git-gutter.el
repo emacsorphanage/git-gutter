@@ -27,21 +27,6 @@
 ;; suppress log message
 (setq git-gutter:verbosity 0)
 
-(ert-deftest git-gutter:root-directory ()
-  "helper function `git-gutter:root-directory'"
-  (when (file-directory-p ".git") ;; https://github.com/syohex/emacs-git-gutter/issues/36
-    (let ((expected (expand-file-name default-directory))
-          (got (git-gutter:root-directory)))
-      (should (string= expected got)))
-
-    ;; Files in .git/ directory are not version-controled
-    (let ((default-directory (concat default-directory ".git/")))
-      (should-not (git-gutter:root-directory))))
-
-  ;; temporary directory maybe be version-controled
-  (let ((default-directory temporary-file-directory))
-    (should-not (git-gutter:root-directory))))
-
 (ert-deftest git-gutter:sign-width ()
   "helper function `git-gutter:sign-width'"
   (let ((got1 (git-gutter:sign-width "a"))
@@ -145,13 +130,6 @@ bar
   (git-gutter:set-window-margin 4)
   (let ((got (car (window-margins))))
     (should (= got 4))))
-
-(ert-deftest git-gutter:file-path ()
-  "Should return file path which is passed to 'git diff'"
-  (let* ((file (concat default-directory "test-git-gutter.el"))
-         (expected file)
-         (got (git-gutter:file-path default-directory file)))
-    (should (string= got expected))))
 
 (ert-deftest git-gutter-mode-success ()
   "Case git-gutter-mode enabled"

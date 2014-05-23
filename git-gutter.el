@@ -27,7 +27,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(declare-function tramp-dissect-file-name "tramp")
 
 (defgroup git-gutter nil
   "Port GitGutter"
@@ -174,14 +173,6 @@ character for signs of changes"
       (string= "true" (buffer-substring-no-properties
                        (point) (line-end-position))))))
 
-(defun git-gutter:root-directory ()
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command t "rev-parse" "--show-toplevel"))
-      (goto-char (point-min))
-      (let ((root (buffer-substring-no-properties (point) (line-end-position))))
-        (unless (string= root "")
-          (file-name-as-directory root))))))
-
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
       1
@@ -233,7 +224,7 @@ character for signs of changes"
 (defsubst git-gutter:start-git-diff-process (file proc-buf)
   (start-file-process "git-gutter" proc-buf
                       "git" "--no-pager" "diff" "--no-color" "--no-ext-diff"
-                      "-U0" file))
+                      "--relative" "-U0" file))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (let ((file (git-gutter:base-file))) ;; for tramp
@@ -494,19 +485,16 @@ character for signs of changes"
         (save-buffer))
       (delete-window (git-gutter:popup-buffer-window)))))
 
-(defsubst git-gutter:current-file-path ()
-  (git-gutter:file-path default-directory (git-gutter:base-file)))
-
 (defun git-gutter:diff-header-index-info (path)
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command t "diff" path))
+    (when (zerop (git-gutter:execute-command t "diff" "--relative" path))
       (goto-char (point-min))
       (forward-line 4)
       (buffer-substring-no-properties (point-min) (point)))))
 
 (defun git-gutter:hunk-diff-header ()
-  (git-gutter:awhen (git-gutter:current-file-path)
-    (git-gutter:diff-header-index-info it)))
+  (git-gutter:awhen (git-gutter:base-file)
+    (git-gutter:diff-header-index-info (file-name-nondirectory it))))
 
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (plist-get diff-info :content))
@@ -583,24 +571,6 @@ character for signs of changes"
 (defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)
 (defalias 'git-gutter:popup-diff 'git-gutter:popup-hunk)
 
-(defun git-gutter:default-directory (dir curfile)
-  (if (not (file-remote-p curfile))
-      dir
-    (let* ((vec (tramp-dissect-file-name curfile))
-           (method (aref vec 0))
-           (user (aref vec 1))
-           (host (aref vec 2)))
-      (format "/%s:%s%s:%s" method (if user (concat user "@") "") host dir))))
-
-(defun git-gutter:file-path (dir curfile)
-  (if (not (file-remote-p curfile))
-      ;; Cygwin can't handle Windows absolute path(Case: Mingw Emacs + Cygwin git)
-      (if (memq system-type '(windows-nt ms-dos))
-          (file-relative-name curfile dir)
-        curfile)
-    (let ((file (aref (tramp-dissect-file-name curfile) 3)))
-      (replace-regexp-in-string (concat "\\`" dir) "" file))))
-
 (defun git-gutter:update-indirect-buffers (orig-file)
   (cl-loop with diffinfos = git-gutter:diffinfos
            for win in (window-list)
@@ -623,11 +593,9 @@ character for signs of changes"
   (when (or git-gutter:force git-gutter:toggle-flag)
     (let ((file (git-gutter:base-file)))
       (when (and file (file-exists-p file))
-        (git-gutter:awhen (git-gutter:root-directory)
-          (let* ((default-directory (git-gutter:default-directory it file))
-                 (curfile (git-gutter:file-path default-directory file))
-                 (proc-buf (git-gutter:diff-process-buffer curfile)))
-            (git-gutter:start-diff-process curfile proc-buf)))))))
+        (let ((basename (file-name-nondirectory file))
+              (proc-buf (git-gutter:diff-process-buffer file)))
+          (git-gutter:start-diff-process basename proc-buf))))))
 
 (defadvice make-indirect-buffer (before git-gutter:has-indirect-buffers activate)
   (when (and git-gutter-mode (not (buffer-base-buffer)))

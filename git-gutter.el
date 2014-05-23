@@ -27,7 +27,7 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'tramp)
+(declare-function tramp-dissect-file-name "tramp")
 
 (defgroup git-gutter nil
   "Port GitGutter"
@@ -164,21 +164,19 @@ character for signs of changes"
   `(let ((it ,test))
      (when it ,@body)))
 
-(defun git-gutter:execute-command (file output &rest args)
-  (if (not (file-remote-p file))
-      (apply 'call-process "git" nil output nil args)
-    (apply 'process-file "git" nil output nil args)))
+(defsubst git-gutter:execute-command (output &rest args)
+  (apply 'process-file "git" nil output nil args))
 
-(defun git-gutter:in-git-repository-p (file)
+(defun git-gutter:in-git-repository-p ()
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command file t "rev-parse" "--is-inside-work-tree"))
+    (when (zerop (git-gutter:execute-command t "rev-parse" "--is-inside-work-tree"))
       (goto-char (point-min))
       (string= "true" (buffer-substring-no-properties
                        (point) (line-end-position))))))
 
-(defun git-gutter:root-directory (file)
+(defun git-gutter:root-directory ()
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command file t "rev-parse" "--show-toplevel"))
+    (when (zerop (git-gutter:execute-command t "rev-parse" "--show-toplevel"))
       (goto-char (point-min))
       (let ((root (buffer-substring-no-properties (point) (line-end-position))))
         (unless (string= root "")
@@ -233,9 +231,9 @@ character for signs of changes"
     (erase-buffer)))
 
 (defsubst git-gutter:start-git-diff-process (file proc-buf)
-  (start-process "git-gutter" proc-buf
-                 "git" "--no-pager" "diff" "--no-color" "--no-ext-diff"
-                 "-U0" file))
+  (start-file-process "git-gutter" proc-buf
+                      "git" "--no-pager" "diff" "--no-color" "--no-ext-diff"
+                      "-U0" file))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (let ((file (git-gutter:base-file))) ;; for tramp
@@ -359,7 +357,7 @@ character for signs of changes"
   :lighter    git-gutter:lighter
   (if git-gutter-mode
       (if (and (git-gutter:check-file-and-directory)
-               (git-gutter:in-git-repository-p (git-gutter:base-file)))
+               (git-gutter:in-git-repository-p))
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
@@ -501,7 +499,7 @@ character for signs of changes"
 
 (defun git-gutter:diff-header-index-info (path)
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command path t "diff" path))
+    (when (zerop (git-gutter:execute-command t "diff" path))
       (goto-char (point-min))
       (forward-line 4)
       (buffer-substring-no-properties (point-min) (point)))))
@@ -519,8 +517,7 @@ character for signs of changes"
         (insert header)
         (insert content)
         (insert "\n"))
-      (unless (zerop (git-gutter:execute-command
-                      patch nil "apply" "--unidiff-zero" "--cached" patch))
+      (unless (zerop (git-gutter:execute-command nil "apply" "--unidiff-zero" "--cached" patch))
         (message "Failed: stating this hunk"))
       (delete-file patch))))
 
@@ -626,7 +623,7 @@ character for signs of changes"
   (when (or git-gutter:force git-gutter:toggle-flag)
     (let ((file (git-gutter:base-file)))
       (when (and file (file-exists-p file))
-        (git-gutter:awhen (git-gutter:root-directory file)
+        (git-gutter:awhen (git-gutter:root-directory)
           (let* ((default-directory (git-gutter:default-directory it file))
                  (curfile (git-gutter:file-path default-directory file))
                  (proc-buf (git-gutter:diff-process-buffer curfile)))

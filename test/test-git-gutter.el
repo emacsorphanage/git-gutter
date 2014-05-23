@@ -29,19 +29,18 @@
 
 (ert-deftest git-gutter:root-directory ()
   "helper function `git-gutter:root-directory'"
-  (let ((file (concat default-directory "test-git-gutter.el")))
-    (when (file-directory-p ".git") ;; https://github.com/syohex/emacs-git-gutter/issues/36
-      (let ((expected (expand-file-name default-directory))
-            (got (git-gutter:root-directory file)))
-        (should (string= expected got)))
+  (when (file-directory-p ".git") ;; https://github.com/syohex/emacs-git-gutter/issues/36
+    (let ((expected (expand-file-name default-directory))
+          (got (git-gutter:root-directory)))
+      (should (string= expected got)))
 
-      ;; Files in .git/ directory are not version-controled
-      (let ((default-directory (concat default-directory ".git/")))
-        (should-not (git-gutter:root-directory file))))
+    ;; Files in .git/ directory are not version-controled
+    (let ((default-directory (concat default-directory ".git/")))
+      (should-not (git-gutter:root-directory))))
 
-    ;; temporary directory maybe be version-controled
-    (let ((default-directory temporary-file-directory))
-      (should-not (git-gutter:root-directory file)))))
+  ;; temporary directory maybe be version-controled
+  (let ((default-directory temporary-file-directory))
+    (should-not (git-gutter:root-directory))))
 
 (ert-deftest git-gutter:sign-width ()
   "helper function `git-gutter:sign-width'"
@@ -94,14 +93,13 @@
   "Should return nil if default-directory does not exist"
 
   ;; In git repository, but here is '.git'
-  (let ((file (concat default-directory "test-git-gutter.el")))
-    (when (file-directory-p ".git") ;; #36
-      (let ((buf (find-file-noselect ".git/config")))
-        (with-current-buffer buf
-          (should-not (git-gutter:in-git-repository-p file)))))
+  (when (file-directory-p ".git") ;; #36
+    (let ((buf (find-file-noselect ".git/config")))
+      (with-current-buffer buf
+        (should-not (git-gutter:in-git-repository-p)))))
 
-    (let ((default-directory (file-name-directory (locate-library "git-gutter"))))
-      (should (git-gutter:in-git-repository-p file)))))
+  (let ((default-directory (file-name-directory (locate-library "git-gutter"))))
+    (should (git-gutter:in-git-repository-p))))
 
 (ert-deftest git-gutter ()
   "Should return nil if buffer does not related with file or file is not existed"

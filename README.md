@@ -187,6 +187,22 @@ You can avoid this issue by adding additional space to each diff signs like belo
 ```
 
 
+### Updates hooks
+
+diff information is updated at hooks in `git-gutter:update-hooks`.
+
+```lisp
+(add-to-list 'git-gutter:update-hooks 'focus-in-hook)
+```
+
+### Updates commands
+
+diff information is updated after command in `git-gutter:update-commands` executed.
+
+```lisp
+(add-to-list 'git-gutter:update-commands 'other-window)
+```
+
 ### Disabled modes
 
 If you use `global-git-gutter-mode`, you may want some modes to disable

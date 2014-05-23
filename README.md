@@ -132,9 +132,10 @@ Toggle git-gutter
 You can change the signs and those faces.
 
 ```lisp
-(setq git-gutter:modified-sign "  ") ;; two space
-(setq git-gutter:added-sign "++")    ;; multiple character is OK
-(setq git-gutter:deleted-sign "--")
+(custom-set-variables
+ '(git-gutter:modified-sign "  ") ;; two space
+ '(git-gutter:added-sign "++")    ;; multiple character is OK
+ '(git-gutter:deleted-sign "--"))
 
 (set-face-background 'git-gutter:modified "purple") ;; background color
 (set-face-foreground 'git-gutter:added "green")
@@ -146,7 +147,8 @@ Default is " GitGutter"
 
 ```lisp
 ;; first character should be a space
-(setq git-gutter:lighter " GG")
+(custom-set-variables
+ '(git-gutter:lighter " GG"))
 ```
 
 
@@ -161,10 +163,11 @@ So you should explicitly specify window width, if you use full-width
 character.
 
 ```lisp
-(setq git-gutter:window-width 2)
-(setq git-gutter:modified-sign "☁")
-(setq git-gutter:added-sign "☀")
-(setq git-gutter:deleted-sign "☂")
+(custom-set-variables
+ '(git-gutter:window-width 2)
+ '(git-gutter:modified-sign "☁")
+ '(git-gutter:added-sign "☀")
+ '(git-gutter:deleted-sign "☂"))
 ```
 
 
@@ -177,40 +180,12 @@ it may be no problems)
 You can avoid this issue by adding additional space to each diff signs like below.
 
 ```lisp
-(setq git-gutter:added-sign "+ ")
-(setq git-gutter:deleted-sign "- ")
-(setq git-gutter:modified-sign "= ")
+(custom-set-variables
+ '(git-gutter:added-sign "+ ")
+ '(git-gutter:deleted-sign "- ")
+ '(git-gutter:modified-sign "= "))
 ```
 
-
-### If You Feel git-gutter is Slow
-
-`git-gutter.el` updates gutter at hooks below
-
-* `after-save-hook`
-* `after-revert-hook`
-* `window-configuration-change-hook`
-
-`window-configuration-change-hook` is run at buffer updated, window construction
-changed etc. But it's hook is called a lot of times and it makes Emacs slow.
-Additionally it is difficult to control(Update function is called (2 * N)
-times if you show N windows in frame).
-
-So `git-gutter.el` does not call update function within `git-gutter:update-threshold`
-second(Default is 1 second) at `window-configuration-change-hook`. Please set longer
-time if you feel slow yet. Update function is always called if `git-gutter:update-threshold`
-is nil.
-
-If you even feel Emacs slow, please remove `window-configuration-change-hook` to
-update points as below and instead you update `M-x git-gutter` manually when needed.
-
-```lisp
-(setq git-gutter:update-threshold 2)
-
-(setq git-gutter:update-hooks '(after-save-hook after-revert-hook))
-```
-
-You can also add other hook points by setting `git-gutter:update-hooks`.
 
 ### Disabled modes
 
@@ -220,7 +195,8 @@ to `non-nil`.
 
 ```lisp
 ;; inactivate git-gutter-mode in asm-mode and image-mode
-(setq git-gutter:disabled-modes '(asm-mode image-mode))
+(custom-set-variables
+ '(git-gutter:disabled-modes '(asm-mode image-mode)))
 ```
 
 Default is `nil`.
@@ -233,7 +209,8 @@ Default is `nil`.
 Like following.
 
 ```lisp
-(setq git-gutter:unchanged-sign " ")
+(custom-set-variables
+ '(git-gutter:unchanged-sign " "))
 (set-face-background 'git-gutter:unchanged "yellow")
 ```
 
@@ -247,7 +224,8 @@ Default value of `git-gutter:unchanged-sign` is `nil`.
 signs. This is mostly useful when running emacs in a console.
 
 ```lisp
-(setq git-gutter:separator-sign "|")
+(custom-set-variables
+ '(git-gutter:separator-sign "|"))
 (set-face-foreground 'git-gutter:separator "yellow")
 ```
 
@@ -259,7 +237,8 @@ Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.
 (Default is nil)
 
 ```elisp
-(setq git-gutter:hide-gutter t)
+(custom-set-variables
+ '(git-gutter:hide-gutter t))
 ```
 
 ### Pass option to 'git diff' command
@@ -268,14 +247,16 @@ You can pass `git diff` option to set `git-gutter:diff-option`.
 
 ```lisp
 ;; ignore all spaces
-(setq git-gutter:diff-option "-w")
+(custom-set-variables
+ '(git-gutter:diff-option "-w"))
 ```
 
 ### Log/Message Level
 
 ```lisp
 ;; Don't need log/message.
-(setq git-gutter:verbosity 0)
+(custom-set-variables
+ '(git-gutter:verbosity 0))
 ```
 
 Default value is 4(`0` is lowest, `4` is highest).

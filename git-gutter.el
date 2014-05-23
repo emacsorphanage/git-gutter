@@ -339,6 +339,14 @@ character for signs of changes"
     (git-gutter:set-window-margin (git-gutter:window-margin))
     (git-gutter)))
 
+(defsubst git-gutter:diff-process-buffer (curfile)
+  (get-buffer-create (concat " *git-gutter-" curfile "-*")))
+
+(defun git-gutter:kill-buffer-hook ()
+  (let ((buf (git-gutter:diff-process-buffer (git-gutter:base-file))))
+    (when (buffer-live-p buf)
+      (kill-buffer buf))))
+
 ;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
@@ -356,6 +364,7 @@ character for signs of changes"
             (set (make-local-variable 'git-gutter:has-indirect-buffers) nil)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
+            (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
             (add-hook 'pre-command-hook 'git-gutter:pre-command-hook)
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
             (dolist (hook git-gutter:update-hooks)
@@ -365,6 +374,7 @@ character for signs of changes"
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))
+    (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)
     (remove-hook 'post-command-hook 'git-gutter:post-command-hook t)
     (dolist (hook git-gutter:update-hooks)
@@ -581,9 +591,6 @@ character for signs of changes"
            (with-current-buffer buf
              (git-gutter:clear)
              (git-gutter:update-diffinfo diffinfos))))
-
-(defsubst git-gutter:diff-process-buffer (curfile)
-  (get-buffer-create (concat " *git-gutter-" curfile "-*")))
 
 ;;;###autoload
 (defun git-gutter ()

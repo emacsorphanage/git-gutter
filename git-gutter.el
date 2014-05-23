@@ -40,6 +40,11 @@ character for signs of changes"
   :type 'integer
   :group 'git-gutter)
 
+(defcustom git-gutter:diff-option ""
+  "Option of 'git diff'"
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:update-commands
   '(ido-switch-buffer helm-buffer-list kill-buffer ido-kill-buffer)
   "Update command when command in this list is executed"
@@ -221,10 +226,12 @@ character for signs of changes"
   (with-current-buffer buf
     (erase-buffer)))
 
-(defsubst git-gutter:start-git-diff-process (file proc-buf)
-  (start-file-process "git-gutter" proc-buf
-                      "git" "--no-pager" "diff" "--no-color" "--no-ext-diff"
-                      "--relative" "-U0" file))
+(defun git-gutter:start-git-diff-process (file proc-buf)
+  (let ((args (list "--no-color" "--no-ext-diff" "--relative" "-U0" file)))
+    (unless (string= git-gutter:diff-option "")
+      (setq args (append (split-string git-gutter:diff-option) args)))
+    (apply 'start-file-process "git-gutter" proc-buf
+           "git" "--no-pager" "diff" args)))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (let ((file (git-gutter:base-file))) ;; for tramp

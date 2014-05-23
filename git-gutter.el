@@ -54,7 +54,7 @@ character for signs of changes"
 
 (defcustom git-gutter:update-hooks
   '(after-save-hook after-revert-hook find-file-hook after-change-major-mode-hook
-    focus-in text-scale-mode-hook)
+    text-scale-mode-hook)
   "hook points of updating gutter"
   :type '(list (hook :tag "HookPoint")
                (repeat :inline t (hook :tag "HookPoint")))

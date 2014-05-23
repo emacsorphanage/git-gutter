@@ -254,11 +254,10 @@ character for signs of changes"
          (lambda (proc _event)
            (when (and (eq (process-status proc) 'exit)
                       (eq curbuf (current-buffer)))
-             (let ((diffinfos (git-gutter:process-diff-output proc)))
-               (git-gutter:update-diffinfo diffinfos)
-               (when git-gutter:has-indirect-buffers
-                 (git-gutter:update-indirect-buffers file))
-               (setq git-gutter:enabled t)))))))))
+             (git-gutter:update-diffinfo (git-gutter:process-diff-output proc))
+             (when git-gutter:has-indirect-buffers
+               (git-gutter:update-indirect-buffers file))
+             (setq git-gutter:enabled t))))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -266,11 +265,12 @@ character for signs of changes"
     (forward-line (1- line))
     (point)))
 
+(defsubst git-gutter:gutter-sperator ()
+  (when git-gutter:separator-sign
+    (propertize git-gutter:separator-sign 'face 'git-gutter:separator)))
+
 (defun git-gutter:before-string (sign)
-  (let* ((sep-sign git-gutter:separator-sign)
-         (sep (when sep-sign
-                (propertize sep-sign 'face 'git-gutter:separator)))
-         (gutter-sep (concat sign sep)))
+  (let ((gutter-sep (concat sign (git-gutter:gutter-sperator))))
     (propertize " " 'display `((margin left-margin) ,gutter-sep))))
 
 (defsubst git-gutter:select-face (type)
@@ -572,7 +572,7 @@ character for signs of changes"
            (real-index (if index
                            (let ((next (if is-reverse (1+ index) (1- index))))
                              (mod (+ arg next) len))
-                         (if is-reverse (1- (length diffinfos)) 0)))
+                         (if is-reverse (1- len) 0)))
            (diffinfo (nth real-index diffinfos)))
       (goto-char (point-min))
       (forward-line (1- (plist-get diffinfo :start-line)))

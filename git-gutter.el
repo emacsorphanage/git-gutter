@@ -430,9 +430,11 @@ character for signs of changes"
   (remove-overlays (point-min) (point-max) 'git-gutter t))
 
 (defun git-gutter:update-diffinfo (diffinfos)
-  (setq git-gutter:diffinfos diffinfos)
   (save-restriction
     (widen)
+    (when git-gutter:clear-function
+      (funcall git-gutter:clear-function))
+    (setq git-gutter:diffinfos diffinfos)
     (funcall git-gutter:view-diff-function diffinfos)))
 
 (defun git-gutter:search-near-diff-index (diffinfos is-reverse)
@@ -598,14 +600,12 @@ character for signs of changes"
            when (and base (string= (buffer-file-name base) orig-file))
            do
            (with-current-buffer buf
-             (git-gutter:clear)
              (git-gutter:update-diffinfo diffinfos))))
 
 ;;;###autoload
 (defun git-gutter ()
   "Show diff information in gutter"
   (interactive)
-  (git-gutter:clear)
   (when (or git-gutter:force git-gutter:toggle-flag)
     (let ((file (git-gutter:base-file)))
       (when (and file (file-exists-p file))

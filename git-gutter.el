@@ -429,11 +429,14 @@ character for signs of changes"
     (git-gutter:set-window-margin 0))
   (remove-overlays (point-min) (point-max) 'git-gutter t))
 
+(defsubst git-gutter:clear-gutter ()
+  (when git-gutter:clear-function
+    (funcall git-gutter:clear-function)))
+
 (defun git-gutter:update-diffinfo (diffinfos)
   (save-restriction
     (widen)
-    (when git-gutter:clear-function
-      (funcall git-gutter:clear-function))
+    (git-gutter:clear-gutter)
     (setq git-gutter:diffinfos diffinfos)
     (funcall git-gutter:view-diff-function diffinfos)))
 
@@ -631,8 +634,7 @@ character for signs of changes"
   (interactive)
   (save-restriction
     (widen)
-    (when git-gutter:clear-function
-      (funcall git-gutter:clear-function)))
+    (git-gutter:clear-gutter))
   (setq git-gutter:enabled nil
         git-gutter:diffinfos nil))
 

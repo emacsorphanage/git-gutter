@@ -532,7 +532,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:stage-hunk ()
-  "Stage this hunk like 'git add -p'"
+  "Stage this hunk like 'git add -p'."
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
     (save-window-excursion
@@ -544,7 +544,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)
-  "popup current diff hunk"
+  "Popup current diff hunk."
   (interactive)
   (git-gutter:awhen (or diffinfo
                         (git-gutter:search-here-diffinfo git-gutter:diffinfos))
@@ -627,7 +627,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:clear ()
-  "clear diff information in gutter"
+  "Clear diff information in gutter."
   (interactive)
   (save-restriction
     (widen)
@@ -638,7 +638,7 @@ character for signs of changes"
 
 ;;;###autoload
 (defun git-gutter:toggle ()
-  "toggle to show diff information"
+  "Toggle to show diff information."
   (interactive)
   (let ((git-gutter:force t))
     (if git-gutter:enabled

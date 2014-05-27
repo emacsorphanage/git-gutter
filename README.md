@@ -172,22 +172,6 @@ character.
 ```
 
 
-### For MacOSX Users
-
-`git-gutter.el` with GUI Emacs on MacOSX makes display strange.
-This issues is only GUI mode.(If you have use CUI mode(`emacs -nw`),
-it may be no problems)
-
-You can avoid this issue by adding additional space to each diff signs like below.
-
-```lisp
-(custom-set-variables
- '(git-gutter:added-sign "+ ")
- '(git-gutter:deleted-sign "- ")
- '(git-gutter:modified-sign "= "))
-```
-
-
 ### Updates hooks
 
 diff information is updated at hooks in `git-gutter:update-hooks`.

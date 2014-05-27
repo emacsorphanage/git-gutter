@@ -220,7 +220,8 @@ character for signs of changes"
                  (git-gutter:make-diffinfo type content start end))))))
 
 (defsubst git-gutter:diff-process-live-p (proc-buf)
-  (process-live-p (get-buffer-process proc-buf)))
+  (git-gutter:awhen (get-buffer-process proc-buf)
+    (process-live-p it)))
 
 (defsubst git-gutter:clear-buffer (buf)
   (with-current-buffer buf

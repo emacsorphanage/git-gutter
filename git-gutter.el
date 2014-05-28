@@ -546,6 +546,18 @@ character for signs of changes"
         (git-gutter))
       (delete-window (git-gutter:popup-buffer-window)))))
 
+(defun git-gutter:update-popuped-buffer (diffinfo)
+  (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
+    (view-mode -1)
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (insert (plist-get diffinfo :content))
+    (insert "\n")
+    (goto-char (point-min))
+    (diff-mode)
+    (view-mode +1)
+    (current-buffer)))
+
 ;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)
   "Popup current diff hunk."
@@ -553,16 +565,7 @@ character for signs of changes"
   (git-gutter:awhen (or diffinfo
                         (git-gutter:search-here-diffinfo git-gutter:diffinfos))
     (save-selected-window
-      (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
-        (view-mode -1)
-        (setq buffer-read-only nil)
-        (erase-buffer)
-        (insert (plist-get it :content))
-        (insert "\n")
-        (goto-char (point-min))
-        (diff-mode)
-        (view-mode +1)
-        (pop-to-buffer (current-buffer))))))
+      (pop-to-buffer (git-gutter:update-popuped-buffer it)))))
 
 ;;;###autoload
 (defun git-gutter:next-hunk (arg)
@@ -583,8 +586,7 @@ character for signs of changes"
       (goto-char (point-min))
       (forward-line (1- (plist-get diffinfo :start-line)))
       (when (buffer-live-p (get-buffer git-gutter:popup-buffer))
-        (save-window-excursion
-          (git-gutter:popup-hunk))))))
+        (git-gutter:update-popuped-buffer diffinfo)))))
 
 ;;;###autoload
 (defun git-gutter:previous-hunk (arg)

@@ -391,13 +391,13 @@ character for signs of changes"
       (remove-hook hook 'git-gutter t))
     (git-gutter:clear)))
 
+(defun git-gutter--turn-on ()
+  (when (and (buffer-file-name)
+             (not (memq major-mode git-gutter:disabled-modes)))
+    (git-gutter-mode 'global)))
+
 ;;;###autoload
-(define-global-minor-mode global-git-gutter-mode
-  git-gutter-mode
-  (lambda ()
-    (when (and (buffer-file-name)
-               (not (memq major-mode git-gutter:disabled-modes)))
-      (git-gutter-mode 'global)))
+(define-global-minor-mode global-git-gutter-mode git-gutter-mode git-gutter--turn-on
   :group 'git-gutter)
 
 (defsubst git-gutter:show-gutter-p (diffinfos)

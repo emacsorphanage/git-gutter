@@ -219,14 +219,6 @@ character for signs of changes"
                      (end (if (zerop end-line) 1 end-line)))
                  (git-gutter:make-diffinfo type content start end))))))
 
-(defsubst git-gutter:diff-process-live-p (proc-buf)
-  (git-gutter:awhen (get-buffer-process proc-buf)
-    (process-live-p it)))
-
-(defsubst git-gutter:clear-buffer (buf)
-  (with-current-buffer buf
-    (erase-buffer)))
-
 (defsubst git-gutter:window-margin ()
   (or git-gutter:window-width (git-gutter:longest-sign-width)))
 
@@ -242,23 +234,24 @@ character for signs of changes"
            "git" "--no-pager" "diff" args)))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
+  (git-gutter:set-window-margin (git-gutter:window-margin))
   (let ((file (git-gutter:base-file)) ;; for tramp
-        (curbuf (current-buffer)))
-    (when (and file (not (git-gutter:diff-process-live-p proc-buf)))
-      (when (buffer-live-p proc-buf)
-        (git-gutter:clear-buffer proc-buf))
-      (git-gutter:set-window-margin (git-gutter:window-margin))
-      (let ((process (git-gutter:start-git-diff-process curfile proc-buf)))
-        (set-process-query-on-exit-flag process nil)
-        (set-process-sentinel
-         process
-         (lambda (proc _event)
-           (when (and (eq (process-status proc) 'exit)
-                      (eq curbuf (current-buffer)))
-             (git-gutter:update-diffinfo (git-gutter:process-diff-output proc))
-             (when git-gutter:has-indirect-buffers
-               (git-gutter:update-indirect-buffers file))
-             (setq git-gutter:enabled t))))))))
+        (curbuf (current-buffer))
+        (process (git-gutter:start-git-diff-process curfile proc-buf)))
+    (set-process-query-on-exit-flag process nil)
+    (set-process-sentinel
+     process
+     (lambda (proc _event)
+       (when (eq (process-status proc) 'exit)
+         (setq git-gutter:enabled nil)
+         (let ((diffinfos (git-gutter:process-diff-output proc)))
+           (when (buffer-live-p curbuf)
+             (with-current-buffer curbuf
+               (git-gutter:update-diffinfo diffinfos)
+               (when git-gutter:has-indirect-buffers
+                 (git-gutter:update-indirect-buffers file))
+               (setq git-gutter:enabled t)))
+           (kill-buffer proc-buf)))))))
 
 (defun git-gutter:line-to-pos (line)
   (save-excursion
@@ -350,12 +343,12 @@ character for signs of changes"
     (git-gutter)))
 
 (defsubst git-gutter:diff-process-buffer (curfile)
-  (get-buffer-create (concat " *git-gutter-" curfile "-*")))
+  (concat " *git-gutter-" curfile "-*"))
 
 (defun git-gutter:kill-buffer-hook ()
   (let ((buf (git-gutter:diff-process-buffer (git-gutter:base-file))))
-    (when (buffer-live-p buf)
-      (kill-buffer buf))))
+    (git-gutter:awhen (get-buffer buf)
+      (kill-buffer it))))
 
 ;;;###autoload
 (define-minor-mode git-gutter-mode
@@ -379,8 +372,7 @@ character for signs of changes"
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
             (dolist (hook git-gutter:update-hooks)
               (add-hook hook 'git-gutter nil t))
-            (unless (eq git-gutter-mode 'global)
-              (git-gutter)))
+            (git-gutter))
         (when (> git-gutter:verbosity 2)
           (message "Here is not Git work tree"))
         (git-gutter-mode -1))
@@ -394,7 +386,7 @@ character for signs of changes"
 (defun git-gutter--turn-on ()
   (when (and (buffer-file-name)
              (not (memq major-mode git-gutter:disabled-modes)))
-    (git-gutter-mode 'global)))
+    (git-gutter-mode +1)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode git-gutter-mode git-gutter--turn-on
@@ -616,11 +608,11 @@ character for signs of changes"
   "Show diff information in gutter"
   (interactive)
   (when (or git-gutter:force git-gutter:toggle-flag)
-    (let ((file (git-gutter:base-file)))
-      (when (and file (file-exists-p file))
-        (let ((basename (file-name-nondirectory file))
-              (proc-buf (git-gutter:diff-process-buffer file)))
-          (git-gutter:start-diff-process basename proc-buf))))))
+    (let* ((file (git-gutter:base-file))
+           (proc-buf (git-gutter:diff-process-buffer file)))
+      (when (and file (file-exists-p file) (not (get-buffer proc-buf)))
+        (git-gutter:start-diff-process (file-name-nondirectory file)
+                                       (get-buffer-create proc-buf))))))
 
 (defadvice make-indirect-buffer (before git-gutter:has-indirect-buffers activate)
   (when (and git-gutter-mode (not (buffer-base-buffer)))
@@ -652,10 +644,11 @@ character for signs of changes"
     (if git-gutter:enabled
         (progn
           (git-gutter:clear)
-          (setq git-gutter-mode nil))
+          (setq git-gutter-mode nil
+                git-gutter:toggle-flag nil))
       (git-gutter)
-      (setq git-gutter-mode t))
-    (setq git-gutter:toggle-flag git-gutter:enabled)
+      (setq git-gutter-mode t
+            git-gutter:toggle-flag t))
     (force-mode-line-update)))
 
 (provide 'git-gutter)

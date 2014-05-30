@@ -592,11 +592,14 @@ character for signs of changes"
 (defun git-gutter:previous-hunk (arg)
   "Move to previous diff hunk"
   (interactive "p")
-  (git-gutter:next-diff (- arg)))
+  (git-gutter:next-hunk (- arg)))
 
 (defalias 'git-gutter:next-diff 'git-gutter:next-hunk)
+(make-obsolete 'git-gutter:next-diff 'git-gutter:next-hunk "0.60")
 (defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)
+(make-obsolete 'git-gutter:previous-diff 'git-gutter:previous-hunk "0.60")
 (defalias 'git-gutter:popup-diff 'git-gutter:popup-hunk)
+(make-obsolete 'git-gutter:popup-diff 'git-gutter:popup-hunk "0.60")
 
 (defun git-gutter:update-indirect-buffers (orig-file)
   (cl-loop with diffinfos = git-gutter:diffinfos

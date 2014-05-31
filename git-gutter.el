@@ -610,6 +610,8 @@ character for signs of changes"
   (when (or git-gutter:force git-gutter:toggle-flag)
     (let* ((file (git-gutter:base-file))
            (proc-buf (git-gutter:diff-process-buffer file)))
+      (when (and (called-interactively-p 'interactive) (get-buffer proc-buf))
+        (kill-buffer proc-buf))
       (when (and file (file-exists-p file) (not (get-buffer proc-buf)))
         (git-gutter:start-diff-process (file-name-nondirectory file)
                                        (get-buffer-create proc-buf))))))

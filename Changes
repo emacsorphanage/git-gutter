@@ -1,5 +1,15 @@
 Revision history for git-gutter.el
 
+Revision 0.60 2014/06/01 syohex
+   - Support asynchronous updating diff information
+   - Reduce needless updating diff information as possible
+   - Improve for readability
+   - Deprecate git-gutter:xxx-diff commands
+     Use git-gutter:xxx-hunk commands instead
+   - Improve popup command
+   - Drop Emacs 23 support
+   - Fix MacOSX display issue
+
 Revision 0.57 2014/04/19 syohex
    - Fix case use set read-only-mode to diff-mode-hook
 

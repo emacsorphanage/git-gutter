@@ -6,4 +6,6 @@
 
 (development
  (depends-on "ert")
+ (depends-on "magit")
+ (depends-on "helm")
  (depends-on "cl-lib"))

@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.61 2014/06/09 syohex
+   - Add verify process buffer is alive
+     Thanks thomasf
+
 Revision 0.60 2014/06/01 syohex
    - Support asynchronous updating diff information
    - Reduce needless updating diff information as possible

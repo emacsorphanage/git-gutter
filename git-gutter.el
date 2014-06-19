@@ -369,32 +369,31 @@ character for signs of changes"
 
 (defsubst git-gutter:linum-padding ()
   (cl-loop repeat (git-gutter:window-margin)
-           collect " " into spaces
-           finally return (apply 'concat spaces)))
+           collect " " into paddings
+           finally return (apply 'concat paddings)))
 
 (defun git-gutter:linum-prepend-spaces ()
   (save-excursion
     (goto-char (point-min))
-    (let ((spaces (git-gutter:linum-padding)))
-      (while (not (eobp))
-        (git-gutter:view-at-pos-linum spaces (point))
-        (forward-line 1)))))
+    (while (not (eobp))
+      (git-gutter:view-at-pos-linum (git-gutter:linum-padding) (point))
+      (forward-line 1))))
 
 (defun git-gutter:linum-update (diffinfos)
-  (when diffinfos
-    (git-gutter:linum-prepend-spaces)
-    (save-excursion
-      (mapc 'git-gutter:view-diff-info diffinfos))
-    (let ((linum-width (car (window-margins)))
-          (curwin (get-buffer-window)))
-      (set-window-margins curwin (+ linum-width (git-gutter:window-margin))
-                          (cdr (window-margins curwin))))))
+  (git-gutter:linum-prepend-spaces)
+  (save-excursion
+    (mapc 'git-gutter:view-diff-info diffinfos))
+  (let ((linum-width (car (window-margins)))
+        (curwin (get-buffer-window)))
+    (set-window-margins curwin (+ linum-width (git-gutter:window-margin))
+                        (cdr (window-margins curwin)))))
 
 (defun git-gutter:linum-init ()
   (set (make-local-variable 'git-gutter:linum-enabled) t))
 
 ;;;###autoload
 (defun git-gutter:linum-setup ()
+  "Setup for linum-mode."
   (setq git-gutter:init-function 'git-gutter:linum-init
         git-gutter:view-diff-function nil)
   (defadvice linum-update-window (after git-gutter:linum-update-window activate)

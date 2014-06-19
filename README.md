@@ -21,12 +21,12 @@ which is a plugin of Sublime Text.
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
 
-|                      | git-gutter.el | git-gutter-fringe.el |
-|:---------------------|:-------------:|:--------------------:|
-| Work in tty frame    | OK            | NG                   |
-| Work with linum-mode | NG            | OK                   |
-| Show on right side   | NG            | OK                   |
-| More configurable    | OK            | NG                   |
+|                      | git-gutter.el   | git-gutter-fringe.el |
+|:---------------------|:---------------:|:--------------------:|
+| Work in tty frame    | OK              | NG                   |
+| Work with linum-mode | OK(experimental)| OK                   |
+| Show on right side   | NG              | OK                   |
+| More configurable    | OK              | NG                   |
 
 
 ## Installation
@@ -97,6 +97,10 @@ Clear changes
 
 Toggle git-gutter
 
+#### `git-gutter:linum-setup`
+
+Setup for working with `linum-mode`.
+
 
 ## Sample Configuration
 
@@ -105,6 +109,9 @@ Toggle git-gutter
 
 ;; If you enable global minor mode
 (global-git-gutter-mode t)
+
+;; If you would like to use git-gutter.el and linum-mode
+(git-gutter:linum-setup)
 
 ;; If you enable git-gutter-mode for some modes
 (add-hook 'ruby-mode-hook 'git-gutter-mode)

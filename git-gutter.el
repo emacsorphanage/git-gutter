@@ -701,6 +701,10 @@ character for signs of changes"
             git-gutter:toggle-flag t))
     (force-mode-line-update)))
 
+;; for linum-user
+(when global-linum-mode
+  (git-gutter:linum-setup))
+
 (provide 'git-gutter)
 
 ;;; git-gutter.el ends here

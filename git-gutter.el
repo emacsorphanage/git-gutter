@@ -46,7 +46,7 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defcustom git-gutter:update-commands
-  '(ido-switch-buffer helm-buffer-list kill-buffer ido-kill-buffer)
+  '(ido-switch-buffer helm-buffers-list kill-buffer ido-kill-buffer vc-revert)
   "Update command when command in this list is executed"
   :type '(list (hook :tag "Update command")
                (repeat :inline t (hook :tag "Update command")))
@@ -357,7 +357,7 @@ character for signs of changes"
 
 (defun git-gutter:post-command-hook ()
   (when (memq git-gutter:real-this-command git-gutter:update-commands)
-    (git-gutter)))
+    (run-with-idle-timer 0.1 nil 'git-gutter)))
 
 (defsubst git-gutter:diff-process-buffer (curfile)
   (concat " *git-gutter-" curfile "-*"))

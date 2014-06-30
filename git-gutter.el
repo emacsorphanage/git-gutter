@@ -281,13 +281,6 @@ character for signs of changes"
         (face (git-gutter:select-face type)))
     (propertize sign 'face face)))
 
-(defun git-gutter:view-region (sign start-line end-line)
-  (let ((curline start-line))
-    (while (and (<= curline end-line) (not (eobp)))
-      (git-gutter:view-at-pos sign (point))
-      (cl-incf curline)
-      (forward-line 1))))
-
 (defsubst git-gutter:linum-get-overlay (pos)
   (cl-loop for ov in (overlays-in pos pos)
            when (overlay-get ov 'linum-str)
@@ -449,11 +442,15 @@ character for signs of changes"
                (forward-line (- start-line curline))
                (cl-case type
                  ((modified added)
-                  (git-gutter:view-region sign start-line end-line))
+                  (setq curline start-line)
+                  (while (and (<= curline end-line) (not (eobp)))
+                    (git-gutter:view-at-pos sign (point))
+                    (cl-incf curline)
+                    (forward-line 1)))
                  (deleted
                   (git-gutter:view-at-pos sign (point))
-                  (forward-line 1)))
-               (setq curline (1+ end-line))))))
+                  (forward-line 1)
+                  (setq curline (1+ end-line))))))))
 
 (defun git-gutter:view-diff-infos (diffinfos)
   (when diffinfos

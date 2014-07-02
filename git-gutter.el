@@ -353,9 +353,10 @@ character for signs of changes"
 (defun git-gutter:linum-prepend-spaces ()
   (save-excursion
     (goto-char (point-min))
-    (while (not (eobp))
-      (git-gutter:view-at-pos-linum (git-gutter:linum-padding) (point))
-      (forward-line 1))))
+    (let ((padding (git-gutter:linum-padding)))
+      (while (not (eobp))
+        (git-gutter:view-at-pos-linum padding (point))
+        (forward-line 1)))))
 
 (defun git-gutter:linum-update (diffinfos)
   (git-gutter:linum-prepend-spaces)

@@ -1,5 +1,11 @@
 Revision history for git-gutter.el
 
+Revision 0.64 2014/07/02 syohex
+   - Fix typo function-name and add vc-revert to updating commands
+     Thanks thierryvolpiatto
+   - Improve view
+     reduce 'save-excursion' as possible
+
 Revision 0.63 2014/06/29 syohex
    - Set up linum if global-linum-mode is enabled when git-gutter.el is loaded
 

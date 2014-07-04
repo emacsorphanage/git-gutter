@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.63
+;; Version: 0.64
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -256,12 +256,6 @@ character for signs of changes"
                (setq git-gutter:enabled t)))
            (kill-buffer proc-buf)))))))
 
-(defun git-gutter:line-to-pos (line)
-  (save-excursion
-    (goto-char (point-min))
-    (forward-line (1- line))
-    (point)))
-
 (defsubst git-gutter:gutter-sperator ()
   (when git-gutter:separator-sign
     (propertize git-gutter:separator-sign 'face 'git-gutter:separator)))
@@ -287,12 +281,6 @@ character for signs of changes"
         (face (git-gutter:select-face type)))
     (propertize sign 'face face)))
 
-(defun git-gutter:view-region (sign start-line end-line)
-  (goto-char (git-gutter:line-to-pos start-line))
-  (while (and (<= (line-number-at-pos) end-line) (not (eobp)))
-    (git-gutter:view-at-pos sign (point))
-    (forward-line 1)))
-
 (defsubst git-gutter:linum-get-overlay (pos)
   (cl-loop for ov in (overlays-in pos pos)
            when (overlay-get ov 'linum-str)
@@ -312,16 +300,6 @@ character for signs of changes"
     (let ((ov (make-overlay pos pos)))
       (overlay-put ov 'before-string (git-gutter:before-string sign))
       (overlay-put ov 'git-gutter t))))
-
-(defun git-gutter:view-diff-info (diffinfo)
-  (let* ((start-line (plist-get diffinfo :start-line))
-         (end-line (plist-get diffinfo :end-line))
-         (type (plist-get diffinfo :type))
-         (sign (git-gutter:propertized-sign type)))
-    (cl-case type
-      ((modified added) (git-gutter:view-region sign start-line end-line))
-      (deleted (git-gutter:view-at-pos
-                sign (git-gutter:line-to-pos start-line))))))
 
 (defsubst git-gutter:sign-width (sign)
   (cl-loop for s across sign
@@ -375,14 +353,14 @@ character for signs of changes"
 (defun git-gutter:linum-prepend-spaces ()
   (save-excursion
     (goto-char (point-min))
-    (while (not (eobp))
-      (git-gutter:view-at-pos-linum (git-gutter:linum-padding) (point))
-      (forward-line 1))))
+    (let ((padding (git-gutter:linum-padding)))
+      (while (not (eobp))
+        (git-gutter:view-at-pos-linum padding (point))
+        (forward-line 1)))))
 
 (defun git-gutter:linum-update (diffinfos)
   (git-gutter:linum-prepend-spaces)
-  (save-excursion
-    (mapc 'git-gutter:view-diff-info diffinfos))
+  (git-gutter:view-set-overlays diffinfos)
   (let ((linum-width (car (window-margins)))
         (curwin (get-buffer-window)))
     (set-window-margins curwin (+ linum-width (git-gutter:window-margin))
@@ -451,12 +429,35 @@ character for signs of changes"
   (when (git-gutter:show-gutter-p diffinfos)
     (git-gutter:set-window-margin (git-gutter:window-margin))))
 
+(defun git-gutter:view-set-overlays (diffinfos)
+  (save-excursion
+    (goto-char (point-min))
+    (cl-loop with curline = 1
+             for info in diffinfos
+             for start-line = (plist-get info :start-line)
+             for end-line = (plist-get info :end-line)
+             for type = (plist-get info :type)
+             for sign = (git-gutter:propertized-sign type)
+             do
+             (progn
+               (forward-line (- start-line curline))
+               (cl-case type
+                 ((modified added)
+                  (setq curline start-line)
+                  (while (and (<= curline end-line) (not (eobp)))
+                    (git-gutter:view-at-pos sign (point))
+                    (cl-incf curline)
+                    (forward-line 1)))
+                 (deleted
+                  (git-gutter:view-at-pos sign (point))
+                  (forward-line 1)
+                  (setq curline (1+ end-line))))))))
+
 (defun git-gutter:view-diff-infos (diffinfos)
   (when diffinfos
     (when (or git-gutter:unchanged-sign git-gutter:separator-sign)
       (git-gutter:view-for-unchanged))
-    (save-excursion
-      (mapc 'git-gutter:view-diff-info diffinfos)))
+    (git-gutter:view-set-overlays diffinfos))
   (git-gutter:show-gutter diffinfos))
 
 (defsubst git-gutter:reset-window-margin-p ()

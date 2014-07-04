@@ -673,7 +673,7 @@ character for signs of changes"
 
 (defadvice vc-revert (after git-gutter:vc-revert activate)
   (when git-gutter-mode
-    (git-gutter)))
+    (run-with-idle-timer 0.1 nil 'git-gutter)))
 
 ;;;###autoload
 (defun git-gutter:clear ()

@@ -46,10 +46,11 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defcustom git-gutter:update-commands
-  '(ido-switch-buffer helm-buffers-list kill-buffer ido-kill-buffer vc-revert)
-  "Update command when command in this list is executed"
-  :type '(list (hook :tag "Update command")
-               (repeat :inline t (hook :tag "Update command")))
+  '(quit-window switch-to-buffer ido-switch-buffer helm-buffers-list
+    kill-buffer ido-kill-buffer)
+  "Each command of this list is executed, gutter information is updated."
+  :type '(list (function :tag "Update command")
+               (repeat :inline t (function :tag "Update command")))
   :group 'git-gutter)
 
 (defcustom git-gutter:update-hooks
@@ -160,6 +161,7 @@ character for signs of changes"
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
   '(minibuffer-complete-and-exit
+    exit-minibuffer
     ido-exit-minibuffer
     helm-confirm-and-exit-minibuffer))
 
@@ -669,11 +671,7 @@ character for signs of changes"
   (when (and git-gutter-mode (not (buffer-base-buffer)))
     (setq git-gutter:has-indirect-buffers t)))
 
-(defadvice quit-window (after git-gutter:quit-window activate)
-  (when git-gutter-mode
-    (git-gutter)))
-
-(defadvice switch-to-buffer (after git-gutter:switch-to-buffer activate)
+(defadvice vc-revert (after git-gutter:vc-revert activate)
   (when git-gutter-mode
     (git-gutter)))
 

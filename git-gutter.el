@@ -163,6 +163,7 @@ character for signs of changes"
   '(minibuffer-complete-and-exit
     exit-minibuffer
     ido-exit-minibuffer
+    helm-maybe-exit-minibuffer
     helm-confirm-and-exit-minibuffer))
 
 (defmacro git-gutter:awhen (test &rest body)

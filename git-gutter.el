@@ -337,7 +337,7 @@ character for signs of changes"
 
 (defun git-gutter:post-command-hook ()
   (when (memq git-gutter:real-this-command git-gutter:update-commands)
-    (run-with-idle-timer 0.1 nil 'git-gutter)))
+    (git-gutter)))
 
 (defsubst git-gutter:diff-process-buffer (curfile)
   (concat " *git-gutter-" curfile "-*"))

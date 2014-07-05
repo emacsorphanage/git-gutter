@@ -46,8 +46,7 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defcustom git-gutter:update-commands
-  '(quit-window switch-to-buffer ido-switch-buffer helm-buffers-list
-    kill-buffer ido-kill-buffer)
+  '(ido-switch-buffer helm-buffers-list kill-buffer ido-kill-buffer)
   "Each command of this list is executed, gutter information is updated."
   :type '(list (function :tag "Update command")
                (repeat :inline t (function :tag "Update command")))
@@ -675,6 +674,16 @@ character for signs of changes"
 (defadvice vc-revert (after git-gutter:vc-revert activate)
   (when git-gutter-mode
     (run-with-idle-timer 0.1 nil 'git-gutter)))
+
+;; `quit-window' and `switch-to-buffer' are called from other
+;; commands. So we should use `defadvice' instead of `post-command-hook'.
+(defadvice quit-window (after git-gutter:quit-window activate)
+  (when git-gutter-mode
+    (git-gutter)))
+
+(defadvice switch-to-buffer (after git-gutter:switch-to-buffer activate)
+  (when git-gutter-mode
+    (git-gutter)))
 
 ;;;###autoload
 (defun git-gutter:clear ()

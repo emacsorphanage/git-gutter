@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.65 2014/07/05
+   - Fix for vc-revert
+   - Fix for new helm
+
 Revision 0.64 2014/07/02 syohex
    - Fix typo function-name and add vc-revert to updating commands
      Thanks thierryvolpiatto

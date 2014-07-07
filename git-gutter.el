@@ -253,7 +253,7 @@ character for signs of changes"
            "git" "--no-pager" "diff" args)))
 
 (defsubst git-gutter:start-hg-diff-process (file proc-buf)
-  (start-file-process "git-gutter" proc-buf "hg" "diff" "-U0"))
+  (start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" file))
 
 (defun git-gutter:start-diff-process1 (file proc-buf)
   (cl-case git-gutter:vcs-type

@@ -183,9 +183,8 @@ character for signs of changes"
                        (point) (line-end-position))))))
 
 (defun git-gutter:in-hg-repository-p ()
-  (with-temp-buffer
-    (and (zerop (git-gutter:execute-command "hg" nil "root"))
-         (not (string-match-p "/\.hg/" default-directory)))))
+  (and (zerop (git-gutter:execute-command "hg" nil "root"))
+       (not (string-match-p "/\.hg/" default-directory))))
 
 (defsubst git-gutter:in-repository-p ()
   (cl-loop for vcs in '(git hg)

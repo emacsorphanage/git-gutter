@@ -2,7 +2,7 @@
 
 ## Introduction
 `git-gutter.el` is port of [GitGutter](https://github.com/jisaacks/GitGutter)
-which is a plugin of Sublime Text.
+which is a plugin of Sublime Text. `git-gutter.el` supports `git` and `mercurial`.
 
 
 `git-gutter.el` also supports TRAMP so you can use `git-gutter.el` for remote files.
@@ -17,6 +17,7 @@ which is a plugin of Sublime Text.
 
 * Emacs 24 or higher
 * [Git](http://git-scm.com/) 1.7.0 or higher
+* [Mercurial](http://mercurial.selenic.com/)
 
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
@@ -79,6 +80,7 @@ of buffer popuped by `git-gutter:popup-diff` to current hunk.
 #### `git-gutter:stage-hunk`
 
 Stage current hunk. You can use this command like `git add -p`.
+This command is not supported for `Mercurial`.
 
 #### `git-gutter:revert-hunk`
 

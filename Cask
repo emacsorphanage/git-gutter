@@ -2,7 +2,7 @@
 (source melpa)
 (source marmalade)
 
-(package "git-gutter" "0.65" "Emacs port of GitGutter Sublime Text plugin")
+(package "git-gutter" "0.66" "Emacs port of GitGutter Sublime Text plugin")
 
 (development
  (depends-on "ert")

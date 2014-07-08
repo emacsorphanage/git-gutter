@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.65
+;; Version: 0.66
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -156,6 +156,7 @@ character for signs of changes"
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
 (defvar git-gutter:linum-enabled nil)
+(defvar git-gutter:linum-prev-window-margin nil)
 (defvar git-gutter:vcs-type nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
@@ -382,15 +383,18 @@ character for signs of changes"
         (forward-line 1)))))
 
 (defun git-gutter:linum-update (diffinfos)
-  (git-gutter:linum-prepend-spaces)
-  (git-gutter:view-set-overlays diffinfos)
-  (let ((linum-width (car (window-margins)))
-        (curwin (get-buffer-window)))
-    (set-window-margins curwin (+ linum-width (git-gutter:window-margin))
-                        (cdr (window-margins curwin)))))
+  (let ((linum-width (car (window-margins))))
+    (when linum-width
+      (git-gutter:linum-prepend-spaces)
+      (git-gutter:view-set-overlays diffinfos)
+      (let ((curwin (get-buffer-window))
+            (margin (+ linum-width (git-gutter:window-margin))))
+        (setq git-gutter:linum-prev-window-margin margin)
+        (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
 (defun git-gutter:linum-init ()
-  (set (make-local-variable 'git-gutter:linum-enabled) t))
+  (set (make-local-variable 'git-gutter:linum-enabled) t)
+  (make-local-variable 'git-gutter:linum-prev-window-margin))
 
 ;;;###autoload
 (defun git-gutter:linum-setup ()
@@ -398,8 +402,12 @@ character for signs of changes"
   (setq git-gutter:init-function 'git-gutter:linum-init
         git-gutter:view-diff-function nil)
   (defadvice linum-update-window (after git-gutter:linum-update-window activate)
-    (when (and git-gutter-mode git-gutter:diffinfos)
-      (git-gutter:linum-update git-gutter:diffinfos))))
+    (if (and git-gutter-mode git-gutter:diffinfos)
+        (git-gutter:linum-update git-gutter:diffinfos)
+      (let ((curwin (get-buffer-window))
+            (margin (or git-gutter:linum-prev-window-margin
+                        (car (window-margins)))))
+        (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
 ;;;###autoload
 (define-minor-mode git-gutter-mode

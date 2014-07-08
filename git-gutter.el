@@ -188,9 +188,9 @@ character for signs of changes"
 
 (defsubst git-gutter:in-repository-p ()
   (cl-loop for vcs in '(git hg)
-           for check-func = (if (eq vcs 'git)
-                                'git-gutter:in-git-repository-p
-                              'git-gutter:in-hg-repository-p)
+           for check-func = (cl-case vcs
+                              (git 'git-gutter:in-git-repository-p)
+                              (hg 'git-gutter:in-hg-repository-p))
            when (funcall check-func)
            return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
 

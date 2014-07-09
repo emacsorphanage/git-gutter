@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.67 2014/07/09
+   - Don't call linum setup if git-gutter-fringe is used.
+
 Revision 0.66 2014/07/08
    - Fix for linum-mode
 

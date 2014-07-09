@@ -719,7 +719,7 @@ character for signs of changes"
     (force-mode-line-update)))
 
 ;; for linum-user
-(when global-linum-mode
+(when (and global-linum-mode (not (boundp 'git-gutter-fringe)))
   (git-gutter:linum-setup))
 
 (provide 'git-gutter)

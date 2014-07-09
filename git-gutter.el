@@ -157,6 +157,7 @@ character for signs of changes"
 (defvar git-gutter:real-this-command nil)
 (defvar git-gutter:linum-enabled nil)
 (defvar git-gutter:linum-prev-window-margin nil)
+(defvar git-gutter:vcs-type nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -172,15 +173,27 @@ character for signs of changes"
   `(let ((it ,test))
      (when it ,@body)))
 
-(defsubst git-gutter:execute-command (output &rest args)
-  (apply 'process-file "git" nil output nil args))
+(defsubst git-gutter:execute-command (cmd output &rest args)
+  (apply 'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command t "rev-parse" "--is-inside-work-tree"))
+    (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
       (goto-char (point-min))
       (string= "true" (buffer-substring-no-properties
                        (point) (line-end-position))))))
+
+(defun git-gutter:in-hg-repository-p ()
+  (and (zerop (git-gutter:execute-command "hg" nil "root"))
+       (not (string-match-p "/\.hg/" default-directory))))
+
+(defsubst git-gutter:in-repository-p ()
+  (cl-loop for vcs in '(git hg)
+           for check-func = (cl-case vcs
+                              (git 'git-gutter:in-git-repository-p)
+                              (hg 'git-gutter:in-hg-repository-p))
+           when (funcall check-func)
+           return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
 
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -239,11 +252,19 @@ character for signs of changes"
     (apply 'start-file-process "git-gutter" proc-buf
            "git" "--no-pager" "diff" args)))
 
+(defsubst git-gutter:start-hg-diff-process (file proc-buf)
+  (start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" file))
+
+(defun git-gutter:start-diff-process1 (file proc-buf)
+  (cl-case git-gutter:vcs-type
+    (git (git-gutter:start-git-diff-process file proc-buf))
+    (hg (git-gutter:start-hg-diff-process file proc-buf))))
+
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (git-gutter:set-window-margin (git-gutter:window-margin))
   (let ((file (git-gutter:base-file)) ;; for tramp
         (curbuf (current-buffer))
-        (process (git-gutter:start-git-diff-process curfile proc-buf)))
+        (process (git-gutter:start-diff-process1 curfile proc-buf)))
     (set-process-query-on-exit-flag process nil)
     (set-process-sentinel
      process
@@ -397,7 +418,7 @@ character for signs of changes"
   :lighter    git-gutter:lighter
   (if git-gutter-mode
       (if (and (git-gutter:check-file-and-directory)
-               (git-gutter:in-git-repository-p))
+               (git-gutter:in-repository-p))
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
@@ -563,7 +584,7 @@ character for signs of changes"
 
 (defun git-gutter:diff-header-index-info (path)
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command t "diff" "--relative" path))
+    (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" path))
       (goto-char (point-min))
       (forward-line 4)
       (buffer-substring-no-properties (point-min) (point)))))
@@ -581,7 +602,8 @@ character for signs of changes"
         (insert header)
         (insert content)
         (insert "\n"))
-      (unless (zerop (git-gutter:execute-command nil "apply" "--unidiff-zero" "--cached" patch))
+      (unless (zerop (git-gutter:execute-command "git" nil
+                                                 "apply" "--unidiff-zero" "--cached" patch))
         (message "Failed: stating this hunk"))
       (delete-file patch))))
 

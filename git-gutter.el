@@ -434,7 +434,7 @@ character for signs of changes"
               (add-hook hook 'git-gutter nil t))
             (git-gutter))
         (when (> git-gutter:verbosity 2)
-          (message "Here is not Git work tree"))
+          (message "Here is not Git/Mercurial work tree"))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)

@@ -177,14 +177,16 @@ character for signs of changes"
   (apply 'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
-      (goto-char (point-min))
-      (string= "true" (buffer-substring-no-properties
-                       (point) (line-end-position))))))
+  (when (executable-find "git")
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
+        (goto-char (point-min))
+        (string= "true" (buffer-substring-no-properties
+                         (point) (line-end-position)))))))
 
 (defun git-gutter:in-hg-repository-p ()
-  (and (zerop (git-gutter:execute-command "hg" nil "root"))
+  (and (executable-find "hg")
+       (zerop (git-gutter:execute-command "hg" nil "root"))
        (not (string-match-p "/\.hg/" default-directory))))
 
 (defsubst git-gutter:in-repository-p ()
@@ -433,7 +435,7 @@ character for signs of changes"
               (add-hook hook 'git-gutter nil t))
             (git-gutter))
         (when (> git-gutter:verbosity 2)
-          (message "Here is not Git work tree"))
+          (message "Here is not Git/Mercurial work tree"))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)

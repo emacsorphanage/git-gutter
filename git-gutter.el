@@ -177,11 +177,12 @@ character for signs of changes"
   (apply 'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
-      (goto-char (point-min))
-      (string= "true" (buffer-substring-no-properties
-                       (point) (line-end-position))))))
+  (when (executable-find "git")
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
+        (goto-char (point-min))
+        (string= "true" (buffer-substring-no-properties
+                         (point) (line-end-position)))))))
 
 (defun git-gutter:in-hg-repository-p ()
   (and (executable-find "hg")

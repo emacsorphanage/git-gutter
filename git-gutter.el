@@ -184,7 +184,8 @@ character for signs of changes"
                        (point) (line-end-position))))))
 
 (defun git-gutter:in-hg-repository-p ()
-  (and (zerop (git-gutter:execute-command "hg" nil "root"))
+  (and (executable-find "hg")
+       (zerop (git-gutter:execute-command "hg" nil "root"))
        (not (string-match-p "/\.hg/" default-directory))))
 
 (defsubst git-gutter:in-repository-p ()

@@ -1,5 +1,18 @@
 Revision history for git-gutter.el
 
+Revision 0.69 2014/07/10
+   - Suppress warning if git or hg are not installed.
+     (Reported by tom-tan)
+
+Revision 0.68 2014/07/10
+   - Support mercurial(Experimental)
+
+Revision 0.67 2014/07/09
+   - Don't call linum setup if git-gutter-fringe is used.
+
+Revision 0.66 2014/07/08
+   - Fix for linum-mode
+
 Revision 0.65 2014/07/05
    - Fix for vc-revert
    - Fix for new helm

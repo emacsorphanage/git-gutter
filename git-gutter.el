@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.65
+;; Version: 0.69
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -156,6 +156,8 @@ character for signs of changes"
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
 (defvar git-gutter:linum-enabled nil)
+(defvar git-gutter:linum-prev-window-margin nil)
+(defvar git-gutter:vcs-type nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -171,15 +173,29 @@ character for signs of changes"
   `(let ((it ,test))
      (when it ,@body)))
 
-(defsubst git-gutter:execute-command (output &rest args)
-  (apply 'process-file "git" nil output nil args))
+(defsubst git-gutter:execute-command (cmd output &rest args)
+  (apply 'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command t "rev-parse" "--is-inside-work-tree"))
-      (goto-char (point-min))
-      (string= "true" (buffer-substring-no-properties
-                       (point) (line-end-position))))))
+  (when (executable-find "git")
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
+        (goto-char (point-min))
+        (string= "true" (buffer-substring-no-properties
+                         (point) (line-end-position)))))))
+
+(defun git-gutter:in-hg-repository-p ()
+  (and (executable-find "hg")
+       (zerop (git-gutter:execute-command "hg" nil "root"))
+       (not (string-match-p "/\.hg/" default-directory))))
+
+(defsubst git-gutter:in-repository-p ()
+  (cl-loop for vcs in '(git hg)
+           for check-func = (cl-case vcs
+                              (git 'git-gutter:in-git-repository-p)
+                              (hg 'git-gutter:in-hg-repository-p))
+           when (funcall check-func)
+           return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
 
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -238,11 +254,19 @@ character for signs of changes"
     (apply 'start-file-process "git-gutter" proc-buf
            "git" "--no-pager" "diff" args)))
 
+(defsubst git-gutter:start-hg-diff-process (file proc-buf)
+  (start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" file))
+
+(defun git-gutter:start-diff-process1 (file proc-buf)
+  (cl-case git-gutter:vcs-type
+    (git (git-gutter:start-git-diff-process file proc-buf))
+    (hg (git-gutter:start-hg-diff-process file proc-buf))))
+
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (git-gutter:set-window-margin (git-gutter:window-margin))
   (let ((file (git-gutter:base-file)) ;; for tramp
         (curbuf (current-buffer))
-        (process (git-gutter:start-git-diff-process curfile proc-buf)))
+        (process (git-gutter:start-diff-process1 curfile proc-buf)))
     (set-process-query-on-exit-flag process nil)
     (set-process-sentinel
      process
@@ -361,15 +385,18 @@ character for signs of changes"
         (forward-line 1)))))
 
 (defun git-gutter:linum-update (diffinfos)
-  (git-gutter:linum-prepend-spaces)
-  (git-gutter:view-set-overlays diffinfos)
-  (let ((linum-width (car (window-margins)))
-        (curwin (get-buffer-window)))
-    (set-window-margins curwin (+ linum-width (git-gutter:window-margin))
-                        (cdr (window-margins curwin)))))
+  (let ((linum-width (car (window-margins))))
+    (when linum-width
+      (git-gutter:linum-prepend-spaces)
+      (git-gutter:view-set-overlays diffinfos)
+      (let ((curwin (get-buffer-window))
+            (margin (+ linum-width (git-gutter:window-margin))))
+        (setq git-gutter:linum-prev-window-margin margin)
+        (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
 (defun git-gutter:linum-init ()
-  (set (make-local-variable 'git-gutter:linum-enabled) t))
+  (set (make-local-variable 'git-gutter:linum-enabled) t)
+  (make-local-variable 'git-gutter:linum-prev-window-margin))
 
 ;;;###autoload
 (defun git-gutter:linum-setup ()
@@ -377,8 +404,12 @@ character for signs of changes"
   (setq git-gutter:init-function 'git-gutter:linum-init
         git-gutter:view-diff-function nil)
   (defadvice linum-update-window (after git-gutter:linum-update-window activate)
-    (when (and git-gutter-mode git-gutter:diffinfos)
-      (git-gutter:linum-update git-gutter:diffinfos))))
+    (if (and git-gutter-mode git-gutter:diffinfos)
+        (git-gutter:linum-update git-gutter:diffinfos)
+      (let ((curwin (get-buffer-window))
+            (margin (or git-gutter:linum-prev-window-margin
+                        (car (window-margins)))))
+        (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
 ;;;###autoload
 (define-minor-mode git-gutter-mode
@@ -389,7 +420,7 @@ character for signs of changes"
   :lighter    git-gutter:lighter
   (if git-gutter-mode
       (if (and (git-gutter:check-file-and-directory)
-               (git-gutter:in-git-repository-p))
+               (git-gutter:in-repository-p))
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
@@ -404,7 +435,7 @@ character for signs of changes"
               (add-hook hook 'git-gutter nil t))
             (git-gutter))
         (when (> git-gutter:verbosity 2)
-          (message "Here is not Git work tree"))
+          (message "Here is not Git/Mercurial work tree"))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)
@@ -555,7 +586,7 @@ character for signs of changes"
 
 (defun git-gutter:diff-header-index-info (path)
   (with-temp-buffer
-    (when (zerop (git-gutter:execute-command t "diff" "--relative" path))
+    (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" path))
       (goto-char (point-min))
       (forward-line 4)
       (buffer-substring-no-properties (point-min) (point)))))
@@ -573,7 +604,8 @@ character for signs of changes"
         (insert header)
         (insert content)
         (insert "\n"))
-      (unless (zerop (git-gutter:execute-command nil "apply" "--unidiff-zero" "--cached" patch))
+      (unless (zerop (git-gutter:execute-command "git" nil
+                                                 "apply" "--unidiff-zero" "--cached" patch))
         (message "Failed: stating this hunk"))
       (delete-file patch))))
 
@@ -711,7 +743,7 @@ character for signs of changes"
     (force-mode-line-update)))
 
 ;; for linum-user
-(when global-linum-mode
+(when (and global-linum-mode (not (boundp 'git-gutter-fringe)))
   (git-gutter:linum-setup))
 
 (provide 'git-gutter)

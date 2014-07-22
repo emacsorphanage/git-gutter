@@ -46,8 +46,16 @@ character for signs of changes"
   :group 'git-gutter)
 
 (defcustom git-gutter:update-commands
-  '(ido-switch-buffer helm-buffers-list kill-buffer ido-kill-buffer)
+  '(ido-switch-buffer helm-buffers-list)
   "Each command of this list is executed, gutter information is updated."
+  :type '(list (function :tag "Update command")
+               (repeat :inline t (function :tag "Update command")))
+  :group 'git-gutter)
+
+(defcustom git-gutter:update-windows-commands
+  '(kill-buffer ido-kill-buffer)
+  "Each command of this list is executed, gutter information is updated and
+gutter information of other windows."
   :type '(list (function :tag "Update command")
                (repeat :inline t (function :tag "Update command")))
   :group 'git-gutter)
@@ -359,9 +367,26 @@ character for signs of changes"
   (unless (memq this-command git-gutter:ignore-commands)
     (setq git-gutter:real-this-command this-command)))
 
+(defun git-gutter:update-other-window-buffers (curwin curbuf)
+  (save-selected-window
+    (cl-loop for win in (window-list)
+             unless (eq win curwin)
+             do
+             (progn
+               (select-window win)
+               (let ((win-width (window-margins win)))
+                 (unless (car win-width)
+                   (if (eq (current-buffer) curbuf)
+                       (git-gutter:set-window-margin (git-gutter:window-margin))
+                     (git-gutter:update-diffinfo git-gutter:diffinfos))))))))
+
 (defun git-gutter:post-command-hook ()
-  (when (memq git-gutter:real-this-command git-gutter:update-commands)
-    (git-gutter)))
+  (cond ((memq git-gutter:real-this-command git-gutter:update-commands)
+         (git-gutter))
+        ((memq git-gutter:real-this-command git-gutter:update-windows-commands)
+         (git-gutter)
+         (unless global-linum-mode
+           (git-gutter:update-other-window-buffers (selected-window) (current-buffer))))))
 
 (defsubst git-gutter:diff-process-buffer (curfile)
   (concat " *git-gutter-" curfile "-*"))

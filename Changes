@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.70 2014/07/22
+   - Improve updating gutter information after kill-buffer command
+
 Revision 0.69 2014/07/10
    - Suppress warning if git or hg are not installed.
      (Reported by tom-tan)

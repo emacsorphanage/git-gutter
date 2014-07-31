@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.69
+;; Version: 0.71
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -45,9 +45,22 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:mercurial-diff-option ""
+  "Option of 'hg diff'"
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:update-commands
-  '(ido-switch-buffer helm-buffers-list kill-buffer ido-kill-buffer)
+  '(ido-switch-buffer helm-buffers-list)
   "Each command of this list is executed, gutter information is updated."
+  :type '(list (function :tag "Update command")
+               (repeat :inline t (function :tag "Update command")))
+  :group 'git-gutter)
+
+(defcustom git-gutter:update-windows-commands
+  '(kill-buffer ido-kill-buffer)
+  "Each command of this list is executed, gutter information is updated and
+gutter information of other windows."
   :type '(list (function :tag "Update command")
                (repeat :inline t (function :tag "Update command")))
   :group 'git-gutter)
@@ -158,6 +171,8 @@ character for signs of changes"
 (defvar git-gutter:linum-enabled nil)
 (defvar git-gutter:linum-prev-window-margin nil)
 (defvar git-gutter:vcs-type nil)
+(defvar git-gutter:start-revision nil)
+(defvar git-gutter:revision-history nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -247,15 +262,35 @@ character for signs of changes"
     (let ((curwin (get-buffer-window)))
       (set-window-margins curwin width (cdr (window-margins curwin))))))
 
-(defun git-gutter:start-git-diff-process (file proc-buf)
-  (let ((args (list "--no-color" "--no-ext-diff" "--relative" "-U0" file)))
+(defsubst git-gutter:revision-set-p ()
+  (and git-gutter:start-revision (not (string= git-gutter:start-revision ""))))
+
+(defun git-gutter:git-diff-arguments (file)
+  (let (args)
     (unless (string= git-gutter:diff-option "")
-      (setq args (append (split-string git-gutter:diff-option) args)))
+      (setq args (nreverse (split-string git-gutter:diff-option))))
+    (when (git-gutter:revision-set-p)
+      (push git-gutter:start-revision args))
+    (nreverse (cons file args))))
+
+(defun git-gutter:start-git-diff-process (file proc-buf)
+  (let ((arg (git-gutter:git-diff-arguments file)))
     (apply 'start-file-process "git-gutter" proc-buf
-           "git" "--no-pager" "diff" args)))
+           "git" "--no-pager" "diff" "--no-color" "--no-ext-diff" "--relative" "-U0"
+           arg)))
+
+(defun git-gutter:hg-diff-arguments (file)
+  (let (args)
+    (unless (string= git-gutter:mercurial-diff-option "")
+      (setq args (nreverse (split-string git-gutter:mercurial-diff-option))))
+    (when (git-gutter:revision-set-p)
+      (push "-r" args)
+      (push git-gutter:start-revision args))
+    (nreverse (cons file args))))
 
 (defsubst git-gutter:start-hg-diff-process (file proc-buf)
-  (start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" file))
+  (let ((args (git-gutter:hg-diff-arguments file)))
+    (apply 'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
 
 (defun git-gutter:start-diff-process1 (file proc-buf)
   (cl-case git-gutter:vcs-type
@@ -359,9 +394,26 @@ character for signs of changes"
   (unless (memq this-command git-gutter:ignore-commands)
     (setq git-gutter:real-this-command this-command)))
 
+(defun git-gutter:update-other-window-buffers (curwin curbuf)
+  (save-selected-window
+    (cl-loop for win in (window-list)
+             unless (eq win curwin)
+             do
+             (progn
+               (select-window win)
+               (let ((win-width (window-margins win)))
+                 (unless (car win-width)
+                   (if (eq (current-buffer) curbuf)
+                       (git-gutter:set-window-margin (git-gutter:window-margin))
+                     (git-gutter:update-diffinfo git-gutter:diffinfos))))))))
+
 (defun git-gutter:post-command-hook ()
-  (when (memq git-gutter:real-this-command git-gutter:update-commands)
-    (git-gutter)))
+  (cond ((memq git-gutter:real-this-command git-gutter:update-commands)
+         (git-gutter))
+        ((memq git-gutter:real-this-command git-gutter:update-windows-commands)
+         (git-gutter)
+         (unless global-linum-mode
+           (git-gutter:update-other-window-buffers (selected-window) (current-buffer))))))
 
 (defsubst git-gutter:diff-process-buffer (curfile)
   (concat " *git-gutter-" curfile "-*"))
@@ -428,6 +480,7 @@ character for signs of changes"
             (set (make-local-variable 'git-gutter:has-indirect-buffers) nil)
             (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
+            (set (make-local-variable 'git-gutter:start-revision) nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
             (add-hook 'pre-command-hook 'git-gutter:pre-command-hook)
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
@@ -741,6 +794,26 @@ character for signs of changes"
       (setq git-gutter-mode t
             git-gutter:toggle-flag t))
     (force-mode-line-update)))
+
+(defun git-gutter:revision-valid-p (revision)
+  (zerop (cl-case git-gutter:vcs-type
+           (git (git-gutter:execute-command "git" nil
+                                            "rev-parse" "--quiet" "--verify"
+                                            revision))
+           (hg (git-gutter:execute-command "hg" nil "id" "-r" revision)))))
+
+;;;###autoload
+(defun git-gutter:set-start-revision (start-rev)
+  "Set start revision. If `start-rev' is nil or empty string then reset
+start revision."
+  (interactive
+   (list (read-string "Start Revision: "
+                      nil 'git-gutter:revision-history)))
+  (when (and start-rev (not (string= start-rev "")))
+    (unless (git-gutter:revision-valid-p start-rev)
+      (error "Revision '%s' is not valid." start-rev)))
+  (setq git-gutter:start-revision start-rev)
+  (git-gutter))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

@@ -70,6 +70,10 @@ Jump to next hunk(alias `git-gutter:next-diff`)
 
 Jump to previous hunk(alias `git-gutter:previous-diff`)
 
+#### `git-gutter:set-start-revision`
+
+Set start revision where got diff(`git diff` or `hg diff`) from.
+
 #### `git-gutter:popup-hunk`
 
 Popup current diff hunk(alias `git-gutter:popup-diff`)

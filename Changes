@@ -1,5 +1,12 @@
 Revision history for git-gutter.el
 
+Revision 0.71 2014/07/26
+   - Implement git-gutter:set-start-revision
+     We can see diff information from arbitrary revision
+
+Revision 0.70 2014/07/22
+   - Improve updating gutter information after kill-buffer command
+
 Revision 0.69 2014/07/10
    - Suppress warning if git or hg are not installed.
      (Reported by tom-tan)

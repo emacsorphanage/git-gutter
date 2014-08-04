@@ -184,6 +184,17 @@ character.
  '(git-gutter:deleted-sign "☂"))
 ```
 
+### Backends
+
+`git-gutter.el` supports `git` and `mercurial` backends.
+You can set backends which `git-gutter.el` will be used.
+Default value of `git-gutter:handled-backends` is `'(git hg)`
+
+```lisp
+;; If you can use git-gutter only for git
+(custom-set-variables
+ '(git-gutter:handled-backends '(git)))
+```
 
 ### Updates hooks
 

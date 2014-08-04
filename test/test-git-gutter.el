@@ -203,4 +203,10 @@ bar
            (got (git-gutter:hg-diff-arguments file)))
       (should (equal got '("-a" "-b" "-c" "-r" "30000" "git-gutter.el"))))))
 
+(ert-deftest git-gutter-vcs-check-functions ()
+  "Check function of VCS"
+
+  (should (eq (git-gutter:vcs-check-function 'git) 'git-gutter:in-git-repository-p))
+  (should (eq (git-gutter:vcs-check-function 'hg) 'git-gutter:in-hg-repository-p)))
+
 ;;; test-git-gutter.el end here

@@ -143,6 +143,12 @@ gutter information of other windows."
   :type '(repeat symbol)
   :group 'git-gutter)
 
+(defcustom git-gutter:handled-backends '(git hg)
+  "List of version control backends for which `git-gutter.el` will be used.
+`git' and `hg' are supported."
+  :type '(repeat symbol)
+  :group 'git-gutter)
+
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
 
@@ -201,14 +207,18 @@ gutter information of other windows."
 
 (defun git-gutter:in-hg-repository-p ()
   (and (executable-find "hg")
+       (locate-dominating-file default-directory ".hg")
        (zerop (git-gutter:execute-command "hg" nil "root"))
        (not (string-match-p "/\.hg/" default-directory))))
 
+(defsubst git-gutter:vcs-check-function (vcs)
+  (cl-case vcs
+    (git 'git-gutter:in-git-repository-p)
+    (hg 'git-gutter:in-hg-repository-p)))
+
 (defsubst git-gutter:in-repository-p ()
-  (cl-loop for vcs in '(git hg)
-           for check-func = (cl-case vcs
-                              (git 'git-gutter:in-git-repository-p)
-                              (hg 'git-gutter:in-hg-repository-p))
+  (cl-loop for vcs in git-gutter:handled-backends
+           for check-func = (git-gutter:vcs-check-function vcs)
            when (funcall check-func)
            return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
 

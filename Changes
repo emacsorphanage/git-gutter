@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.72 2014/08/04
+   - Improve for backend configuration
+
 Revision 0.71 2014/07/26
    - Implement git-gutter:set-start-revision
      We can see diff information from arbitrary revision

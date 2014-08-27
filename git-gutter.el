@@ -268,7 +268,7 @@ gutter information of other windows."
   (or git-gutter:window-width (git-gutter:longest-sign-width)))
 
 (defun git-gutter:set-window-margin (width)
-  (unless git-gutter:linum-enabled
+  (when (and (not git-gutter:linum-enabled) (>= width 0))
     (let ((curwin (get-buffer-window)))
       (set-window-margins curwin width (cdr (window-margins curwin))))))
 

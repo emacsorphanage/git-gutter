@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.73 2014/08/27
+   - Add margin width validation
+
 Revision 0.72 2014/08/04
    - Improve for backend configuration
 

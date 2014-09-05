@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.74 2014/09/06
+   - Log level is 0 as default now.
+
 Revision 0.73 2014/08/27
    - Add margin width validation
 

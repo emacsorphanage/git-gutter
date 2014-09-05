@@ -108,7 +108,7 @@ gutter information of other windows."
   :type 'string
   :group 'git-gutter)
 
-(defcustom git-gutter:verbosity 4
+(defcustom git-gutter:verbosity 0
   "Log/message level. 4 means all, 0 nothing."
   :type 'integer
   :group 'git-gutter)

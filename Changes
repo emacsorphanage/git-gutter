@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.75 2014/09/14
+   - Update gutter information at magit-revert-buffer-hook
+
 Revision 0.74 2014/09/06
    - Log level is 0 as default now.
 

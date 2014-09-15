@@ -114,27 +114,27 @@ gutter information of other windows."
   :group 'git-gutter)
 
 (defface git-gutter:separator
-    '((t (:foreground "cyan" :weight bold)))
+  '((t (:foreground "cyan" :weight bold)))
   "Face of separator"
   :group 'git-gutter)
 
 (defface git-gutter:modified
-    '((t (:foreground "magenta" :weight bold)))
+  '((t (:foreground "magenta" :weight bold)))
   "Face of modified"
   :group 'git-gutter)
 
 (defface git-gutter:added
-    '((t (:foreground "green" :weight bold)))
+  '((t (:foreground "green" :weight bold)))
   "Face of added"
   :group 'git-gutter)
 
 (defface git-gutter:deleted
-    '((t (:foreground "red" :weight bold)))
+  '((t (:foreground "red" :weight bold)))
   "Face of deleted"
   :group 'git-gutter)
 
 (defface git-gutter:unchanged
-    '((t (:background "yellow")))
+  '((t (:background "yellow")))
   "Face of unchanged"
   :group 'git-gutter)
 

@@ -658,17 +658,44 @@ gutter information of other windows."
   (git-gutter:awhen (git-gutter:base-file)
     (git-gutter:diff-header-index-info (file-name-nondirectory it))))
 
+(defsubst git-gutter:read-hunk-header (hunk)
+  (when (string-match
+         "^@@ -\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? \\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? @@"
+         hunk)
+    (list (string-to-number (match-string 1 hunk))
+          (string-to-number (or (match-string 2 hunk) "1"))
+          (string-to-number (match-string 3 hunk))
+          (string-to-number (or (match-string 4 hunk) "1")))))
+
+(defsubst git-gutter:delete-hunk-header ()
+  (delete-region (point) (line-end-position)))
+
+(defun git-gutter:insert-hunk-header (type add-len del-line del-len add-line)
+  (cl-case type
+    (added (setq add-line (1+ del-line)))
+    (t (setq add-line del-line)))
+  (insert  (format "@@ -%d,%d +%d,%d @@" del-line del-len add-line add-len)))
+
+(defun git-gutter:insert-staging-hunk (hunk type)
+  (cl-destructuring-bind
+      (del-line del-len add-line add-len) (git-gutter:read-hunk-header hunk)
+    (save-excursion
+      (insert hunk "\n"))
+    (git-gutter:delete-hunk-header)
+    (git-gutter:insert-hunk-header type add-len del-line del-len add-line)))
+
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (plist-get diff-info :content))
+        (type (plist-get diff-info :type))
         (header (git-gutter:hunk-diff-header))
         (patch (make-temp-name "git-gutter")))
     (when header
       (with-temp-file patch
         (insert header)
-        (insert content)
-        (insert "\n"))
+        (git-gutter:insert-staging-hunk content type))
       (unless (zerop (git-gutter:execute-command "git" nil
-                                                 "apply" "--unidiff-zero" "--cached" patch))
+                                                 "apply" "--unidiff-zero"
+                                                 "--cached" patch))
         (message "Failed: stating this hunk"))
       (delete-file patch))))
 

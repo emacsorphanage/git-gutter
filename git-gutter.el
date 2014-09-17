@@ -680,6 +680,10 @@ gutter information of other windows."
     (insert hunk "\n"))
   (git-gutter:convert-hunk-header type))
 
+(defun git-gutter:apply-directory-option ()
+  (let ((root (locate-dominating-file default-directory ".git")))
+    (file-name-directory (file-relative-name (git-gutter:base-file) root))))
+
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (plist-get diff-info :content))
         (type (plist-get diff-info :type))
@@ -689,11 +693,15 @@ gutter information of other windows."
       (with-temp-file patch
         (insert header)
         (git-gutter:insert-staging-hunk content type))
-      (unless (zerop (git-gutter:execute-command "git" nil
-                                                 "apply" "--unidiff-zero"
-                                                 "--cached" patch))
-        (message "Failed: stating this hunk"))
-      (delete-file patch))))
+      (let ((dir-option (git-gutter:apply-directory-option))
+            (options (list "--cached" patch)))
+        (when dir-option
+          (setq options (cons "--directory" (cons dir-option options))))
+        (unless (zerop (apply 'git-gutter:execute-command
+                              "git" nil "apply" "--unidiff-zero"
+                              options))
+          (message "Failed: stating this hunk"))
+        (delete-file patch)))))
 
 ;;;###autoload
 (defun git-gutter:stage-hunk ()

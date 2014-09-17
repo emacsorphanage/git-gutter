@@ -647,47 +647,43 @@ gutter information of other windows."
         (save-buffer))
       (delete-window (git-gutter:popup-buffer-window)))))
 
-(defun git-gutter:diff-header-index-info (path)
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" path))
-      (goto-char (point-min))
-      (forward-line 4)
-      (buffer-substring-no-properties (point-min) (point)))))
-
-(defun git-gutter:hunk-diff-header ()
+(defun git-gutter:extract-hunk-header ()
   (git-gutter:awhen (git-gutter:base-file)
-    (git-gutter:diff-header-index-info (file-name-nondirectory it))))
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" it))
+        (goto-char (point-min))
+        (forward-line 4)
+        (buffer-substring-no-properties (point-min) (point))))))
 
-(defsubst git-gutter:read-hunk-header (hunk)
-  (when (string-match
-         "^@@ -\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? \\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? @@"
-         hunk)
-    (list (string-to-number (match-string 1 hunk))
-          (string-to-number (or (match-string 2 hunk) "1"))
-          (string-to-number (match-string 3 hunk))
-          (string-to-number (or (match-string 4 hunk) "1")))))
+(defun git-gutter:read-hunk-header (header)
+  (let ((header-regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
+    (when (string-match header-regexp header)
+      (list (string-to-number (match-string 1 header))
+            (git-gutter:changes-to-number (match-string 2 header))
+            (string-to-number (match-string 3 header))
+            (git-gutter:changes-to-number (match-string 4 header))))))
 
-(defsubst git-gutter:delete-hunk-header ()
-  (delete-region (point) (line-end-position)))
-
-(defun git-gutter:insert-hunk-header (type add-len del-line del-len add-line)
-  (cl-case type
-    (added (setq add-line (1+ del-line)))
-    (t (setq add-line del-line)))
-  (insert  (format "@@ -%d,%d +%d,%d @@" del-line del-len add-line add-len)))
+(defun git-gutter:convert-hunk-header (type)
+  (let ((header (buffer-substring-no-properties (point) (line-end-position))))
+    (delete-region (point) (line-end-position))
+    (cl-destructuring-bind
+        (orig-line orig-changes new-line new-changes) (git-gutter:read-hunk-header header)
+      (cl-case type
+        (added (setq new-line (1+ orig-line)))
+        (t (setq new-line orig-line)))
+      (let ((new-header (format "@@ -%d,%d +%d,%d @@"
+                                orig-line orig-changes new-line new-changes)))
+        (insert new-header)))))
 
 (defun git-gutter:insert-staging-hunk (hunk type)
-  (cl-destructuring-bind
-      (del-line del-len add-line add-len) (git-gutter:read-hunk-header hunk)
-    (save-excursion
-      (insert hunk "\n"))
-    (git-gutter:delete-hunk-header)
-    (git-gutter:insert-hunk-header type add-len del-line del-len add-line)))
+  (save-excursion
+    (insert hunk "\n"))
+  (git-gutter:convert-hunk-header type))
 
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (plist-get diff-info :content))
         (type (plist-get diff-info :type))
-        (header (git-gutter:hunk-diff-header))
+        (header (git-gutter:extract-hunk-header))
         (patch (make-temp-name "git-gutter")))
     (when header
       (with-temp-file patch

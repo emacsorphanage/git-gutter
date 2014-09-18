@@ -114,27 +114,27 @@ gutter information of other windows."
   :group 'git-gutter)
 
 (defface git-gutter:separator
-    '((t (:foreground "cyan" :weight bold)))
+  '((t (:foreground "cyan" :weight bold)))
   "Face of separator"
   :group 'git-gutter)
 
 (defface git-gutter:modified
-    '((t (:foreground "magenta" :weight bold)))
+  '((t (:foreground "magenta" :weight bold)))
   "Face of modified"
   :group 'git-gutter)
 
 (defface git-gutter:added
-    '((t (:foreground "green" :weight bold)))
+  '((t (:foreground "green" :weight bold)))
   "Face of added"
   :group 'git-gutter)
 
 (defface git-gutter:deleted
-    '((t (:foreground "red" :weight bold)))
+  '((t (:foreground "red" :weight bold)))
   "Face of deleted"
   :group 'git-gutter)
 
 (defface git-gutter:unchanged
-    '((t (:background "yellow")))
+  '((t (:background "yellow")))
   "Face of unchanged"
   :group 'git-gutter)
 
@@ -647,30 +647,61 @@ gutter information of other windows."
         (save-buffer))
       (delete-window (git-gutter:popup-buffer-window)))))
 
-(defun git-gutter:diff-header-index-info (path)
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" path))
-      (goto-char (point-min))
-      (forward-line 4)
-      (buffer-substring-no-properties (point-min) (point)))))
-
-(defun git-gutter:hunk-diff-header ()
+(defun git-gutter:extract-hunk-header ()
   (git-gutter:awhen (git-gutter:base-file)
-    (git-gutter:diff-header-index-info (file-name-nondirectory it))))
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" it))
+        (goto-char (point-min))
+        (forward-line 4)
+        (buffer-substring-no-properties (point-min) (point))))))
+
+(defun git-gutter:read-hunk-header (header)
+  (let ((header-regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
+    (when (string-match header-regexp header)
+      (list (string-to-number (match-string 1 header))
+            (git-gutter:changes-to-number (match-string 2 header))
+            (string-to-number (match-string 3 header))
+            (git-gutter:changes-to-number (match-string 4 header))))))
+
+(defun git-gutter:convert-hunk-header (type)
+  (let ((header (buffer-substring-no-properties (point) (line-end-position))))
+    (delete-region (point) (line-end-position))
+    (cl-destructuring-bind
+        (orig-line orig-changes new-line new-changes) (git-gutter:read-hunk-header header)
+      (cl-case type
+        (added (setq new-line (1+ orig-line)))
+        (t (setq new-line orig-line)))
+      (let ((new-header (format "@@ -%d,%d +%d,%d @@"
+                                orig-line orig-changes new-line new-changes)))
+        (insert new-header)))))
+
+(defun git-gutter:insert-staging-hunk (hunk type)
+  (save-excursion
+    (insert hunk "\n"))
+  (git-gutter:convert-hunk-header type))
+
+(defun git-gutter:apply-directory-option ()
+  (let ((root (locate-dominating-file default-directory ".git")))
+    (file-name-directory (file-relative-name (git-gutter:base-file) root))))
 
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (plist-get diff-info :content))
-        (header (git-gutter:hunk-diff-header))
+        (type (plist-get diff-info :type))
+        (header (git-gutter:extract-hunk-header))
         (patch (make-temp-name "git-gutter")))
     (when header
       (with-temp-file patch
         (insert header)
-        (insert content)
-        (insert "\n"))
-      (unless (zerop (git-gutter:execute-command "git" nil
-                                                 "apply" "--unidiff-zero" "--cached" patch))
-        (message "Failed: stating this hunk"))
-      (delete-file patch))))
+        (git-gutter:insert-staging-hunk content type))
+      (let ((dir-option (git-gutter:apply-directory-option))
+            (options (list "--cached" patch)))
+        (when dir-option
+          (setq options (cons "--directory" (cons dir-option options))))
+        (unless (zerop (apply 'git-gutter:execute-command
+                              "git" nil "apply" "--unidiff-zero"
+                              options))
+          (message "Failed: stating this hunk"))
+        (delete-file patch)))))
 
 ;;;###autoload
 (defun git-gutter:stage-hunk ()

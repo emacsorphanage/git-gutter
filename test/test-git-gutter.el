@@ -209,4 +209,19 @@ bar
   (should (eq (git-gutter:vcs-check-function 'git) 'git-gutter:in-git-repository-p))
   (should (eq (git-gutter:vcs-check-function 'hg) 'git-gutter:in-hg-repository-p)))
 
+(ert-deftest git-gutter-read-header ()
+  "Read header of diff hunk"
+
+  (let ((got (git-gutter:read-hunk-header "@@ -658,31 +688,30 @@")))
+    (should (= (nth 0 got) 658))
+    (should (= (nth 1 got) 31))
+    (should (= (nth 2 got) 688))
+    (should (= (nth 3 got) 30)))
+
+  (let ((got (git-gutter:read-hunk-header "@@ -100 +200 @@")))
+    (should (= (nth 0 got) 100))
+    (should (= (nth 1 got) 1))
+    (should (= (nth 2 got) 200))
+    (should (= (nth 3 got) 1))))
+
 ;;; test-git-gutter.el end here

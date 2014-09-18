@@ -1,7 +1,10 @@
 Revision history for git-gutter.el
 
+Revision 0.76 2014/09/18
+    - Fix staging hunk command bug
+
 Revision 0.75 2014/09/14
-   - Update gutter information at magit-revert-buffer-hook
+    - Update gutter information at magit-revert-buffer-hook
 
 Revision 0.74 2014/09/06
    - Log level is 0 as default now.

@@ -107,6 +107,10 @@ Toggle git-gutter
 
 Setup for working with `linum-mode`.
 
+#### `git-gutter:update-all-windows`
+
+Update git-gutter information of buffers in all visible window.
+
 
 ## Sample Configuration
 
@@ -184,6 +188,17 @@ character.
  '(git-gutter:deleted-sign "☂"))
 ```
 
+### Backends
+
+`git-gutter.el` supports `git` and `mercurial` backends.
+You can set backends which `git-gutter.el` will be used.
+Default value of `git-gutter:handled-backends` is `'(git hg)`
+
+```lisp
+;; If you can use git-gutter only for git
+(custom-set-variables
+ '(git-gutter:handled-backends '(git)))
+```
 
 ### Updates hooks
 

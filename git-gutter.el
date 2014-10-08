@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.71
+;; Version: 0.77
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,7 @@ gutter information of other windows."
 
 (defcustom git-gutter:update-hooks
   '(after-save-hook after-revert-hook find-file-hook after-change-major-mode-hook
-    text-scale-mode-hook)
+    text-scale-mode-hook magit-revert-buffer-hook)
   "hook points of updating gutter"
   :type '(list (hook :tag "HookPoint")
                (repeat :inline t (hook :tag "HookPoint")))
@@ -108,38 +108,44 @@ gutter information of other windows."
   :type 'string
   :group 'git-gutter)
 
-(defcustom git-gutter:verbosity 4
+(defcustom git-gutter:verbosity 0
   "Log/message level. 4 means all, 0 nothing."
   :type 'integer
   :group 'git-gutter)
 
 (defface git-gutter:separator
-    '((t (:foreground "cyan" :weight bold)))
+  '((t (:foreground "cyan" :weight bold)))
   "Face of separator"
   :group 'git-gutter)
 
 (defface git-gutter:modified
-    '((t (:foreground "magenta" :weight bold)))
+  '((t (:foreground "magenta" :weight bold)))
   "Face of modified"
   :group 'git-gutter)
 
 (defface git-gutter:added
-    '((t (:foreground "green" :weight bold)))
+  '((t (:foreground "green" :weight bold)))
   "Face of added"
   :group 'git-gutter)
 
 (defface git-gutter:deleted
-    '((t (:foreground "red" :weight bold)))
+  '((t (:foreground "red" :weight bold)))
   "Face of deleted"
   :group 'git-gutter)
 
 (defface git-gutter:unchanged
-    '((t (:background "yellow")))
+  '((t (:background "yellow")))
   "Face of unchanged"
   :group 'git-gutter)
 
 (defcustom git-gutter:disabled-modes nil
   "A list of modes which `global-git-gutter-mode' should be disabled."
+  :type '(repeat symbol)
+  :group 'git-gutter)
+
+(defcustom git-gutter:handled-backends '(git hg)
+  "List of version control backends for which `git-gutter.el` will be used.
+`git' and `hg' are supported."
   :type '(repeat symbol)
   :group 'git-gutter)
 
@@ -201,14 +207,18 @@ gutter information of other windows."
 
 (defun git-gutter:in-hg-repository-p ()
   (and (executable-find "hg")
+       (locate-dominating-file default-directory ".hg")
        (zerop (git-gutter:execute-command "hg" nil "root"))
        (not (string-match-p "/\.hg/" default-directory))))
 
+(defsubst git-gutter:vcs-check-function (vcs)
+  (cl-case vcs
+    (git 'git-gutter:in-git-repository-p)
+    (hg 'git-gutter:in-hg-repository-p)))
+
 (defsubst git-gutter:in-repository-p ()
-  (cl-loop for vcs in '(git hg)
-           for check-func = (cl-case vcs
-                              (git 'git-gutter:in-git-repository-p)
-                              (hg 'git-gutter:in-hg-repository-p))
+  (cl-loop for vcs in git-gutter:handled-backends
+           for check-func = (git-gutter:vcs-check-function vcs)
            when (funcall check-func)
            return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
 
@@ -258,7 +268,7 @@ gutter information of other windows."
   (or git-gutter:window-width (git-gutter:longest-sign-width)))
 
 (defun git-gutter:set-window-margin (width)
-  (unless git-gutter:linum-enabled
+  (when (and (not git-gutter:linum-enabled) (>= width 0))
     (let ((curwin (get-buffer-window)))
       (set-window-margins curwin width (cdr (window-margins curwin))))))
 
@@ -637,30 +647,61 @@ gutter information of other windows."
         (save-buffer))
       (delete-window (git-gutter:popup-buffer-window)))))
 
-(defun git-gutter:diff-header-index-info (path)
-  (with-temp-buffer
-    (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" path))
-      (goto-char (point-min))
-      (forward-line 4)
-      (buffer-substring-no-properties (point-min) (point)))))
-
-(defun git-gutter:hunk-diff-header ()
+(defun git-gutter:extract-hunk-header ()
   (git-gutter:awhen (git-gutter:base-file)
-    (git-gutter:diff-header-index-info (file-name-nondirectory it))))
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" it))
+        (goto-char (point-min))
+        (forward-line 4)
+        (buffer-substring-no-properties (point-min) (point))))))
+
+(defun git-gutter:read-hunk-header (header)
+  (let ((header-regexp "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
+    (when (string-match header-regexp header)
+      (list (string-to-number (match-string 1 header))
+            (git-gutter:changes-to-number (match-string 2 header))
+            (string-to-number (match-string 3 header))
+            (git-gutter:changes-to-number (match-string 4 header))))))
+
+(defun git-gutter:convert-hunk-header (type)
+  (let ((header (buffer-substring-no-properties (point) (line-end-position))))
+    (delete-region (point) (line-end-position))
+    (cl-destructuring-bind
+        (orig-line orig-changes new-line new-changes) (git-gutter:read-hunk-header header)
+      (cl-case type
+        (added (setq new-line (1+ orig-line)))
+        (t (setq new-line orig-line)))
+      (let ((new-header (format "@@ -%d,%d +%d,%d @@"
+                                orig-line orig-changes new-line new-changes)))
+        (insert new-header)))))
+
+(defun git-gutter:insert-staging-hunk (hunk type)
+  (save-excursion
+    (insert hunk "\n"))
+  (git-gutter:convert-hunk-header type))
+
+(defun git-gutter:apply-directory-option ()
+  (let ((root (locate-dominating-file default-directory ".git")))
+    (file-name-directory (file-relative-name (git-gutter:base-file) root))))
 
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (plist-get diff-info :content))
-        (header (git-gutter:hunk-diff-header))
+        (type (plist-get diff-info :type))
+        (header (git-gutter:extract-hunk-header))
         (patch (make-temp-name "git-gutter")))
     (when header
       (with-temp-file patch
         (insert header)
-        (insert content)
-        (insert "\n"))
-      (unless (zerop (git-gutter:execute-command "git" nil
-                                                 "apply" "--unidiff-zero" "--cached" patch))
-        (message "Failed: stating this hunk"))
-      (delete-file patch))))
+        (git-gutter:insert-staging-hunk content type))
+      (let ((dir-option (git-gutter:apply-directory-option))
+            (options (list "--cached" patch)))
+        (when dir-option
+          (setq options (cons "--directory" (cons dir-option options))))
+        (unless (zerop (apply 'git-gutter:execute-command
+                              "git" nil "apply" "--unidiff-zero"
+                              options))
+          (message "Failed: stating this hunk"))
+        (delete-file patch)))))
 
 ;;;###autoload
 (defun git-gutter:stage-hunk ()
@@ -814,6 +855,16 @@ start revision."
       (error "Revision '%s' is not valid." start-rev)))
   (setq git-gutter:start-revision start-rev)
   (git-gutter))
+
+;;;###autoload
+(defun git-gutter:update-all-windows ()
+  "Update git-gutter informations for all visible buffers."
+  (interactive)
+  (dolist (win (window-list))
+    (let ((buf (window-buffer win)))
+      (with-current-buffer buf
+        (when git-gutter-mode
+          (git-gutter))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

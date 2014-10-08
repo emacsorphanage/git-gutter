@@ -856,6 +856,16 @@ start revision."
   (setq git-gutter:start-revision start-rev)
   (git-gutter))
 
+;;;###autoload
+(defun git-gutter:update-all-windows ()
+  "Update git-gutter informations for all visible buffers."
+  (interactive)
+  (dolist (win (window-list))
+    (let ((buf (window-buffer win)))
+      (with-current-buffer buf
+        (when git-gutter-mode
+          (git-gutter))))))
+
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))
   (git-gutter:linum-setup))

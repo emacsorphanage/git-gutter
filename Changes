@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.77 2014/10/08
+    - Add update command which updates all visible buffers
+
 Revision 0.76 2014/09/18
     - Fix staging hunk command bug
 

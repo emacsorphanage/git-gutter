@@ -107,6 +107,10 @@ Toggle git-gutter
 
 Setup for working with `linum-mode`.
 
+#### `git-gutter:update-all-windows`
+
+Update git-gutter information of buffers in all visible window.
+
 
 ## Sample Configuration
 

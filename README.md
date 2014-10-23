@@ -2,7 +2,8 @@
 
 ## Introduction
 `git-gutter.el` is port of [GitGutter](https://github.com/jisaacks/GitGutter)
-which is a plugin of Sublime Text. `git-gutter.el` supports `git` and `mercurial`.
+which is a plugin of Sublime Text. `git-gutter.el` supports `git`, `mercurial`
+and `bazaar`.
 
 
 `git-gutter.el` also supports TRAMP so you can use `git-gutter.el` for remote files.
@@ -18,6 +19,7 @@ which is a plugin of Sublime Text. `git-gutter.el` supports `git` and `mercurial
 * Emacs 24 or higher
 * [Git](http://git-scm.com/) 1.7.0 or higher
 * [Mercurial](http://mercurial.selenic.com/)
+* [Bazaar](http://bazaar.canonical.com/)
 
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
@@ -72,7 +74,7 @@ Jump to previous hunk(alias `git-gutter:previous-diff`)
 
 #### `git-gutter:set-start-revision`
 
-Set start revision where got diff(`git diff` or `hg diff`) from.
+Set start revision where got diff(`git diff`, `hg diff` or `bzr diff`) from.
 
 #### `git-gutter:popup-hunk`
 
@@ -190,7 +192,7 @@ character.
 
 ### Backends
 
-`git-gutter.el` supports `git` and `mercurial` backends.
+`git-gutter.el` supports `git`, `mercurial`, and `bazaar` backends.
 You can set backends which `git-gutter.el` will be used.
 Default value of `git-gutter:handled-backends` is `'(git hg)`
 

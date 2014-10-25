@@ -4,7 +4,7 @@
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.77
+;; Version: 0.78
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,11 @@ character for signs of changes"
 
 (defcustom git-gutter:mercurial-diff-option ""
   "Option of 'hg diff'"
+  :type 'string
+  :group 'git-gutter)
+
+(defcustom git-gutter:bazaar-diff-option ""
+  "Option of 'bzr diff'"
   :type 'string
   :group 'git-gutter)
 
@@ -145,7 +150,7 @@ gutter information of other windows."
 
 (defcustom git-gutter:handled-backends '(git hg)
   "List of version control backends for which `git-gutter.el` will be used.
-`git' and `hg' are supported."
+`git', `hg', and `bzr' are supported."
   :type '(repeat symbol)
   :group 'git-gutter)
 
@@ -211,10 +216,17 @@ gutter information of other windows."
        (zerop (git-gutter:execute-command "hg" nil "root"))
        (not (string-match-p "/\.hg/" default-directory))))
 
+(defun git-gutter:in-bzr-repository-p ()
+  (and (executable-find "bzr")
+       (locate-dominating-file default-directory ".bzr")
+       (zerop (git-gutter:execute-command "bzr" nil "root"))
+       (not (string-match-p "/\.bzr/" default-directory))))
+
 (defsubst git-gutter:vcs-check-function (vcs)
   (cl-case vcs
     (git 'git-gutter:in-git-repository-p)
-    (hg 'git-gutter:in-hg-repository-p)))
+    (hg 'git-gutter:in-hg-repository-p)
+    (bzr 'git-gutter:in-bzr-repository-p)))
 
 (defsubst git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
@@ -302,10 +314,25 @@ gutter information of other windows."
   (let ((args (git-gutter:hg-diff-arguments file)))
     (apply 'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
 
+(defun git-gutter:bzr-diff-arguments (file)
+  (let (args)
+    (unless (string= git-gutter:bazaar-diff-option "")
+      (setq args (nreverse (split-string git-gutter:bazaar-diff-option))))
+    (when (git-gutter:revision-set-p)
+      (push "-r" args)
+      (push git-gutter:start-revision args))
+    (nreverse (cons file args))))
+
+(defsubst git-gutter:start-bzr-diff-process (file proc-buf)
+  (let ((args (git-gutter:bzr-diff-arguments file)))
+    (apply 'start-file-process "git-gutter" proc-buf
+           "bzr" "diff" "--context=0" args)))
+
 (defun git-gutter:start-diff-process1 (file proc-buf)
   (cl-case git-gutter:vcs-type
     (git (git-gutter:start-git-diff-process file proc-buf))
-    (hg (git-gutter:start-hg-diff-process file proc-buf))))
+    (hg (git-gutter:start-hg-diff-process file proc-buf))
+    (bzr (git-gutter:start-bzr-diff-process file proc-buf))))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (git-gutter:set-window-margin (git-gutter:window-margin))
@@ -841,7 +868,9 @@ gutter information of other windows."
            (git (git-gutter:execute-command "git" nil
                                             "rev-parse" "--quiet" "--verify"
                                             revision))
-           (hg (git-gutter:execute-command "hg" nil "id" "-r" revision)))))
+           (hg (git-gutter:execute-command "hg" nil "id" "-r" revision))
+           (bzr (git-gutter:execute-command "bzr" nil
+                                            "revno" "-r" revision)))))
 
 ;;;###autoload
 (defun git-gutter:set-start-revision (start-rev)

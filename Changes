@@ -1,5 +1,9 @@
 Revision history for git-gutter.el
 
+Revision 0.78 2014/10/25
+    - Support bzr
+    Thanks nikolas
+
 Revision 0.77 2014/10/08
     - Add update command which updates all visible buffers
 

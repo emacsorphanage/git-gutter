@@ -1,4 +1,4 @@
-# git-gutter.el
+# git-gutter.el [![travis badge][travis-badge]][travis-link] [![melpa badge][melpa-badge]][melpa-link] [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
 
 ## Introduction
 `git-gutter.el` is port of [GitGutter](https://github.com/jisaacks/GitGutter)
@@ -58,7 +58,6 @@ Following example of enabling `git-gutter` for some mode.
 (add-hook 'ruby-mode-hook 'git-gutter-mode)
 (add-hook 'python-mode-hook 'git-gutter-mode)
 ```
-
 
 ## Commands
 
@@ -320,3 +319,10 @@ Fork of `git-gutter.el`.
 ### Another implementation of git-gutter.el
 
 [How to write another implementation](wiki/Write-another-git-gutter.el-implementation)
+
+[travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.png
+[travis-link]: https://travis-ci.org/syohex/emacs-git-gutter
+[melpa-link]: http://melpa.milkbox.net/#/git-gutter
+[melpa-stable-link]: http://melpa-stable.milkbox.net/#/git-gutter
+[melpa-badge]: http://melpa.milkbox.net/packages/git-gutter-badge.svg
+[melpa-stable-badge]: http://melpa-stable.milkbox.net/packages/git-gutter-badge.svg

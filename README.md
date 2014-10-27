@@ -322,7 +322,7 @@ Fork of `git-gutter.el`.
 
 [travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.png
 [travis-link]: https://travis-ci.org/syohex/emacs-git-gutter
-[melpa-link]: http://melpa.milkbox.net/#/git-gutter
-[melpa-stable-link]: http://melpa-stable.milkbox.net/#/git-gutter
-[melpa-badge]: http://melpa.milkbox.net/packages/git-gutter-badge.svg
-[melpa-stable-badge]: http://melpa-stable.milkbox.net/packages/git-gutter-badge.svg
+[melpa-link]: http://melpa.org/#/git-gutter
+[melpa-stable-link]: http://stable.melpa.org/#/git-gutter
+[melpa-badge]: http://melpa.org/packages/git-gutter-badge.svg
+[melpa-stable-badge]: http://stable.melpa.org/packages/git-gutter-badge.svg

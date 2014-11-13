@@ -193,12 +193,14 @@ character.
 
 `git-gutter.el` supports `git`, `mercurial`, and `bazaar` backends.
 You can set backends which `git-gutter.el` will be used.
-Default value of `git-gutter:handled-backends` is `'(git hg)`
+Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
+`git-gutter.el` for mercurial or bazaar projects, please change value of
+`git-gutter:handled-backends` as below.
 
 ```lisp
-;; If you can use git-gutter only for git
+;; Use git-gutter for 'git', 'mercurial' and 'bazzar' project.
 (custom-set-variables
- '(git-gutter:handled-backends '(git)))
+ '(git-gutter:handled-backends '(git hg bzr)))
 ```
 
 ### Updates hooks

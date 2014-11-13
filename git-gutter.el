@@ -148,7 +148,7 @@ gutter information of other windows."
   :type '(repeat symbol)
   :group 'git-gutter)
 
-(defcustom git-gutter:handled-backends '(git hg)
+(defcustom git-gutter:handled-backends '(git)
   "List of version control backends for which `git-gutter.el` will be used.
 `git', `hg', and `bzr' are supported."
   :type '(repeat symbol)

@@ -198,7 +198,7 @@ Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
 `git-gutter:handled-backends` as below.
 
 ```lisp
-;; Use git-gutter for 'git', 'mercurial' and 'bazzar' project.
+;; Use git-gutter for 'git', 'mercurial' and 'bazaar' project.
 (custom-set-variables
  '(git-gutter:handled-backends '(git hg bzr)))
 ```

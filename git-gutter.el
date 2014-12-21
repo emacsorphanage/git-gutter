@@ -78,6 +78,11 @@ gutter information of other windows."
                (repeat :inline t (hook :tag "HookPoint")))
   :group 'git-gutter)
 
+(defcustom git-gutter:always-show-separator nil
+  "Show separator even if there are no changes."
+  :type 'boolean
+  :group 'git-gutter)
+
 (defcustom git-gutter:separator-sign nil
   "Separator sign"
   :type 'string
@@ -577,7 +582,7 @@ gutter information of other windows."
                   (setq curline (1+ end-line))))))))
 
 (defun git-gutter:view-diff-infos (diffinfos)
-  (when diffinfos
+  (when (or diffinfos git-gutter:always-show-separator)
     (when (or git-gutter:unchanged-sign git-gutter:separator-sign)
       (git-gutter:view-for-unchanged))
     (git-gutter:view-set-overlays diffinfos))

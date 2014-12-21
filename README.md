@@ -263,6 +263,9 @@ signs. This is mostly useful when running emacs in a console.
 
 Default value of `git-gutter:separator-sign` is `nil`.
 
+Please set `git-gutter:always-show-separator` to non-nil, if you want to show
+separator always.
+
 ### Hide gutter if there are no changes
 
 Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.

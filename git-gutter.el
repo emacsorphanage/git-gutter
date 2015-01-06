@@ -505,6 +505,11 @@ gutter information of other windows."
                         (car (window-margins)))))
         (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
+(defun git-gutter:show-backends ()
+  (mapconcat (lambda (backend)
+               (capitalize (symbol-name backend)))
+             git-gutter:handled-backends "/"))
+
 ;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
@@ -530,7 +535,7 @@ gutter information of other windows."
               (add-hook hook 'git-gutter nil t))
             (git-gutter))
         (when (> git-gutter:verbosity 2)
-          (message "Here is not Git/Mercurial work tree"))
+          (message "Here is not %s work tree" (git-gutter:show-backends)))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)

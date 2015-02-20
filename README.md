@@ -325,7 +325,7 @@ Fork of `git-gutter.el`.
 
 [How to write another implementation](wiki/Write-another-git-gutter.el-implementation)
 
-[travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.png
+[travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.svg
 [travis-link]: https://travis-ci.org/syohex/emacs-git-gutter
 [melpa-link]: http://melpa.org/#/git-gutter
 [melpa-stable-link]: http://stable.melpa.org/#/git-gutter

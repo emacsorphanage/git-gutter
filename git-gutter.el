@@ -195,6 +195,7 @@ gutter information of other windows."
 (defvar git-gutter:start-revision nil)
 (defvar git-gutter:revision-history nil)
 (defvar git-gutter:update-timer nil)
+(defvar git-gutter:last-sha1 nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -967,16 +968,22 @@ start revision."
              (delete-file original)
              (delete-file now))))))))
 
+(defun git-gutter:should-update-p ()
+  (let ((sha1 (secure-hash 'sha1 (current-buffer))))
+    (unless (equal sha1 git-gutter:last-sha1)
+      (setq git-gutter:last-sha1 sha1))))
+
 (defun git-gutter:live-update ()
   (if (not global-git-gutter-mode)
       (git-gutter:cancel-update-timer)
     (when (and git-gutter:enabled (buffer-modified-p))
-      (let ((file (file-name-nondirectory (git-gutter:base-file)))
-            (now (make-temp-file "git-gutter-cur"))
-            (original (make-temp-file "git-gutter-orig")))
-        (git-gutter:write-original-content original file)
-        (git-gutter:write-current-content now)
-        (git-gutter:start-live-update file original now)))))
+      (when (git-gutter:should-update-p)
+        (let ((file (file-name-nondirectory (git-gutter:base-file)))
+              (now (make-temp-file "git-gutter-cur"))
+              (original (make-temp-file "git-gutter-orig")))
+          (git-gutter:write-original-content original file)
+          (git-gutter:write-current-content now)
+          (git-gutter:start-live-update file original now))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

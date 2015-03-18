@@ -1,5 +1,14 @@
 Revision history for git-gutter.el
 
+Revision 0.80 2014/12/21
+    - Add flag variable for always showing separator
+
+Revision 0.79 2014/11/13
+    [Incompatible Change]
+     - mercurial is not default backend now
+       If you use git-gutter.el for mercurial, please set
+       'hg' to git-gutter:handled-backends
+
 Revision 0.78 2014/10/25
     - Support bzr
     Thanks nikolas

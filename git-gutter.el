@@ -1,10 +1,10 @@
 ;;; git-gutter.el --- Port of Sublime Text plugin GitGutter -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2014 by Syohei YOSHIDA
+;; Copyright (C) 2015 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
-;; Version: 0.78
+;; Version: 0.80
 ;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -78,6 +78,11 @@ gutter information of other windows."
                (repeat :inline t (hook :tag "HookPoint")))
   :group 'git-gutter)
 
+(defcustom git-gutter:always-show-separator nil
+  "Show separator even if there are no changes."
+  :type 'boolean
+  :group 'git-gutter)
+
 (defcustom git-gutter:separator-sign nil
   "Separator sign"
   :type 'string
@@ -148,7 +153,7 @@ gutter information of other windows."
   :type '(repeat symbol)
   :group 'git-gutter)
 
-(defcustom git-gutter:handled-backends '(git hg)
+(defcustom git-gutter:handled-backends '(git)
   "List of version control backends for which `git-gutter.el` will be used.
 `git', `hg', and `bzr' are supported."
   :type '(repeat symbol)
@@ -173,6 +178,11 @@ gutter information of other windows."
   :type 'hook
   :group 'git-gutter)
 
+(defcustom git-gutter:update-interval 0
+  "Time interval in seconds for updating diff information."
+  :type 'integer
+  :group 'git-gutter)
+
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:toggle-flag t)
 (defvar git-gutter:force nil)
@@ -184,6 +194,8 @@ gutter information of other windows."
 (defvar git-gutter:vcs-type nil)
 (defvar git-gutter:start-revision nil)
 (defvar git-gutter:revision-history nil)
+(defvar git-gutter:update-timer nil)
+(defvar git-gutter:last-sha1 nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -255,26 +267,26 @@ gutter information of other windows."
         (goto-char (point-max)))
       (buffer-substring curpoint (point)))))
 
-(defun git-gutter:process-diff-output (proc)
-  (when (buffer-live-p (process-buffer proc))
-    (let ((regexp "^@@ -\\(?:[0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"))
-      (with-current-buffer (process-buffer proc)
-        (goto-char (point-min))
-        (cl-loop while (re-search-forward regexp nil t)
-                 for new-line  = (string-to-number (match-string 2))
-                 for orig-changes = (git-gutter:changes-to-number (match-string 1))
-                 for new-changes = (git-gutter:changes-to-number (match-string 3))
-                 for type = (cond ((zerop orig-changes) 'added)
-                                  ((zerop new-changes) 'deleted)
-                                  (t 'modified))
-                 for end-line = (if (eq type 'deleted)
-                                    new-line
-                                  (1- (+ new-line new-changes)))
-                 for content = (git-gutter:diff-content)
-                 collect
-                 (let ((start (if (zerop new-line) 1 new-line))
-                       (end (if (zerop end-line) 1 end-line)))
-                   (git-gutter:make-diffinfo type content start end)))))))
+(defun git-gutter:process-diff-output (buf)
+  (when (buffer-live-p buf)
+    (with-current-buffer buf
+      (goto-char (point-min))
+      (cl-loop with regexp = "^@@ -\\(?:[0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"
+               while (re-search-forward regexp nil t)
+               for new-line  = (string-to-number (match-string 2))
+               for orig-changes = (git-gutter:changes-to-number (match-string 1))
+               for new-changes = (git-gutter:changes-to-number (match-string 3))
+               for type = (cond ((zerop orig-changes) 'added)
+                                ((zerop new-changes) 'deleted)
+                                (t 'modified))
+               for end-line = (if (eq type 'deleted)
+                                  new-line
+                                (1- (+ new-line new-changes)))
+               for content = (git-gutter:diff-content)
+               collect
+               (let ((start (if (zerop new-line) 1 new-line))
+                     (end (if (zerop end-line) 1 end-line)))
+                 (git-gutter:make-diffinfo type content start end))))))
 
 (defsubst git-gutter:window-margin ()
   (or git-gutter:window-width (git-gutter:longest-sign-width)))
@@ -345,7 +357,7 @@ gutter information of other windows."
      (lambda (proc _event)
        (when (eq (process-status proc) 'exit)
          (setq git-gutter:enabled nil)
-         (let ((diffinfos (git-gutter:process-diff-output proc)))
+         (let ((diffinfos (git-gutter:process-diff-output (process-buffer proc))))
            (when (buffer-live-p curbuf)
              (with-current-buffer curbuf
                (git-gutter:update-diffinfo diffinfos)
@@ -500,6 +512,11 @@ gutter information of other windows."
                         (car (window-margins)))))
         (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
+(defun git-gutter:show-backends ()
+  (mapconcat (lambda (backend)
+               (capitalize (symbol-name backend)))
+             git-gutter:handled-backends "/"))
+
 ;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
@@ -525,7 +542,7 @@ gutter information of other windows."
               (add-hook hook 'git-gutter nil t))
             (git-gutter))
         (when (> git-gutter:verbosity 2)
-          (message "Here is not Git/Mercurial work tree"))
+          (message "Here is not %s work tree" (git-gutter:show-backends)))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)
@@ -535,10 +552,12 @@ gutter information of other windows."
     (git-gutter:clear)))
 
 (defun git-gutter--turn-on ()
-  (let ((bfn (buffer-file-name)))
-    (when (and bfn (not (file-remote-p bfn))
-               (not (memq major-mode git-gutter:disabled-modes)))
-      (git-gutter-mode +1))))
+  (when (and (buffer-file-name)
+             (not (memq major-mode git-gutter:disabled-modes)))
+    (git-gutter-mode +1)
+    (when (and (not git-gutter:update-timer) (> git-gutter:update-interval 0))
+      (setq git-gutter:update-timer
+            (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update)))))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode git-gutter-mode git-gutter--turn-on
@@ -578,7 +597,7 @@ gutter information of other windows."
                   (setq curline (1+ end-line))))))))
 
 (defun git-gutter:view-diff-infos (diffinfos)
-  (when diffinfos
+  (when (or diffinfos git-gutter:always-show-separator)
     (when (or git-gutter:unchanged-sign git-gutter:separator-sign)
       (git-gutter:view-for-unchanged))
     (git-gutter:view-set-overlays diffinfos))
@@ -895,6 +914,76 @@ start revision."
       (with-current-buffer buf
         (when git-gutter-mode
           (git-gutter))))))
+
+(defun git-gutter:start-update-timer ()
+  (interactive)
+  (when git-gutter:update-timer
+    (error "Update timer is already running."))
+  (setq git-gutter:update-timer
+        (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update)))
+
+(defun git-gutter:cancel-update-timer ()
+  (interactive)
+  (cancel-timer git-gutter:update-timer)
+  (setq git-gutter:update-timer nil))
+
+(defsubst git-gutter:write-current-content (tmpfile)
+  (let ((content (buffer-substring-no-properties (point-min) (point-max))))
+    (with-temp-file tmpfile
+      (insert content))))
+
+(defsubst git-gutter:original-file-content (file)
+  (with-temp-buffer
+    (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
+      (buffer-substring-no-properties (point-min) (point-max)))))
+
+(defun git-gutter:write-original-content (tmpfile filename)
+  (let ((content (git-gutter:original-file-content filename)))
+    (with-temp-file tmpfile
+      (insert content))))
+
+(defsubst git-gutter:start-raw-diff-process (proc-buf original now)
+  (start-file-process "git-gutter:update-timer" proc-buf
+                      "diff" "-U0" original now))
+
+(defun git-gutter:start-live-update (file original now)
+  (let ((proc-bufname (git-gutter:diff-process-buffer file)))
+    (when (get-buffer proc-bufname)
+      (kill-buffer proc-bufname))
+    (let* ((curbuf (current-buffer))
+           (proc-buf (get-buffer-create proc-bufname))
+           (process (git-gutter:start-raw-diff-process proc-buf original now)))
+      (set-process-query-on-exit-flag process nil)
+      (set-process-sentinel
+       process
+       (lambda (proc _event)
+         (when (eq (process-status proc) 'exit)
+           (setq git-gutter:enabled nil)
+           (let ((diffinfos (git-gutter:process-diff-output (process-buffer proc))))
+             (when (buffer-live-p curbuf)
+               (with-current-buffer curbuf
+                 (git-gutter:update-diffinfo diffinfos)
+                 (setq git-gutter:enabled t)))
+             (kill-buffer proc-buf)
+             (delete-file original)
+             (delete-file now))))))))
+
+(defun git-gutter:should-update-p ()
+  (let ((sha1 (secure-hash 'sha1 (current-buffer))))
+    (unless (equal sha1 git-gutter:last-sha1)
+      (setq git-gutter:last-sha1 sha1))))
+
+(defun git-gutter:live-update ()
+  (if (not global-git-gutter-mode)
+      (git-gutter:cancel-update-timer)
+    (when (and git-gutter:enabled (buffer-modified-p))
+      (when (git-gutter:should-update-p)
+        (let ((file (file-name-nondirectory (git-gutter:base-file)))
+              (now (make-temp-file "git-gutter-cur"))
+              (original (make-temp-file "git-gutter-orig")))
+          (git-gutter:write-original-content original file)
+          (git-gutter:write-current-content now)
+          (git-gutter:start-live-update file original now))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

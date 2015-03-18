@@ -17,9 +17,7 @@ and `bazaar`.
 ## Requirements
 
 * Emacs 24 or higher
-* [Git](http://git-scm.com/) 1.7.0 or higher
-* [Mercurial](http://mercurial.selenic.com/)
-* [Bazaar](http://bazaar.canonical.com/)
+* [Git](http://git-scm.com/)(1.7.0 or higher) or [Mercurial](http://mercurial.selenic.com/) or [Bazaar](http://bazaar.canonical.com/)
 
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
@@ -34,7 +32,7 @@ and `bazaar`.
 
 ## Installation
 
-You can install `git-gutter.el` from [MELPA](https://github.com/milkypostman/melpa.git) with package.el
+You can install `git-gutter.el` from [MELPA](http://melpa.org) with package.el
 (`M-x package-install git-gutter`).
 
 And you can also install it with [el-get](https://github.com/dimitri/el-get).
@@ -144,6 +142,16 @@ Update git-gutter information of buffers in all visible window.
 
 ## Customize
 
+### Live updating
+
+If you set `git-gutter:update-interval` seconds larger than 0, `git-gutter` updates
+diff information in real-time by idle timer.
+
+```lisp
+(custom-set-variables
+ '(git-gutter:update-interval 2))
+```
+
 ### Look and feel
 
 ![git-gutter-multichar](image/git-gutter-multichar.png)
@@ -193,12 +201,14 @@ character.
 
 `git-gutter.el` supports `git`, `mercurial`, and `bazaar` backends.
 You can set backends which `git-gutter.el` will be used.
-Default value of `git-gutter:handled-backends` is `'(git hg)`
+Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
+`git-gutter.el` for mercurial or bazaar projects, please change value of
+`git-gutter:handled-backends` as below.
 
 ```lisp
-;; If you can use git-gutter only for git
+;; Use git-gutter for 'git', 'mercurial' and 'bazaar' project.
 (custom-set-variables
- '(git-gutter:handled-backends '(git)))
+ '(git-gutter:handled-backends '(git hg bzr)))
 ```
 
 ### Updates hooks
@@ -261,6 +271,9 @@ signs. This is mostly useful when running emacs in a console.
 
 Default value of `git-gutter:separator-sign` is `nil`.
 
+Please set `git-gutter:always-show-separator` to non-nil, if you want to show
+separator always.
+
 ### Hide gutter if there are no changes
 
 Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.
@@ -320,9 +333,9 @@ Fork of `git-gutter.el`.
 
 [How to write another implementation](wiki/Write-another-git-gutter.el-implementation)
 
-[travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.png
+[travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.svg
 [travis-link]: https://travis-ci.org/syohex/emacs-git-gutter
-[melpa-link]: http://melpa.milkbox.net/#/git-gutter
-[melpa-stable-link]: http://melpa-stable.milkbox.net/#/git-gutter
-[melpa-badge]: http://melpa.milkbox.net/packages/git-gutter-badge.svg
-[melpa-stable-badge]: http://melpa-stable.milkbox.net/packages/git-gutter-badge.svg
+[melpa-link]: http://melpa.org/#/git-gutter
+[melpa-stable-link]: http://stable.melpa.org/#/git-gutter
+[melpa-badge]: http://melpa.org/packages/git-gutter-badge.svg
+[melpa-stable-badge]: http://stable.melpa.org/packages/git-gutter-badge.svg

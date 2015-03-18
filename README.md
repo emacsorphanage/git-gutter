@@ -17,9 +17,7 @@ and `bazaar`.
 ## Requirements
 
 * Emacs 24 or higher
-* [Git](http://git-scm.com/) 1.7.0 or higher
-* [Mercurial](http://mercurial.selenic.com/)
-* [Bazaar](http://bazaar.canonical.com/)
+* [Git](http://git-scm.com/)(1.7.0 or higher) or [Mercurial](http://mercurial.selenic.com/) or [Bazaar](http://bazaar.canonical.com/)
 
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
@@ -143,6 +141,16 @@ Update git-gutter information of buffers in all visible window.
 
 
 ## Customize
+
+### Live updating
+
+If you set `git-gutter:update-interval` seconds larger than 0, `git-gutter` updates
+diff information in real-time by idle timer.
+
+```lisp
+(custom-set-variables
+ '(git-gutter:update-interval 2))
+```
 
 ### Look and feel
 

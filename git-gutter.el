@@ -45,6 +45,11 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:subversion-diff-option ""
+  "Option of 'svn diff'"
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:mercurial-diff-option ""
   "Option of 'hg diff'"
   :type 'string
@@ -155,7 +160,7 @@ gutter information of other windows."
 
 (defcustom git-gutter:handled-backends '(git)
   "List of version control backends for which `git-gutter.el` will be used.
-`git', `hg', and `bzr' are supported."
+`git', `svn', `hg', and `bzr' are supported."
   :type '(repeat symbol)
   :group 'git-gutter)
 
@@ -222,6 +227,12 @@ gutter information of other windows."
         (string= "true" (buffer-substring-no-properties
                          (point) (line-end-position)))))))
 
+(defun git-gutter:in-svn-repository-p ()
+  (and (executable-find "svn")
+       (locate-dominating-file default-directory ".svn")
+       (zerop (git-gutter:execute-command "svn" nil "info"))
+       (not (string-match-p "/\.svn/" default-directory))))
+
 (defun git-gutter:in-hg-repository-p ()
   (and (executable-find "hg")
        (locate-dominating-file default-directory ".hg")
@@ -237,6 +248,7 @@ gutter information of other windows."
 (defsubst git-gutter:vcs-check-function (vcs)
   (cl-case vcs
     (git 'git-gutter:in-git-repository-p)
+    (svn 'git-gutter:in-svn-repository-p)
     (hg 'git-gutter:in-hg-repository-p)
     (bzr 'git-gutter:in-bzr-repository-p)))
 
@@ -313,6 +325,20 @@ gutter information of other windows."
            "git" "--no-pager" "diff" "--no-color" "--no-ext-diff" "--relative" "-U0"
            arg)))
 
+(defun git-gutter:svn-diff-arguments (file)
+  (let (args)
+    (unless (string= git-gutter:subversion-diff-option "")
+      (setq args (nreverse (split-string git-gutter:subversion-diff-option))))
+    (when (git-gutter:revision-set-p)
+      (push "-r" args)
+      (push git-gutter:start-revision args))
+    (nreverse (cons file args))))
+
+(defsubst git-gutter:start-svn-diff-process (file proc-buf)
+  (let ((args (git-gutter:svn-diff-arguments file)))
+    (apply 'start-file-process "git-gutter" proc-buf "svn" "diff" "--diff-cmd"
+           "diff" "-x" "-U0" args)))
+
 (defun git-gutter:hg-diff-arguments (file)
   (let (args)
     (unless (string= git-gutter:mercurial-diff-option "")
@@ -343,6 +369,7 @@ gutter information of other windows."
 (defun git-gutter:start-diff-process1 (file proc-buf)
   (cl-case git-gutter:vcs-type
     (git (git-gutter:start-git-diff-process file proc-buf))
+    (svn (git-gutter:start-svn-diff-process file proc-buf))
     (hg (git-gutter:start-hg-diff-process file proc-buf))
     (bzr (git-gutter:start-bzr-diff-process file proc-buf))))
 
@@ -888,6 +915,8 @@ gutter information of other windows."
            (git (git-gutter:execute-command "git" nil
                                             "rev-parse" "--quiet" "--verify"
                                             revision))
+           (svn (git-gutter:execute-command "svn" nil "info" "-r" revision
+                                            (buffer-file-name)))
            (hg (git-gutter:execute-command "hg" nil "id" "-r" revision))
            (bzr (git-gutter:execute-command "bzr" nil
                                             "revno" "-r" revision)))))

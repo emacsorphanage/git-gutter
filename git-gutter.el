@@ -944,6 +944,7 @@ start revision."
         (when git-gutter-mode
           (git-gutter))))))
 
+;;;###autoload
 (defun git-gutter:start-update-timer ()
   (interactive)
   (when git-gutter:update-timer
@@ -951,6 +952,7 @@ start revision."
   (setq git-gutter:update-timer
         (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update)))
 
+;;;###autoload
 (defun git-gutter:cancel-update-timer ()
   (interactive)
   (cancel-timer git-gutter:update-timer)

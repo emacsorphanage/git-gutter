@@ -567,7 +567,10 @@ gutter information of other windows."
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
             (dolist (hook git-gutter:update-hooks)
               (add-hook hook 'git-gutter nil t))
-            (git-gutter))
+            (git-gutter)
+            (when (and (not git-gutter:update-timer) (> git-gutter:update-interval 0))
+              (setq git-gutter:update-timer
+                    (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update))))
         (when (> git-gutter:verbosity 2)
           (message "Here is not %s work tree" (git-gutter:show-backends)))
         (git-gutter-mode -1))
@@ -581,10 +584,7 @@ gutter information of other windows."
 (defun git-gutter--turn-on ()
   (when (and (buffer-file-name)
              (not (memq major-mode git-gutter:disabled-modes)))
-    (git-gutter-mode +1)
-    (when (and (not git-gutter:update-timer) (> git-gutter:update-interval 0))
-      (setq git-gutter:update-timer
-            (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update)))))
+    (git-gutter-mode +1)))
 
 ;;;###autoload
 (define-global-minor-mode global-git-gutter-mode git-gutter-mode git-gutter--turn-on

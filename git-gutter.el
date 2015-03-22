@@ -955,6 +955,8 @@ start revision."
 ;;;###autoload
 (defun git-gutter:cancel-update-timer ()
   (interactive)
+  (unless git-gutter:update-timer
+    (error "Timer is no running."))
   (cancel-timer git-gutter:update-timer)
   (setq git-gutter:update-timer nil))
 

@@ -944,6 +944,7 @@ start revision."
         (when git-gutter-mode
           (git-gutter))))))
 
+;;;###autoload
 (defun git-gutter:start-update-timer ()
   (interactive)
   (when git-gutter:update-timer
@@ -951,8 +952,11 @@ start revision."
   (setq git-gutter:update-timer
         (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update)))
 
+;;;###autoload
 (defun git-gutter:cancel-update-timer ()
   (interactive)
+  (unless git-gutter:update-timer
+    (error "Timer is no running."))
   (cancel-timer git-gutter:update-timer)
   (setq git-gutter:update-timer nil))
 
@@ -1003,16 +1007,14 @@ start revision."
       (setq git-gutter:last-sha1 sha1))))
 
 (defun git-gutter:live-update ()
-  (if (not global-git-gutter-mode)
-      (git-gutter:cancel-update-timer)
-    (when (and git-gutter:enabled (buffer-modified-p))
-      (when (git-gutter:should-update-p)
-        (let ((file (file-name-nondirectory (git-gutter:base-file)))
-              (now (make-temp-file "git-gutter-cur"))
-              (original (make-temp-file "git-gutter-orig")))
-          (git-gutter:write-original-content original file)
-          (git-gutter:write-current-content now)
-          (git-gutter:start-live-update file original now))))))
+  (when (and git-gutter:enabled (buffer-modified-p))
+    (when (git-gutter:should-update-p)
+      (let ((file (file-name-nondirectory (git-gutter:base-file)))
+            (now (make-temp-file "git-gutter-cur"))
+            (original (make-temp-file "git-gutter-orig")))
+        (git-gutter:write-original-content original file)
+        (git-gutter:write-current-content now)
+        (git-gutter:start-live-update file original now)))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

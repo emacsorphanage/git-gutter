@@ -155,6 +155,8 @@ diff information in real-time by idle timer.
  '(git-gutter:update-interval 2))
 ```
 
+You can stop timer by `git-gutter:cancel-update-timer` and starts by `git-gutter:start-update-timer`.
+
 ### Look and feel
 
 ![git-gutter-multichar](image/git-gutter-multichar.png)

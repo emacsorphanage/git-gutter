@@ -858,7 +858,8 @@ gutter information of other windows."
 (defun git-gutter ()
   "Show diff information in gutter"
   (interactive)
-  (when (or git-gutter:force git-gutter:toggle-flag)
+  (when (and (or git-gutter:toggle-flag git-gutter:force)
+             (or git-gutter:vcs-type (git-gutter:in-repository-p)))
     (let* ((file (git-gutter:base-file))
            (proc-buf (git-gutter:diff-process-buffer file)))
       (when (and (called-interactively-p 'interactive) (get-buffer proc-buf))

@@ -972,9 +972,10 @@ start revision."
       (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun git-gutter:write-original-content (tmpfile filename)
-  (let ((content (git-gutter:original-file-content filename)))
+  (git-gutter:awhen (git-gutter:original-file-content filename)
     (with-temp-file tmpfile
-      (insert content))))
+      (insert it)
+      t)))
 
 (defsubst git-gutter:start-raw-diff-process (proc-buf original now)
   (start-file-process "git-gutter:update-timer" proc-buf
@@ -1013,9 +1014,9 @@ start revision."
       (let ((file (file-name-nondirectory (git-gutter:base-file)))
             (now (make-temp-file "git-gutter-cur"))
             (original (make-temp-file "git-gutter-orig")))
-        (git-gutter:write-original-content original file)
-        (git-gutter:write-current-content now)
-        (git-gutter:start-live-update file original now)))))
+        (when (git-gutter:write-original-content original file)
+          (git-gutter:write-current-content now)
+          (git-gutter:start-live-update file original now))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

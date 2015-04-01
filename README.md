@@ -86,7 +86,7 @@ of buffer popuped by `git-gutter:popup-diff` to current hunk.
 #### `git-gutter:stage-hunk`
 
 Stage current hunk. You can use this command like `git add -p`.
-This command is not supported for `Mercurial`.
+This command is supported only for `git`.
 
 #### `git-gutter:revert-hunk`
 

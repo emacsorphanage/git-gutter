@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.82 2015/04/01
+    - Fix git-gutter command when git-gutter-mode is disabled
+
 Revision 0.81 2015/03/28
     - Implement live update feature
     - Support Subversion(Thanks alpha22jp)

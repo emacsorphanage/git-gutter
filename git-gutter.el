@@ -917,7 +917,7 @@ gutter information of other windows."
                                             "rev-parse" "--quiet" "--verify"
                                             revision))
            (svn (git-gutter:execute-command "svn" nil "info" "-r" revision
-                                            (buffer-file-name)))
+                                            (file-relative-name (buffer-file-name))))
            (hg (git-gutter:execute-command "hg" nil "id" "-r" revision))
            (bzr (git-gutter:execute-command "bzr" nil
                                             "revno" "-r" revision)))))

@@ -664,12 +664,14 @@ gutter information of other windows."
                     index)))
 
 (defun git-gutter:search-here-diffinfo (diffinfos)
-  (cl-loop with current-line = (line-number-at-pos)
-           for diffinfo in diffinfos
-           for start = (plist-get diffinfo :start-line)
-           for end   = (or (plist-get diffinfo :end-line) (1+ start))
-           when (and (>= current-line start) (<= current-line end))
-           return diffinfo))
+  (save-excursion
+    (widen)
+    (cl-loop with current-line = (line-number-at-pos)
+             for diffinfo in diffinfos
+             for start = (plist-get diffinfo :start-line)
+             for end   = (or (plist-get diffinfo :end-line) (1+ start))
+             when (and (>= current-line start) (<= current-line end))
+             return diffinfo)))
 
 (defun git-gutter:collect-deleted-line (str)
   (with-temp-buffer

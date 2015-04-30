@@ -664,7 +664,7 @@ gutter information of other windows."
                     index)))
 
 (defun git-gutter:search-here-diffinfo (diffinfos)
-  (save-excursion
+  (save-restriction
     (widen)
     (cl-loop with current-line = (line-number-at-pos)
              for diffinfo in diffinfos

@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.83 2015/05/01
+    - Fix narrow region issue in staging hunk
+
 Revision 0.82 2015/04/01
     - Fix git-gutter command when git-gutter-mode is disabled
 

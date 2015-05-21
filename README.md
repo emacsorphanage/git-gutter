@@ -283,7 +283,7 @@ separator always.
 Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.
 (Default is nil)
 
-```elisp
+```lisp
 (custom-set-variables
  '(git-gutter:hide-gutter t))
 ```

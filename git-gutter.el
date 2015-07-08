@@ -1011,9 +1011,11 @@ start revision."
       (setq git-gutter:last-sha1 sha1))))
 
 (defun git-gutter:live-update ()
-  (when (and git-gutter:enabled (buffer-modified-p))
-    (when (git-gutter:should-update-p)
-      (let ((file (file-name-nondirectory (git-gutter:base-file)))
+  (git-gutter:awhen (git-gutter:base-file)
+    (when (and git-gutter:enabled
+               (buffer-modified-p)
+               (git-gutter:should-update-p))
+      (let ((file (file-name-nondirectory it))
             (now (make-temp-file "git-gutter-cur"))
             (original (make-temp-file "git-gutter-orig")))
         (when (git-gutter:write-original-content original file)

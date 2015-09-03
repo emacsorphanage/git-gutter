@@ -188,6 +188,11 @@ gutter information of other windows."
   :type 'integer
   :group 'git-gutter)
 
+(defcustom git-gutter:ask-p t
+  "Ask whether commit/revert or not"
+  :type 'boolean
+  :group 'git-gutter)
+
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:toggle-flag t)
 (defvar git-gutter:force nil)
@@ -711,17 +716,23 @@ gutter information of other windows."
 (defsubst git-gutter:popup-buffer-window ()
   (get-buffer-window (get-buffer git-gutter:popup-buffer)))
 
+(defun git-gutter:query-action (action action-fn update-fn)
+  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
+    (save-window-excursion
+      (when git-gutter:ask-p
+        (git-gutter:popup-hunk it))
+      (when (or (not git-gutter:ask-p) (yes-or-no-p (format "%s current hunk ?" action)))
+        (funcall action-fn it)
+        (funcall update-fn))
+      (if git-gutter:ask-p
+          (delete-window (git-gutter:popup-buffer-window))
+        (message "%s current hunk." action)))))
+
 ;;;###autoload
 (defun git-gutter:revert-hunk ()
   "Revert current hunk."
   (interactive)
-  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (save-window-excursion
-      (git-gutter:popup-hunk it)
-      (when (yes-or-no-p "Revert current hunk ?")
-        (git-gutter:do-revert-hunk it)
-        (save-buffer))
-      (delete-window (git-gutter:popup-buffer-window)))))
+  (git-gutter:query-action "Revert" #'git-gutter:do-revert-hunk #'save-buffer))
 
 (defun git-gutter:extract-hunk-header ()
   (git-gutter:awhen (git-gutter:base-file)
@@ -783,13 +794,7 @@ gutter information of other windows."
 (defun git-gutter:stage-hunk ()
   "Stage this hunk like 'git add -p'."
   (interactive)
-  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (save-window-excursion
-      (git-gutter:popup-hunk it)
-      (when (yes-or-no-p "Stage current hunk ?")
-        (git-gutter:do-stage-hunk it)
-        (git-gutter))
-      (delete-window (git-gutter:popup-buffer-window)))))
+  (git-gutter:query-action "Stage" #'git-gutter:do-stage-hunk #'git-gutter))
 
 (defun git-gutter:update-popuped-buffer (diffinfo)
   (with-current-buffer (get-buffer-create git-gutter:popup-buffer)

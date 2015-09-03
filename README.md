@@ -62,7 +62,7 @@ Following example of enabling `git-gutter` for some mode.
 
 ## Commands
 
-`git-gutter.el` provides following commands.
+`git-gutter.el` provides following commands. **Aliases will be removed when 1.0 released.**
 
 #### `git-gutter:next-hunk`
 
@@ -296,6 +296,17 @@ You can pass `git diff` option to set `git-gutter:diff-option`.
 ;; ignore all spaces
 (custom-set-variables
  '(git-gutter:diff-option "-w"))
+```
+
+### Don't ask whether commit/revert or not
+
+`git-gutter.el` always asks you whether commit/revert or not. If you don't want,
+please set `git-gutter:ask-p` to `nil`.
+
+```lisp
+;; Don't ask me!!
+(custom-set-variables
+ '(git-gutter:ask-p nil))
 ```
 
 ### Log/Message Level

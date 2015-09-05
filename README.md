@@ -2,8 +2,8 @@
 
 ## Introduction
 `git-gutter.el` is port of [GitGutter](https://github.com/jisaacks/GitGutter)
-which is a plugin of Sublime Text. `git-gutter.el` supports `git`, `mercurial`
-and `bazaar`.
+which is a plugin of Sublime Text. `git-gutter.el` also supports `Mercurial`
+and `Subversion` and `Bazaar`.
 
 
 `git-gutter.el` also supports TRAMP so you can use `git-gutter.el` for remote files.
@@ -17,7 +17,10 @@ and `bazaar`.
 ## Requirements
 
 * Emacs 24 or higher
-* [Git](http://git-scm.com/)(1.7.0 or higher) or [Mercurial](http://mercurial.selenic.com/) or [Bazaar](http://bazaar.canonical.com/)
+* [Git](http://git-scm.com/)(1.7.0 or higher)
+
+
+If you use `git-gutter.el` for Subversion, please use Subversion 1.8 or higher.
 
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
@@ -59,7 +62,7 @@ Following example of enabling `git-gutter` for some mode.
 
 ## Commands
 
-`git-gutter.el` provides following commands.
+`git-gutter.el` provides following commands. **Aliases will be removed when 1.0 released.**
 
 #### `git-gutter:next-hunk`
 
@@ -83,7 +86,7 @@ of buffer popuped by `git-gutter:popup-diff` to current hunk.
 #### `git-gutter:stage-hunk`
 
 Stage current hunk. You can use this command like `git add -p`.
-This command is not supported for `Mercurial`.
+This command is supported only for `git`.
 
 #### `git-gutter:revert-hunk`
 
@@ -152,6 +155,8 @@ diff information in real-time by idle timer.
  '(git-gutter:update-interval 2))
 ```
 
+You can stop timer by `git-gutter:cancel-update-timer` and starts by `git-gutter:start-update-timer`.
+
 ### Look and feel
 
 ![git-gutter-multichar](image/git-gutter-multichar.png)
@@ -199,16 +204,15 @@ character.
 
 ### Backends
 
-`git-gutter.el` supports `git`, `mercurial`, and `bazaar` backends.
+`git-gutter.el` supports `Git`, `Mercurial`, `Subversion` and `Bazaar` backends.
 You can set backends which `git-gutter.el` will be used.
 Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
-`git-gutter.el` for mercurial or bazaar projects, please change value of
-`git-gutter:handled-backends` as below.
+`git-gutter.el` for other VCS, please change value of `git-gutter:handled-backends` as below.
 
 ```lisp
-;; Use git-gutter for 'git', 'mercurial' and 'bazaar' project.
+;; Use for 'Git'(`git`), 'Mercurial'(`hg`), 'Bazaar'(`bzr`), and 'Subversion'(`svn`) projects
 (custom-set-variables
- '(git-gutter:handled-backends '(git hg bzr)))
+ '(git-gutter:handled-backends '(git hg bzr svn)))
 ```
 
 ### Updates hooks
@@ -279,7 +283,7 @@ separator always.
 Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.
 (Default is nil)
 
-```elisp
+```lisp
 (custom-set-variables
  '(git-gutter:hide-gutter t))
 ```
@@ -292,6 +296,17 @@ You can pass `git diff` option to set `git-gutter:diff-option`.
 ;; ignore all spaces
 (custom-set-variables
  '(git-gutter:diff-option "-w"))
+```
+
+### Don't ask whether commit/revert or not
+
+`git-gutter.el` always asks you whether commit/revert or not. If you don't want,
+please set `git-gutter:ask-p` to `nil`.
+
+```lisp
+;; Don't ask me!!
+(custom-set-variables
+ '(git-gutter:ask-p nil))
 ```
 
 ### Log/Message Level
@@ -322,7 +337,7 @@ Vim version of GitGutter
 
 ### [diff-hl](https://github.com/dgutov/diff-hl)
 
-`diff-hl` has more features than `git-gutter.el`.
+`diff-hl` has more features than `git-gutter.el` and is `vc` friendly.
 
 ### [git-gutter-plus](https://github.com/nonsequitur/git-gutter-plus)
 

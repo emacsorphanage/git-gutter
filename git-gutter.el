@@ -971,19 +971,16 @@ start revision."
 (defun git-gutter:write-current-content (tmpfile)
   (let ((content (buffer-substring-no-properties (point-min) (point-max))))
     (with-temp-file tmpfile
-      (set-buffer-multibyte nil)
       (insert content))))
 
-(defun git-gutter:original-file-content (file)
+(defun git-gutter:original-file-content-p (file)
   (with-temp-buffer
-    (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
-      (buffer-substring-no-properties (point-min) (point-max)))))
+    (zerop (process-file "git" nil t nil "show" (concat ":" file)))))
 
 (defun git-gutter:write-original-content (tmpfile filename)
-  (git-gutter:awhen (git-gutter:original-file-content filename)
+  (when (git-gutter:original-file-content-p filename)
     (with-temp-file tmpfile
-      (set-buffer-multibyte nil)
-      (insert it)
+      (insert-file-contents filename)
       t)))
 
 (defsubst git-gutter:start-raw-diff-process (proc-buf original now)

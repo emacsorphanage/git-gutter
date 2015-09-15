@@ -721,7 +721,7 @@ gutter information of other windows."
     (save-window-excursion
       (when git-gutter:ask-p
         (git-gutter:popup-hunk it))
-      (when (or (not git-gutter:ask-p) (yes-or-no-p (format "%s current hunk ?" action)))
+      (when (or (not git-gutter:ask-p) (yes-or-no-p (format "%s current hunk ? " action)))
         (funcall action-fn it)
         (funcall update-fn))
       (if git-gutter:ask-p

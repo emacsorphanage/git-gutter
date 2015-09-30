@@ -337,7 +337,7 @@ Vim version of GitGutter
 
 ### [diff-hl](https://github.com/dgutov/diff-hl)
 
-`diff-hl` has more features than `git-gutter.el` and is `vc` friendly.
+`diff-hl` is similar tool based on `vc`.
 
 ### [git-gutter-plus](https://github.com/nonsequitur/git-gutter-plus)
 

@@ -737,7 +737,9 @@ gutter information of other windows."
 (defun git-gutter:extract-hunk-header ()
   (git-gutter:awhen (git-gutter:base-file)
     (with-temp-buffer
-      (when (zerop (git-gutter:execute-command "git" t "diff" "--relative" it))
+      (when (zerop (git-gutter:execute-command
+                    "git" t "--no-pager" "diff" "--no-color" "--no-ext-diff"
+                    "--relative" (file-name-nondirectory it)))
         (goto-char (point-min))
         (forward-line 4)
         (buffer-substring-no-properties (point-min) (point))))))

@@ -1,5 +1,10 @@
 Revision history for git-gutter.el
 
+Revision 0.84 2015/11/23
+    - Fix staging command issue on Windows(#101)
+    - Add ask flag for staging and reverting command(#96)
+    - Fix dead buffer issue for live-update(#92)
+
 Revision 0.83 2015/05/01
     - Fix narrow region issue in staging hunk
 

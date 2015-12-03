@@ -1,12 +1,18 @@
 # git-gutter.el [![travis badge][travis-badge]][travis-link] [![melpa badge][melpa-badge]][melpa-link] [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
 
 ## Introduction
+
 `git-gutter.el` is port of [GitGutter](https://github.com/jisaacks/GitGutter)
-which is a plugin of Sublime Text. `git-gutter.el` also supports `Mercurial`
-and `Subversion` and `Bazaar`.
+which is a plugin of Sublime Text.
 
 
-`git-gutter.el` also supports TRAMP so you can use `git-gutter.el` for remote files.
+## Features
+
+- Asynchronous updating
+- Live updating(Update diff information without saving buffer)
+- Support multiple VCS(`Git`, `Mercurial`, `Subversion`, `Bazaar`)
+- Support Tramp
+- Work without `vc-mode`
 
 
 ## Screenshot
@@ -341,7 +347,8 @@ Vim version of GitGutter
 
 ### [git-gutter-plus](https://github.com/nonsequitur/git-gutter-plus)
 
-Fork of `git-gutter.el`.
+Fork of `git-gutter.el`. Some features which are not provided `git-gutter.el` provides.
+However git-gutter-plus updates diff information synchronously.
 
 
 ### Another implementation of git-gutter.el

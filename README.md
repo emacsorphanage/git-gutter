@@ -9,8 +9,8 @@ which is a plugin of Sublime Text.
 ## Features
 
 - Asynchronous updating
-- Live updating(Update diff information without saving buffer)
-- Support multiple VCS(`Git`, `Mercurial`, `Subversion`, `Bazaar`)
+- [Live updating](#live-updating)
+- [Support multiple VCS](#backends)
 - Support Tramp
 - Work without `vc-mode`
 

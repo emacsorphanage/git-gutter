@@ -194,8 +194,6 @@ gutter information of other windows."
   :group 'git-gutter)
 
 (defvar git-gutter:enabled nil)
-(defvar git-gutter:toggle-flag t)
-(defvar git-gutter:force nil)
 (defvar git-gutter:diffinfos nil)
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
@@ -564,7 +562,6 @@ gutter information of other windows."
               (funcall git-gutter:init-function))
             (make-local-variable 'git-gutter:enabled)
             (set (make-local-variable 'git-gutter:has-indirect-buffers) nil)
-            (set (make-local-variable 'git-gutter:toggle-flag) t)
             (make-local-variable 'git-gutter:diffinfos)
             (set (make-local-variable 'git-gutter:start-revision) nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
@@ -584,7 +581,7 @@ gutter information of other windows."
     (remove-hook 'post-command-hook 'git-gutter:post-command-hook t)
     (dolist (hook git-gutter:update-hooks)
       (remove-hook hook 'git-gutter t))
-    (git-gutter:clear)))
+    (git-gutter:clear-gutter)))
 
 (defun git-gutter--turn-on ()
   (when (and (buffer-file-name)
@@ -636,18 +633,20 @@ gutter information of other windows."
   (git-gutter:show-gutter diffinfos))
 
 (defsubst git-gutter:reset-window-margin-p ()
-  (or git-gutter:force
-      git-gutter:hide-gutter
-      (not global-git-gutter-mode)))
+  (or git-gutter:hide-gutter (not global-git-gutter-mode)))
 
 (defun git-gutter:clear-diff-infos ()
   (when (git-gutter:reset-window-margin-p)
     (git-gutter:set-window-margin 0))
   (remove-overlays (point-min) (point-max) 'git-gutter t))
 
-(defsubst git-gutter:clear-gutter ()
-  (when git-gutter:clear-function
-    (funcall git-gutter:clear-function)))
+(defun git-gutter:clear-gutter ()
+  (save-restriction
+    (widen)
+    (when git-gutter:clear-function
+      (funcall git-gutter:clear-function)))
+  (setq git-gutter:enabled nil
+        git-gutter:diffinfos nil))
 
 (defun git-gutter:update-diffinfo (diffinfos)
   (save-restriction
@@ -867,8 +866,7 @@ gutter information of other windows."
 (defun git-gutter ()
   "Show diff information in gutter"
   (interactive)
-  (when (and (or git-gutter:toggle-flag git-gutter:force)
-             (or git-gutter:vcs-type (git-gutter:in-repository-p)))
+  (when (or git-gutter:vcs-type (git-gutter:in-repository-p))
     (let* ((file (git-gutter:base-file))
            (proc-buf (git-gutter:diff-process-buffer file)))
       (when (and (called-interactively-p 'interactive) (get-buffer proc-buf))
@@ -899,26 +897,15 @@ gutter information of other windows."
 (defun git-gutter:clear ()
   "Clear diff information in gutter."
   (interactive)
-  (save-restriction
-    (widen)
-    (git-gutter:clear-gutter))
-  (setq git-gutter:enabled nil
-        git-gutter:diffinfos nil))
+  (git-gutter-mode -1))
 
 ;;;###autoload
 (defun git-gutter:toggle ()
   "Toggle to show diff information."
   (interactive)
-  (let ((git-gutter:force t))
-    (if git-gutter:enabled
-        (progn
-          (git-gutter:clear)
-          (setq git-gutter-mode nil
-                git-gutter:toggle-flag nil))
-      (git-gutter)
-      (setq git-gutter-mode t
-            git-gutter:toggle-flag t))
-    (force-mode-line-update)))
+  (if git-gutter-mode
+      (git-gutter-mode -1)
+    (git-gutter-mode +1)))
 
 (defun git-gutter:revision-valid-p (revision)
   (zerop (cl-case git-gutter:vcs-type

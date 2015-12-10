@@ -1,5 +1,11 @@
 Revision history for git-gutter.el
 
+Revision 0.85 2015/12/10
+    - Use EVM for travis-ci
+    - Update documents
+    - Improve older commands based on git-gutter-mode
+    - Refactoring
+
 Revision 0.84 2015/11/23
     - Fix staging command issue on Windows(#101)
     - Add ask flag for staging and reverting command(#96)

@@ -26,9 +26,6 @@ which is a plugin of Sublime Text.
 * [Git](http://git-scm.com/)(1.7.0 or higher)
 
 
-If you use `git-gutter.el` for Subversion, please use Subversion 1.8 or higher.
-
-
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
 
 |                      | git-gutter.el   | git-gutter-fringe.el |
@@ -210,7 +207,14 @@ character.
 
 ### Backends
 
-`git-gutter.el` supports `Git`, `Mercurial`, `Subversion` and `Bazaar` backends.
+`git-gutter.el` supports following version control systems
+
+- [Git](http://git-scm.com/)(1.7.0 or higher)
+- [Mercurial](https://www.mercurial-scm.org/)
+- [Subversion](https://subversion.apache.org/)(1.8 or higher)
+- [Bazaar](http://bazaar.canonical.com/en/)
+
+
 You can set backends which `git-gutter.el` will be used.
 Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
 `git-gutter.el` for other VCS, please change value of `git-gutter:handled-backends` as below.

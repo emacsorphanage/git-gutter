@@ -920,7 +920,7 @@ start revision."
 
 ;;;###autoload
 (defun git-gutter:update-all-windows ()
-  "Update git-gutter informations for all visible buffers."
+  "Update git-gutter information for all visible buffers."
   (interactive)
   (dolist (win (window-list))
     (let ((buf (window-buffer win)))

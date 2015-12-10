@@ -230,35 +230,22 @@ gutter information of other windows."
         (string= "true" (buffer-substring-no-properties
                          (point) (line-end-position)))))))
 
-(defun git-gutter:in-svn-repository-p ()
-  (and (executable-find "svn")
-       (locate-dominating-file default-directory ".svn")
-       (zerop (git-gutter:execute-command "svn" nil "info"))
-       (not (string-match-p "/\.svn/" default-directory))))
-
-(defun git-gutter:in-hg-repository-p ()
-  (and (executable-find "hg")
-       (locate-dominating-file default-directory ".hg")
-       (zerop (git-gutter:execute-command "hg" nil "root"))
-       (not (string-match-p "/\.hg/" default-directory))))
-
-(defun git-gutter:in-bzr-repository-p ()
-  (and (executable-find "bzr")
-       (locate-dominating-file default-directory ".bzr")
-       (zerop (git-gutter:execute-command "bzr" nil "root"))
-       (not (string-match-p "/\.bzr/" default-directory))))
+(defun git-gutter:in-repository-common-p (cmd check-subcmd repodir)
+  (and (executable-find cmd)
+       (locate-dominating-file default-directory repodir)
+       (zerop (apply #'git-gutter:execute-command cmd nil check-subcmd))
+       (not (string-match-p (regexp-quote (concat "/" repodir "/")) default-directory))))
 
 (defsubst git-gutter:vcs-check-function (vcs)
   (cl-case vcs
-    (git 'git-gutter:in-git-repository-p)
-    (svn 'git-gutter:in-svn-repository-p)
-    (hg 'git-gutter:in-hg-repository-p)
-    (bzr 'git-gutter:in-bzr-repository-p)))
+    (git (git-gutter:in-git-repository-p))
+    (svn (git-gutter:in-repository-common-p "svn" '("info") ".svn"))
+    (hg (git-gutter:in-repository-common-p "hg" '("root") ".hg"))
+    (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))))
 
 (defsubst git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
-           for check-func = (git-gutter:vcs-check-function vcs)
-           when (funcall check-func)
+           when (git-gutter:vcs-check-function vcs)
            return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
 
 (defsubst git-gutter:changes-to-number (str)

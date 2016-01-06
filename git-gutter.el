@@ -1,6 +1,6 @@
 ;;; git-gutter.el --- Port of Sublime Text plugin GitGutter -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2015 by Syohei YOSHIDA
+;; Copyright (C) 2016 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter

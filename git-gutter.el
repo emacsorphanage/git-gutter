@@ -590,6 +590,8 @@ gutter information of other windows."
     (git-gutter:set-window-margin (git-gutter:window-margin))))
 
 (defun git-gutter:view-set-overlays (diffinfos)
+  (when (or git-gutter:unchanged-sign git-gutter:separator-sign)
+    (git-gutter:view-for-unchanged))
   (save-excursion
     (goto-char (point-min))
     (cl-loop with curline = 1
@@ -615,8 +617,6 @@ gutter information of other windows."
 
 (defun git-gutter:view-diff-infos (diffinfos)
   (when (or diffinfos git-gutter:always-show-separator)
-    (when (or git-gutter:unchanged-sign git-gutter:separator-sign)
-      (git-gutter:view-for-unchanged))
     (git-gutter:view-set-overlays diffinfos))
   (git-gutter:show-gutter diffinfos))
 

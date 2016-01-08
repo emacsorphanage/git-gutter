@@ -204,6 +204,7 @@ gutter information of other windows."
 (defvar git-gutter:revision-history nil)
 (defvar git-gutter:update-timer nil)
 (defvar git-gutter:last-sha1 nil)
+(defvar git-gutter:repo-base nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -227,14 +228,22 @@ gutter information of other windows."
     (with-temp-buffer
       (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
         (goto-char (point-min))
-        (string= "true" (buffer-substring-no-properties
-                         (point) (line-end-position)))))))
+        (when (string= "true" (buffer-substring-no-properties
+                               (point) (line-end-position)))
+          (with-temp-buffer
+            (git-gutter:execute-command "git" t "rev-parse" "--show-toplevel")
+            (goto-char (point-max))
+            (delete-backward-char 1)
+            (buffer-string)))))))
 
 (defun git-gutter:in-repository-common-p (cmd check-subcmd repodir)
-  (and (executable-find cmd)
-       (locate-dominating-file default-directory repodir)
-       (zerop (apply #'git-gutter:execute-command cmd nil check-subcmd))
-       (not (string-match-p (regexp-quote (concat "/" repodir "/")) default-directory))))
+  (let (domfile)
+    (when (and (executable-find cmd)
+               (setq domfile (locate-dominating-file default-directory repodir))
+               (zerop (apply #'git-gutter:execute-command cmd nil check-subcmd))
+               (not (string-match-p (regexp-quote (concat "/" repodir "/"))
+                                    default-directory)))
+      (file-name-directory domfile))))
 
 (defsubst git-gutter:vcs-check-function (vcs)
   (cl-case vcs
@@ -245,8 +254,11 @@ gutter information of other windows."
 
 (defsubst git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
-           when (git-gutter:vcs-check-function vcs)
-           return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
+           for vcs-dir = (git-gutter:vcs-check-function vcs)
+           when vcs-dir
+           return (progn
+                    (set (make-local-variable 'git-gutter:repo-base) vcs-dir)
+                    (set (make-local-variable 'git-gutter:vcs-type) vcs))))
 
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -951,13 +963,16 @@ start revision."
     (with-temp-file tmpfile
       (insert content))))
 
-(defsubst git-gutter:original-file-content (file)
+(defsubst git-gutter:original-file-content (file repo-dir)
   (with-temp-buffer
-    (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
+    (when (zerop (process-file
+                  "git" nil t nil "show"
+                  (concat ":0:" (file-relative-name file repo-dir))))
       (buffer-substring-no-properties (point-min) (point-max)))))
 
 (defun git-gutter:write-original-content (tmpfile filename)
-  (git-gutter:awhen (git-gutter:original-file-content filename)
+  (git-gutter:awhen (git-gutter:original-file-content
+                     filename git-gutter:repo-base)
     (with-temp-file tmpfile
       (insert it)
       t)))

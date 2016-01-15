@@ -77,7 +77,7 @@ gutter information of other windows."
 
 (defcustom git-gutter:update-hooks
   '(after-save-hook after-revert-hook find-file-hook after-change-major-mode-hook
-    text-scale-mode-hook magit-revert-buffer-hook)
+    text-scale-mode-hook)
   "hook points of updating gutter"
   :type '(list (hook :tag "HookPoint")
                (repeat :inline t (hook :tag "HookPoint")))

@@ -192,7 +192,7 @@ gutter information of other windows."
      (when it ,@body)))
 
 (defsubst git-gutter:execute-command (cmd output &rest args)
-  (apply 'process-file cmd nil output nil args))
+  (apply #'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
   (when (executable-find "git")
@@ -283,7 +283,7 @@ gutter information of other windows."
 
 (defun git-gutter:start-git-diff-process (file proc-buf)
   (let ((arg (git-gutter:git-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf
+    (apply #'start-file-process "git-gutter" proc-buf
            "git" "--no-pager" "-c" "diff.autorefreshindex=0"
            "diff" "--no-color" "--no-ext-diff" "--relative" "-U0"
            arg)))
@@ -299,7 +299,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-svn-diff-process (file proc-buf)
   (let ((args (git-gutter:svn-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf "svn" "diff" "--diff-cmd"
+    (apply #'start-file-process "git-gutter" proc-buf "svn" "diff" "--diff-cmd"
            "diff" "-x" "-U0" args)))
 
 (defun git-gutter:hg-diff-arguments (file)
@@ -313,7 +313,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-hg-diff-process (file proc-buf)
   (let ((args (git-gutter:hg-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
+    (apply #'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
 
 (defun git-gutter:bzr-diff-arguments (file)
   (let (args)
@@ -326,7 +326,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-bzr-diff-process (file proc-buf)
   (let ((args (git-gutter:bzr-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf
+    (apply #'start-file-process "git-gutter" proc-buf
            "bzr" "diff" "--context=0" args)))
 
 (defun git-gutter:start-diff-process1 (file proc-buf)
@@ -411,7 +411,7 @@ gutter information of other windows."
                      git-gutter:deleted-sign)))
     (when git-gutter:unchanged-sign
       (push git-gutter:unchanged-sign signs))
-    (+ (apply 'max (mapcar 'git-gutter:sign-width signs))
+    (+ (apply #'max (mapcar 'git-gutter:sign-width signs))
        (git-gutter:sign-width git-gutter:separator-sign))))
 
 (defun git-gutter:view-for-unchanged ()
@@ -465,7 +465,7 @@ gutter information of other windows."
 (defsubst git-gutter:linum-padding ()
   (cl-loop repeat (git-gutter:window-margin)
            collect " " into paddings
-           finally return (apply 'concat paddings)))
+           finally return (apply #'concat paddings)))
 
 (defun git-gutter:linum-prepend-spaces ()
   (save-excursion
@@ -744,7 +744,7 @@ gutter information of other windows."
             (options (list "--cached" patch)))
         (when dir-option
           (setq options (cons "--directory" (cons dir-option options))))
-        (unless (zerop (apply 'git-gutter:execute-command
+        (unless (zerop (apply #'git-gutter:execute-command
                               "git" nil "apply" "--unidiff-zero"
                               options))
           (message "Failed: stating this hunk"))

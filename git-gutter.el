@@ -37,132 +37,108 @@
   "Character width of gutter window. Emacs mistakes width of some characters.
 It is better to explicitly assign width to this variable, if you use full-width
 character for signs of changes"
-  :type 'integer
-  :group 'git-gutter)
+  :type 'integer)
 
 (defcustom git-gutter:diff-option ""
   "Option of 'git diff'"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:subversion-diff-option ""
   "Option of 'svn diff'"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:mercurial-diff-option ""
   "Option of 'hg diff'"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:bazaar-diff-option ""
   "Option of 'bzr diff'"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:update-commands
   '(ido-switch-buffer helm-buffers-list)
   "Each command of this list is executed, gutter information is updated."
   :type '(list (function :tag "Update command")
-               (repeat :inline t (function :tag "Update command")))
-  :group 'git-gutter)
+               (repeat :inline t (function :tag "Update command"))))
 
 (defcustom git-gutter:update-windows-commands
   '(kill-buffer ido-kill-buffer)
   "Each command of this list is executed, gutter information is updated and
 gutter information of other windows."
   :type '(list (function :tag "Update command")
-               (repeat :inline t (function :tag "Update command")))
-  :group 'git-gutter)
+               (repeat :inline t (function :tag "Update command"))))
 
 (defcustom git-gutter:update-hooks
   '(after-save-hook after-revert-hook find-file-hook after-change-major-mode-hook
     text-scale-mode-hook)
   "hook points of updating gutter"
   :type '(list (hook :tag "HookPoint")
-               (repeat :inline t (hook :tag "HookPoint")))
-  :group 'git-gutter)
+               (repeat :inline t (hook :tag "HookPoint"))))
 
 (defcustom git-gutter:always-show-separator nil
   "Show separator even if there are no changes."
-  :type 'boolean
-  :group 'git-gutter)
+  :type 'boolean)
 
 (defcustom git-gutter:separator-sign nil
   "Separator sign"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:modified-sign "="
   "Modified sign"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:added-sign "+"
   "Added sign"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:deleted-sign "-"
   "Deleted sign"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:unchanged-sign nil
   "Unchanged sign"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:hide-gutter nil
   "Hide gutter if there are no changes"
-  :type 'boolean
-  :group 'git-gutter)
+  :type 'boolean)
 
 (defcustom git-gutter:lighter " GitGutter"
   "Minor mode lighter in mode-line"
-  :type 'string
-  :group 'git-gutter)
+  :type 'string)
 
 (defcustom git-gutter:verbosity 0
   "Log/message level. 4 means all, 0 nothing."
-  :type 'integer
-  :group 'git-gutter)
+  :type 'integer)
 
 (defface git-gutter:separator
   '((t (:foreground "cyan" :weight bold)))
-  "Face of separator"
-  :group 'git-gutter)
+  "Face of separator")
 
 (defface git-gutter:modified
   '((t (:foreground "magenta" :weight bold)))
-  "Face of modified"
-  :group 'git-gutter)
+  "Face of modified")
 
 (defface git-gutter:added
   '((t (:foreground "green" :weight bold)))
-  "Face of added"
-  :group 'git-gutter)
+  "Face of added")
 
 (defface git-gutter:deleted
   '((t (:foreground "red" :weight bold)))
-  "Face of deleted"
-  :group 'git-gutter)
+  "Face of deleted")
 
 (defface git-gutter:unchanged
   '((t (:background "yellow")))
-  "Face of unchanged"
-  :group 'git-gutter)
+  "Face of unchanged")
 
 (defcustom git-gutter:disabled-modes nil
   "A list of modes which `global-git-gutter-mode' should be disabled."
-  :type '(repeat symbol)
-  :group 'git-gutter)
+  :type '(repeat symbol))
 
 (defcustom git-gutter:handled-backends '(git)
   "List of version control backends for which `git-gutter.el` will be used.
 `git', `svn', `hg', and `bzr' are supported."
-  :type '(repeat symbol)
-  :group 'git-gutter)
+  :type '(repeat symbol))
 
 (defvar git-gutter:view-diff-function 'git-gutter:view-diff-infos
   "Function of viewing changes")
@@ -175,23 +151,19 @@ gutter information of other windows."
 
 (defcustom git-gutter-mode-on-hook nil
   "Hook run when git-gutter mode enable"
-  :type 'hook
-  :group 'git-gutter)
+  :type 'hook)
 
 (defcustom git-gutter-mode-off-hook nil
   "Hook run when git-gutter mode disable"
-  :type 'hook
-  :group 'git-gutter)
+  :type 'hook)
 
 (defcustom git-gutter:update-interval 0
   "Time interval in seconds for updating diff information."
-  :type 'integer
-  :group 'git-gutter)
+  :type 'integer)
 
 (defcustom git-gutter:ask-p t
   "Ask whether commit/revert or not"
-  :type 'boolean
-  :group 'git-gutter)
+  :type 'boolean)
 
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:diffinfos nil)
@@ -220,7 +192,7 @@ gutter information of other windows."
      (when it ,@body)))
 
 (defsubst git-gutter:execute-command (cmd output &rest args)
-  (apply 'process-file cmd nil output nil args))
+  (apply #'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
   (when (executable-find "git")
@@ -311,7 +283,7 @@ gutter information of other windows."
 
 (defun git-gutter:start-git-diff-process (file proc-buf)
   (let ((arg (git-gutter:git-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf
+    (apply #'start-file-process "git-gutter" proc-buf
            "git" "--no-pager" "-c" "diff.autorefreshindex=0"
            "diff" "--no-color" "--no-ext-diff" "--relative" "-U0"
            arg)))
@@ -327,7 +299,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-svn-diff-process (file proc-buf)
   (let ((args (git-gutter:svn-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf "svn" "diff" "--diff-cmd"
+    (apply #'start-file-process "git-gutter" proc-buf "svn" "diff" "--diff-cmd"
            "diff" "-x" "-U0" args)))
 
 (defun git-gutter:hg-diff-arguments (file)
@@ -341,7 +313,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-hg-diff-process (file proc-buf)
   (let ((args (git-gutter:hg-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
+    (apply #'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
 
 (defun git-gutter:bzr-diff-arguments (file)
   (let (args)
@@ -354,7 +326,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-bzr-diff-process (file proc-buf)
   (let ((args (git-gutter:bzr-diff-arguments file)))
-    (apply 'start-file-process "git-gutter" proc-buf
+    (apply #'start-file-process "git-gutter" proc-buf
            "bzr" "diff" "--context=0" args)))
 
 (defun git-gutter:start-diff-process1 (file proc-buf)
@@ -439,7 +411,7 @@ gutter information of other windows."
                      git-gutter:deleted-sign)))
     (when git-gutter:unchanged-sign
       (push git-gutter:unchanged-sign signs))
-    (+ (apply 'max (mapcar 'git-gutter:sign-width signs))
+    (+ (apply #'max (mapcar 'git-gutter:sign-width signs))
        (git-gutter:sign-width git-gutter:separator-sign))))
 
 (defun git-gutter:view-for-unchanged ()
@@ -493,7 +465,7 @@ gutter information of other windows."
 (defsubst git-gutter:linum-padding ()
   (cl-loop repeat (git-gutter:window-margin)
            collect " " into paddings
-           finally return (apply 'concat paddings)))
+           finally return (apply #'concat paddings)))
 
 (defun git-gutter:linum-prepend-spaces ()
   (save-excursion
@@ -538,7 +510,6 @@ gutter information of other windows."
 ;;;###autoload
 (define-minor-mode git-gutter-mode
   "Git-Gutter mode"
-  :group      'git-gutter
   :init-value nil
   :global     nil
   :lighter    git-gutter:lighter
@@ -577,8 +548,7 @@ gutter information of other windows."
     (git-gutter-mode +1)))
 
 ;;;###autoload
-(define-global-minor-mode global-git-gutter-mode git-gutter-mode git-gutter--turn-on
-  :group 'git-gutter)
+(define-global-minor-mode global-git-gutter-mode git-gutter-mode git-gutter--turn-on)
 
 (defsubst git-gutter:show-gutter-p (diffinfos)
   (if git-gutter:hide-gutter
@@ -774,7 +744,7 @@ gutter information of other windows."
             (options (list "--cached" patch)))
         (when dir-option
           (setq options (cons "--directory" (cons dir-option options))))
-        (unless (zerop (apply 'git-gutter:execute-command
+        (unless (zerop (apply #'git-gutter:execute-command
                               "git" nil "apply" "--unidiff-zero"
                               options))
           (message "Failed: stating this hunk"))

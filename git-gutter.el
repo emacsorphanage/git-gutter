@@ -633,7 +633,8 @@ gutter information of other windows."
              for start = (plist-get diffinfo :start-line)
              for end   = (or (plist-get diffinfo :end-line) (1+ start))
              when (and (>= current-line start) (<= current-line end))
-             return diffinfo)))
+             return diffinfo
+             finally do (error "Here is not changed!!"))))
 
 (defun git-gutter:collect-deleted-line (str)
   (with-temp-buffer

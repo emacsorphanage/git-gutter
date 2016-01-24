@@ -1,5 +1,12 @@
 Revision history for git-gutter.el
 
+Revision 0.86 2016/01/24
+    - Add mark hunk command(#112)
+    - Refactoring code
+    - Remove old magit hook setting, it is no longer used(#110)
+    - Update unchanged line at linum update(#109
+    - Don't upgrade index at invoking 'git diff'(#105)
+
 Revision 0.85 2015/12/10
     - Use EVM for travis-ci
     - Update documents

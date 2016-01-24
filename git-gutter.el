@@ -806,6 +806,8 @@ gutter information of other windows."
            (diffinfo (nth real-index diffinfos)))
       (goto-char (point-min))
       (forward-line (1- (plist-get diffinfo :start-line)))
+      (when (> git-gutter:verbosity 0)
+        (message "Move to %d/%d hunk" (1+ real-index) len))
       (when (buffer-live-p (get-buffer git-gutter:popup-buffer))
         (git-gutter:update-popuped-buffer diffinfo)))))
 

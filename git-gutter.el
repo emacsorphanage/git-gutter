@@ -633,7 +633,8 @@ gutter information of other windows."
              for start = (plist-get diffinfo :start-line)
              for end   = (or (plist-get diffinfo :end-line) (1+ start))
              when (and (>= current-line start) (<= current-line end))
-             return diffinfo)))
+             return diffinfo
+             finally do (error "Here is not changed!!"))))
 
 (defun git-gutter:collect-deleted-line (str)
   (with-temp-buffer
@@ -755,6 +756,20 @@ gutter information of other windows."
   "Stage this hunk like 'git add -p'."
   (interactive)
   (git-gutter:query-action "Stage" #'git-gutter:do-stage-hunk #'git-gutter))
+
+(defsubst git-gutter:line-point (line)
+  (save-excursion
+    (goto-char (point-min))
+    (forward-line (1- line))
+    (point)))
+
+(defun git-gutter:mark-hunk ()
+  (interactive)
+  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
+    (let ((start (git-gutter:line-point (plist-get it :start-line)))
+          (end (git-gutter:line-point (1+ (plist-get it :end-line)))))
+      (goto-char start)
+      (push-mark end nil t))))
 
 (defun git-gutter:update-popuped-buffer (diffinfo)
   (with-current-buffer (get-buffer-create git-gutter:popup-buffer)

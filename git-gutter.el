@@ -686,7 +686,6 @@ gutter information of other windows."
           (delete-window (git-gutter:popup-buffer-window))
         (message "%s current hunk." action)))))
 
-;;;###autoload
 (defun git-gutter:revert-hunk ()
   "Revert current hunk."
   (interactive)
@@ -751,7 +750,6 @@ gutter information of other windows."
           (message "Failed: stating this hunk"))
         (delete-file patch)))))
 
-;;;###autoload
 (defun git-gutter:stage-hunk ()
   "Stage this hunk like 'git add -p'."
   (interactive)
@@ -783,7 +781,6 @@ gutter information of other windows."
     (view-mode +1)
     (current-buffer)))
 
-;;;###autoload
 (defun git-gutter:popup-hunk (&optional diffinfo)
   "Popup current diff hunk."
   (interactive)
@@ -792,7 +789,6 @@ gutter information of other windows."
     (save-selected-window
       (pop-to-buffer (git-gutter:update-popuped-buffer it)))))
 
-;;;###autoload
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"
   (interactive "p")
@@ -810,10 +806,11 @@ gutter information of other windows."
            (diffinfo (nth real-index diffinfos)))
       (goto-char (point-min))
       (forward-line (1- (plist-get diffinfo :start-line)))
+      (when (> git-gutter:verbosity 0)
+        (message "Move to %d/%d hunk" (1+ real-index) len))
       (when (buffer-live-p (get-buffer git-gutter:popup-buffer))
         (git-gutter:update-popuped-buffer diffinfo)))))
 
-;;;###autoload
 (defun git-gutter:previous-hunk (arg)
   "Move to previous diff hunk"
   (interactive "p")
@@ -867,7 +864,6 @@ gutter information of other windows."
   (when git-gutter-mode
     (git-gutter)))
 
-;;;###autoload
 (defun git-gutter:clear ()
   "Clear diff information in gutter."
   (interactive)
@@ -892,7 +888,6 @@ gutter information of other windows."
            (bzr (git-gutter:execute-command "bzr" nil
                                             "revno" "-r" revision)))))
 
-;;;###autoload
 (defun git-gutter:set-start-revision (start-rev)
   "Set start revision. If `start-rev' is nil or empty string then reset
 start revision."
@@ -905,7 +900,6 @@ start revision."
   (setq git-gutter:start-revision start-rev)
   (git-gutter))
 
-;;;###autoload
 (defun git-gutter:update-all-windows ()
   "Update git-gutter information for all visible buffers."
   (interactive)
@@ -915,7 +909,6 @@ start revision."
         (when git-gutter-mode
           (git-gutter))))))
 
-;;;###autoload
 (defun git-gutter:start-update-timer ()
   (interactive)
   (when git-gutter:update-timer
@@ -923,7 +916,6 @@ start revision."
   (setq git-gutter:update-timer
         (run-with-idle-timer 1 git-gutter:update-interval 'git-gutter:live-update)))
 
-;;;###autoload
 (defun git-gutter:cancel-update-timer ()
   (interactive)
   (unless git-gutter:update-timer

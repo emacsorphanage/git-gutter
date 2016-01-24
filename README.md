@@ -69,11 +69,11 @@ Following example of enabling `git-gutter` for some mode.
 
 #### `git-gutter:next-hunk`
 
-Jump to next hunk(alias `git-gutter:next-diff`)
+Jump to next hunk(Alias `git-gutter:next-diff`)
 
 #### `git-gutter:previous-hunk`
 
-Jump to previous hunk(alias `git-gutter:previous-diff`)
+Jump to previous hunk(Alias `git-gutter:previous-diff`)
 
 #### `git-gutter:mark-hunk`
 
@@ -103,14 +103,6 @@ Revert current hunk
 
 Show changes from last commit or Update change information.
 Please execute this command if diff information is not be updated.
-
-#### `git-gutter:clear`
-
-Clear changes
-
-#### `git-gutter:toggle`
-
-Toggle git-gutter
 
 #### `git-gutter:linum-setup`
 

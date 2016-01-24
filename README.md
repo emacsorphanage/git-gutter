@@ -75,6 +75,10 @@ Jump to next hunk(alias `git-gutter:next-diff`)
 
 Jump to previous hunk(alias `git-gutter:previous-diff`)
 
+#### `git-gutter:mark-hunk`
+
+Mark current hunk.
+
 #### `git-gutter:set-start-revision`
 
 Set start revision where got diff(`git diff`, `hg diff` or `bzr diff`) from.
@@ -143,6 +147,9 @@ Update git-gutter information of buffers in all visible window.
 
 ;; Revert current hunk
 (global-set-key (kbd "C-x v r") 'git-gutter:revert-hunk)
+
+;; Mark current hunk
+(global-set-key (kbd "C-x v SPC") #'git-gutter:mark-hunk)
 ```
 
 

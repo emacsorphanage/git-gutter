@@ -65,15 +65,16 @@ Following example of enabling `git-gutter` for some mode.
 
 ## Commands
 
-`git-gutter.el` provides following commands. **Aliases will be removed when 1.0 released.**
+`git-gutter.el` provides following commands.
+**Obsoleted interfaces will be removed when 1.0 released.**
 
 #### `git-gutter:next-hunk`
 
-Jump to next hunk(Alias `git-gutter:next-diff`)
+Jump to next hunk
 
 #### `git-gutter:previous-hunk`
 
-Jump to previous hunk(Alias `git-gutter:previous-diff`)
+Jump to previous hunk
 
 #### `git-gutter:mark-hunk`
 

@@ -868,6 +868,7 @@ gutter information of other windows."
   "Clear diff information in gutter."
   (interactive)
   (git-gutter-mode -1))
+(make-obsolete 'git-gutter:clear #'git-gutter-mode "0.86")
 
 ;;;###autoload
 (defun git-gutter:toggle ()
@@ -876,6 +877,7 @@ gutter information of other windows."
   (if git-gutter-mode
       (git-gutter-mode -1)
     (git-gutter-mode +1)))
+(make-obsolete 'git-gutter:toggle #'git-gutter-mode "0.86")
 
 (defun git-gutter:revision-valid-p (revision)
   (zerop (cl-case git-gutter:vcs-type

@@ -112,15 +112,15 @@ gutter information of other windows."
   :type 'integer)
 
 (defface git-gutter:separator
-  '((t (:foreground "cyan" :weight bold)))
+  '((t (:foreground "cyan" :weight bold :inherit default)))
   "Face of separator")
 
 (defface git-gutter:modified
-  '((t (:foreground "magenta" :weight bold)))
+  '((t (:foreground "magenta" :weight bold :inherit default)))
   "Face of modified")
 
 (defface git-gutter:added
-  '((t (:foreground "green" :weight bold)))
+  '((t (:foreground "green" :weight bold :inherit default)))
   "Face of added")
 
 (defface git-gutter:deleted

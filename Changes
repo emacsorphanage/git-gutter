@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.87 2016/01/27
+    - Fix mixing face issue(#115)
+
 Revision 0.86 2016/01/24
     - Add mark hunk command(#112)
     - Refactoring code

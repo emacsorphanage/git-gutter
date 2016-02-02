@@ -988,6 +988,19 @@ start revision."
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))
   (git-gutter:linum-setup))
 
+(defun git-gutter:all-hunks ()
+  "Cound unstaged hunks in all buffers"
+  (let ((sum 0))
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when git-gutter-mode
+          (cl-incf sum (git-gutter:buffer-hunks)))))
+    sum))
+
+(defun git-gutter:buffer-hunks ()
+  "Count unstaged hunks in current buffer."
+  (length git-gutter:diffinfos))
+
 (provide 'git-gutter)
 
 ;;; git-gutter.el ends here

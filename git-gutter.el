@@ -1001,6 +1001,34 @@ start revision."
   "Count unstaged hunks in current buffer."
   (length git-gutter:diffinfos))
 
+(defun git-gutter:stat-hunk (hunk)
+  (cl-case (plist-get hunk :type)
+    (modified (with-temp-buffer
+                (insert (plist-get hunk :content))
+                (goto-char (point-min))
+                (let ((added 0)
+                      (deleted 0))
+                  (while (not (eobp))
+                    (cond ((looking-at-p "\\+") (cl-incf added))
+                          ((looking-at-p "\\-") (cl-decf deleted)))
+                    (forward-line 1))
+                  (cons added deleted))))
+    (added (cons (- (plist-get hunk :end-line) (plist-get hunk :start-line)) 0))
+    (deleted (cons 0 (- (plist-get hunk :start-line) (plist-get hunk :end-line))))))
+
+(defun git-gutter:statistic ()
+  "Return statistic unstaged hunks in current buffer."
+  (interactive)
+  (cl-loop for hunk in git-gutter:diffinfos
+           for (add . del) = (git-gutter:stat-hunk hunk)
+           sum add into added
+           sum del into deleted
+           finally
+           return (progn
+                    (when (called-interactively-p 'interactive)
+                      (message "Added %d lines, Deleted %d lines" added deleted))
+                    (cons added deleted))))
+
 (provide 'git-gutter)
 
 ;;; git-gutter.el ends here

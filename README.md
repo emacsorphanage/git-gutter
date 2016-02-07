@@ -334,6 +334,23 @@ Default value is 4(`0` is lowest, `4` is highest).
 Run hook `git-gutter-mode-on-hook` when `git-gutter-mode` is turn on, and
 run hook `git-gutter-mode-off-hook` when `git-gutter-mode` is turn off.
 
+## Statistic
+
+`git-gutter.el` provides some statistic API. This is useful for knowing how much
+code you changed etc. To display them in mode-line is also useful.
+
+#### `(git-gutter:buffer-hunks)`
+
+Cound unstaged hunks in current buffer.
+
+#### `(git-gutter:all-hunks)`
+
+Cound unstaged hunks in all buffers
+
+#### `(git-gutter:statistic)`
+
+Return statistic unstaged hunks in current buffer. Return value is dot-list.
+First element is total added lines, second element is total deleted lines.
 
 ## See Also
 

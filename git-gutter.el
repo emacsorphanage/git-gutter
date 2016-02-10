@@ -1010,11 +1010,11 @@ start revision."
                       (deleted 0))
                   (while (not (eobp))
                     (cond ((looking-at-p "\\+") (cl-incf added))
-                          ((looking-at-p "\\-") (cl-decf deleted)))
+                          ((looking-at-p "\\-") (cl-incf deleted)))
                     (forward-line 1))
                   (cons added deleted))))
     (added (cons (- (plist-get hunk :end-line) (plist-get hunk :start-line)) 0))
-    (deleted (cons 0 (- (plist-get hunk :start-line) (plist-get hunk :end-line))))))
+    (deleted (cons 0 (- (plist-get hunk :end-line) (plist-get hunk :start-line))))))
 
 (defun git-gutter:statistic ()
   "Return statistic unstaged hunks in current buffer."

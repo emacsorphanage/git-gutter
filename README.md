@@ -255,6 +255,19 @@ to `non-nil`.
 
 Default is `nil`.
 
+### Show signs at gutter by visual lines
+
+Emacs folds long line if `truncate-lines` is `nil`. If `git-gutter:visual-line` is
+non-nil, `git-gutter` puts sign by visual lines.
+
+```lisp
+(custom-set-variables
+ '(git-gutter:visual-line t))
+```
+
+Default bahavior is that signs are put by logical lines.
+value of `git-gutter:visual-line` is `nil`.
+
 ### Show Unchanged Information
 
 ![git-gutter-unchanged](image/git-gutter-unchanged.png)

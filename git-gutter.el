@@ -369,21 +369,15 @@ gutter information of other windows."
   (let ((gutter-sep (concat sign (git-gutter:gutter-sperator))))
     (propertize " " 'display `((margin left-margin) ,gutter-sep))))
 
-(defsubst git-gutter:select-face (type)
-  (cl-case type
-    (added 'git-gutter:added)
-    (modified 'git-gutter:modified)
-    (deleted 'git-gutter:deleted)))
-
-(defsubst git-gutter:select-sign (type)
-  (cl-case type
-    (added git-gutter:added-sign)
-    (modified git-gutter:modified-sign)
-    (deleted git-gutter:deleted-sign)))
-
 (defun git-gutter:propertized-sign (type)
-  (let ((sign (git-gutter:select-sign type))
-        (face (git-gutter:select-face type)))
+  (let (sign face)
+    (cl-case type
+      (added (setq sign git-gutter:added-sign
+                   face 'git-gutter:added))
+      (modified (setq sign git-gutter:modified-sign
+                      face 'git-gutter:modified))
+      (deleted (setq sign git-gutter:deleted-sign
+                     face 'git-gutter:deleted)))
     (propertize sign 'face face)))
 
 (defsubst git-gutter:linum-get-overlay (pos)

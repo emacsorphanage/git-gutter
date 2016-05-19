@@ -34,22 +34,6 @@
     (should (= got1 1))
     (should (= got2 10))))
 
-(ert-deftest git-gutter:select-face ()
-  "helper function `git-gutter:select-face'"
-  (cl-loop for (type . expected) in '((added . git-gutter:added)
-                                      (modified . git-gutter:modified)
-                                      (deleted . git-gutter:deleted))
-           do
-           (should (eq (git-gutter:select-face type) expected)))
-  (should-not (git-gutter:select-face 'not-found)))
-
-(ert-deftest git-gutter:select-sign ()
-  "helper function `git-gutter:select-sign'"
-  (cl-loop for (type . expected) in '((added . "+") (modified . "=") (deleted . "-"))
-           do
-           (should (string= (git-gutter:select-sign type) expected)))
-  (should-not (git-gutter:select-sign 'not-found)))
-
 (ert-deftest git-gutter:propertized-sign ()
   "helper function `git-gutter:propertized-sign'"
   (should (string= (git-gutter:propertized-sign 'added) "+")))

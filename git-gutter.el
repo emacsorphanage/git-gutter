@@ -169,6 +169,9 @@ gutter information of other windows."
   "Ask whether commit/revert or not"
   :type 'boolean)
 
+(cl-defstruct git-gutter-hunk
+  type content start-line end-line)
+
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:diffinfos nil)
 (defvar git-gutter:has-indirect-buffers nil)
@@ -229,9 +232,6 @@ gutter information of other windows."
       1
     (string-to-number str)))
 
-(defsubst git-gutter:make-diffinfo (type content start end)
-  (list :type type :content content :start-line start :end-line end))
-
 (defsubst git-gutter:base-file ()
   (buffer-file-name (buffer-base-buffer)))
 
@@ -264,7 +264,8 @@ gutter information of other windows."
                collect
                (let ((start (if (zerop new-line) 1 new-line))
                      (end (if (zerop end-line) 1 end-line)))
-                 (git-gutter:make-diffinfo type content start end))))))
+                 (make-git-gutter-hunk
+                  :type type :content content :start-line start :end-line end))))))
 
 (defsubst git-gutter:window-margin ()
   (or git-gutter:window-width (git-gutter:longest-sign-width)))
@@ -589,9 +590,9 @@ gutter information of other windows."
                               #'forward-line)
 
              for info in diffinfos
-             for start-line = (plist-get info :start-line)
-             for end-line = (plist-get info :end-line)
-             for type = (plist-get info :type)
+             for start-line = (git-gutter-hunk-start-line info)
+             for end-line = (git-gutter-hunk-end-line info)
+             for type = (git-gutter-hunk-type info)
              for sign = (git-gutter:propertized-sign type)
              for points = nil
              do
@@ -644,7 +645,7 @@ gutter information of other windows."
            with cmp-fn = (if is-reverse #'> #'<)
            for diffinfo in (if is-reverse (reverse diffinfos) diffinfos)
            for index = 0 then (1+ index)
-           for start-line = (plist-get diffinfo :start-line)
+           for start-line = (git-gutter-hunk-start-line diffinfo)
            when (funcall cmp-fn current-line start-line)
            return (if is-reverse
                       (1- (- (length diffinfos) index))
@@ -655,8 +656,8 @@ gutter information of other windows."
     (widen)
     (cl-loop with current-line = (line-number-at-pos)
              for diffinfo in diffinfos
-             for start = (plist-get diffinfo :start-line)
-             for end   = (or (plist-get diffinfo :end-line) (1+ start))
+             for start = (git-gutter-hunk-start-line diffinfo)
+             for end   = (or (git-gutter-hunk-end-line diffinfo) (1+ start))
              when (and (>= current-line start) (<= current-line end))
              return diffinfo
              finally do (error "Here is not changed!!"))))
@@ -685,10 +686,10 @@ gutter information of other windows."
 (defun git-gutter:do-revert-hunk (diffinfo)
   (save-excursion
     (goto-char (point-min))
-    (let ((start-line (plist-get diffinfo :start-line))
-          (end-line (plist-get diffinfo :end-line))
-          (content (plist-get diffinfo :content)))
-      (cl-case (plist-get diffinfo :type)
+    (let ((start-line (git-gutter-hunk-start-line diffinfo))
+          (end-line (git-gutter-hunk-end-line diffinfo))
+          (content (git-gutter-hunk-content diffinfo)))
+      (cl-case (git-gutter-hunk-type diffinfo)
         (added (git-gutter:delete-added-lines start-line end-line))
         (deleted (when (git-gutter:delete-from-first-line-p start-line end-line)
                    (forward-line start-line))
@@ -757,8 +758,8 @@ gutter information of other windows."
     (file-name-directory (file-relative-name (git-gutter:base-file) root))))
 
 (defun git-gutter:do-stage-hunk (diff-info)
-  (let ((content (plist-get diff-info :content))
-        (type (plist-get diff-info :type))
+  (let ((content (git-gutter-hunk-content diff-info))
+        (type (git-gutter-hunk-type diff-info))
         (header (git-gutter:extract-hunk-header))
         (patch (make-temp-name "git-gutter")))
     (when header
@@ -789,8 +790,8 @@ gutter information of other windows."
 (defun git-gutter:mark-hunk ()
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (let ((start (git-gutter:line-point (plist-get it :start-line)))
-          (end (git-gutter:line-point (1+ (plist-get it :end-line)))))
+    (let ((start (git-gutter:line-point (git-gutter-hunk-start-line it)))
+          (end (git-gutter:line-point (1+ (git-gutter-hunk-end-line it)))))
       (goto-char start)
       (push-mark end nil t))))
 
@@ -799,7 +800,7 @@ gutter information of other windows."
     (view-mode -1)
     (setq buffer-read-only nil)
     (erase-buffer)
-    (insert (plist-get diffinfo :content))
+    (insert (git-gutter-hunk-content diffinfo))
     (insert "\n")
     (goto-char (point-min))
     (diff-mode)
@@ -830,7 +831,7 @@ gutter information of other windows."
                          (if is-reverse (1- len) 0)))
            (diffinfo (nth real-index diffinfos)))
       (goto-char (point-min))
-      (forward-line (1- (plist-get diffinfo :start-line)))
+      (forward-line (1- (git-gutter-hunk-start-line diffinfo)))
       (when (> git-gutter:verbosity 0)
         (message "Move to %d/%d hunk" (1+ real-index) len))
       (when (buffer-live-p (get-buffer git-gutter:popup-buffer))
@@ -1031,9 +1032,9 @@ start revision."
   (length git-gutter:diffinfos))
 
 (defun git-gutter:stat-hunk (hunk)
-  (cl-case (plist-get hunk :type)
+  (cl-case (git-gutter-hunk-type hunk)
     (modified (with-temp-buffer
-                (insert (plist-get hunk :content))
+                (insert (git-gutter-hunk-content hunk))
                 (goto-char (point-min))
                 (let ((added 0)
                       (deleted 0))
@@ -1042,8 +1043,8 @@ start revision."
                           ((looking-at-p "\\-") (cl-incf deleted)))
                     (forward-line 1))
                   (cons added deleted))))
-    (added (cons (- (plist-get hunk :end-line) (plist-get hunk :start-line)) 0))
-    (deleted (cons 0 (- (plist-get hunk :end-line) (plist-get hunk :start-line))))))
+    (added (cons (- (git-gutter-hunk-end-line hunk) (git-gutter-hunk-start-line hunk)) 0))
+    (deleted (cons 0 (- (git-gutter-hunk-end-line hunk) (git-gutter-hunk-start-line hunk))))))
 
 (defun git-gutter:statistic ()
   "Return statistic unstaged hunks in current buffer."

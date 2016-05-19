@@ -206,8 +206,7 @@ gutter information of other windows."
     (with-temp-buffer
       (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
         (goto-char (point-min))
-        (string= "true" (buffer-substring-no-properties
-                         (point) (line-end-position)))))))
+        (looking-at-p "true")))))
 
 (defun git-gutter:in-repository-common-p (cmd check-subcmd repodir)
   (and (executable-find cmd)

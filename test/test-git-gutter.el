@@ -34,22 +34,6 @@
     (should (= got1 1))
     (should (= got2 10))))
 
-(ert-deftest git-gutter:select-face ()
-  "helper function `git-gutter:select-face'"
-  (cl-loop for (type . expected) in '((added . git-gutter:added)
-                                      (modified . git-gutter:modified)
-                                      (deleted . git-gutter:deleted))
-           do
-           (should (eq (git-gutter:select-face type) expected)))
-  (should-not (git-gutter:select-face 'not-found)))
-
-(ert-deftest git-gutter:select-sign ()
-  "helper function `git-gutter:select-sign'"
-  (cl-loop for (type . expected) in '((added . "+") (modified . "=") (deleted . "-"))
-           do
-           (should (string= (git-gutter:select-sign type) expected)))
-  (should-not (git-gutter:select-sign 'not-found)))
-
 (ert-deftest git-gutter:propertized-sign ()
   "helper function `git-gutter:propertized-sign'"
   (should (string= (git-gutter:propertized-sign 'added) "+")))
@@ -58,21 +42,6 @@
   "helper function `git-gutter:changes-to-number'"
   (should (= (git-gutter:changes-to-number "") 1))
   (should (= (git-gutter:changes-to-number "123") 123)))
-
-(ert-deftest git-gutter:make-diffinfo ()
-  "helper function `git-gutter:make-diffinfo'"
-  (let ((diffinfo1 (git-gutter:make-diffinfo 'added "diff1" 10 20))
-        (diffinfo2 (git-gutter:make-diffinfo 'deleted "diff2" 5 nil)))
-    (cl-loop for (prop . expected) in '((:type . added)
-                                        (:start-line . 10) (:end-line . 20))
-             do
-             (should (eql (plist-get diffinfo1 prop) expected)))
-    (should (string= (plist-get diffinfo1 :content) "diff1"))
-    (cl-loop for (prop . expected) in '((:type . deleted)
-                                        (:start-line . 5) (:end-line . nil))
-             do
-             (should (eql (plist-get diffinfo2 prop) expected)))
-    (should (string= (plist-get diffinfo2 :content) "diff2"))))
 
 (ert-deftest git-gutter:in-git-repository-p ()
   "Should return nil if default-directory does not exist"

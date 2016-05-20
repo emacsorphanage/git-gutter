@@ -384,11 +384,6 @@ Vim version of GitGutter
 Fork of `git-gutter.el`. Some features which are not provided `git-gutter.el` provides.
 However git-gutter-plus updates diff information synchronously.
 
-
-### Another implementation of git-gutter.el
-
-[How to write another implementation](wiki/Write-another-git-gutter.el-implementation)
-
 [travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.svg
 [travis-link]: https://travis-ci.org/syohex/emacs-git-gutter
 [melpa-link]: http://melpa.org/#/git-gutter

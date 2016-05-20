@@ -1,5 +1,11 @@
 Revision history for git-gutter.el
 
+Revision 0.88 2016/05/21
+    - Improve performance(#125)
+    - Optimize putting signs(#123)
+    - Support visual line(#122)
+    - Add statistic commands(#118)
+
 Revision 0.87 2016/01/27
     - Fix mixing face issue(#115)
 

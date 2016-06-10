@@ -1,5 +1,8 @@
 Revision history for git-gutter.el
 
+Revision 0.89 2016/06/11
+    - Fix wrong argument passing of run-with-idle-timer(#128)
+
 Revision 0.88 2016/05/21
     - Improve performance(#125)
     - Optimize putting signs(#123)

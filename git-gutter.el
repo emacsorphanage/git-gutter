@@ -870,6 +870,12 @@ gutter information of other windows."
         (git-gutter:start-diff-process (file-name-nondirectory file)
                                        (get-buffer-create proc-buf))))))
 
+(defun git-gutter:staged ()
+  "Show staged diff information in gutter"
+  (interactive)
+  (let ((git-gutter:diff-option (concat git-gutter:diff-option " --cached")))
+    (call-interactively #'git-gutter)))
+
 (defadvice make-indirect-buffer (before git-gutter:has-indirect-buffers activate)
   (when (and git-gutter-mode (not (buffer-base-buffer)))
     (setq git-gutter:has-indirect-buffers t)))

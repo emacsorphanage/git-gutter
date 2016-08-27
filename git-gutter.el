@@ -218,14 +218,14 @@ gutter information of other windows."
        (zerop (apply #'git-gutter:execute-command cmd nil check-subcmd))
        (not (string-match-p (regexp-quote (concat "/" repodir "/")) default-directory))))
 
-(defsubst git-gutter:vcs-check-function (vcs)
+(defun git-gutter:vcs-check-function (vcs)
   (cl-case vcs
     (git (git-gutter:in-git-repository-p))
     (svn (git-gutter:in-repository-common-p "svn" '("info") ".svn"))
     (hg (git-gutter:in-repository-common-p "hg" '("root") ".hg"))
     (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))))
 
-(defsubst git-gutter:in-repository-p ()
+(defun git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
            when (git-gutter:vcs-check-function vcs)
            return (set (make-local-variable 'git-gutter:vcs-type) vcs)))

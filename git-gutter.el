@@ -840,6 +840,13 @@ gutter information of other windows."
   (interactive "p")
   (git-gutter:next-hunk (- arg)))
 
+(defun git-gutter:end-of-hunk ()
+  "Move to end of current diff hunk"
+  (interactive)
+  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
+    (let ((lines (- (git-gutter-hunk-end-line it) (line-number-at-pos))))
+      (forward-line lines))))
+
 (defalias 'git-gutter:next-diff 'git-gutter:next-hunk)
 (make-obsolete 'git-gutter:next-diff 'git-gutter:next-hunk "0.60")
 (defalias 'git-gutter:previous-diff 'git-gutter:previous-hunk)

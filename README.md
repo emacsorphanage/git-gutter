@@ -76,6 +76,10 @@ Jump to next hunk
 
 Jump to previous hunk
 
+#### `git-gutter:end-of-hunk`
+
+Move to end of current hunk
+
 #### `git-gutter:mark-hunk`
 
 Mark current hunk.

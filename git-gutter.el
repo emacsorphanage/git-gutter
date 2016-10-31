@@ -321,7 +321,7 @@ gutter information of other windows."
 
 (defsubst git-gutter:start-hg-diff-process (file proc-buf)
   (let ((args (git-gutter:hg-diff-arguments file)))
-    (apply #'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
+    (apply #'start-file-process "git-gutter" proc-buf "hg" "diff" "--pager=no" "-U0" args)))
 
 (defun git-gutter:bzr-diff-arguments (file)
   (let (args)

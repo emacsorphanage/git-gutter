@@ -320,8 +320,9 @@ gutter information of other windows."
     (nreverse (cons file args))))
 
 (defsubst git-gutter:start-hg-diff-process (file proc-buf)
-  (let ((args (git-gutter:hg-diff-arguments file)))
-    (apply #'start-file-process "git-gutter" proc-buf "hg" "diff" "--pager=no" "-U0" args)))
+  (let ((args (git-gutter:hg-diff-arguments file))
+        (process-environment (cons "HGPLAIN=1" process-environment)))
+    (apply #'start-file-process "git-gutter" proc-buf "hg" "diff" "-U0" args)))
 
 (defun git-gutter:bzr-diff-arguments (file)
   (let (args)

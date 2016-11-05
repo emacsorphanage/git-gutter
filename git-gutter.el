@@ -5,7 +5,7 @@
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-git-gutter
 ;; Version: 0.90
-;; Package-Requires: ((cl-lib "0.5") (emacs "24"))
+;; Package-Requires: ((emacs "24.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -228,7 +228,7 @@ gutter information of other windows."
 (defun git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
            when (git-gutter:vcs-check-function vcs)
-           return (set (make-local-variable 'git-gutter:vcs-type) vcs)))
+           return (setq-local git-gutter:vcs-type vcs)))
 
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -504,7 +504,7 @@ gutter information of other windows."
         (set-window-margins curwin margin (cdr (window-margins curwin)))))))
 
 (defun git-gutter:linum-init ()
-  (set (make-local-variable 'git-gutter:linum-enabled) t)
+  (setq-local git-gutter:linum-enabled t)
   (make-local-variable 'git-gutter:linum-prev-window-margin))
 
 ;;;###autoload
@@ -539,9 +539,9 @@ gutter information of other windows."
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
             (make-local-variable 'git-gutter:enabled)
-            (set (make-local-variable 'git-gutter:has-indirect-buffers) nil)
+            (setq-local git-gutter:has-indirect-buffers nil)
             (make-local-variable 'git-gutter:diffinfos)
-            (set (make-local-variable 'git-gutter:start-revision) nil)
+            (setq-local git-gutter:start-revision nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
             (add-hook 'pre-command-hook 'git-gutter:pre-command-hook)
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)

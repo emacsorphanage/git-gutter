@@ -33,6 +33,17 @@
   :prefix "git-gutter:"
   :group 'vc)
 
+(defcustom git-gutter:exp-to-create-diff nil
+  "It could be string, expression, function.
+If it's a string, it's passed to `shell-command-to-string' as parameter.
+If it's an expression, it will be evaluated.
+If it's a function, it is executed.
+The returned string is expected to be in diff Unified Format.
+When it's not nil, it will overrides all the existing backends.
+It's recommended to set it up in `.dir-locals.el'.
+A sample `.dir-locals.el' for perforce:
+`((nil (git-gutter:exp-to-create-diff . (shell-command-to-string (format \"p4 diff -du -db %s\" (file-relative-name buffer-file-name))))))'")
+
 (defcustom git-gutter:window-width nil
   "Character width of gutter window. Emacs mistakes width of some characters.
 It is better to explicitly assign width to this variable, if you use full-width
@@ -226,9 +237,13 @@ gutter information of other windows."
     (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))))
 
 (defun git-gutter:in-repository-p ()
-  (cl-loop for vcs in git-gutter:handled-backends
-           when (git-gutter:vcs-check-function vcs)
-           return (setq-local git-gutter:vcs-type vcs)))
+  (cond
+   (git-gutter:exp-to-create-diff
+	(setq git-gutter:vcs-type 'unknown))
+   (t
+	(cl-loop for vcs in git-gutter:handled-backends
+			 when (git-gutter:vcs-check-function vcs)
+			 return (setq-local git-gutter:vcs-type vcs)))))
 
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")
@@ -347,23 +362,21 @@ gutter information of other windows."
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (git-gutter:set-window-margin (git-gutter:window-margin))
-  (let ((file (git-gutter:base-file)) ;; for tramp
-        (curbuf (current-buffer))
-        (process (git-gutter:start-diff-process1 curfile proc-buf)))
-    (set-process-query-on-exit-flag process nil)
-    (set-process-sentinel
-     process
-     (lambda (proc _event)
-       (when (eq (process-status proc) 'exit)
-         (setq git-gutter:enabled nil)
-         (let ((diffinfos (git-gutter:process-diff-output (process-buffer proc))))
-           (when (buffer-live-p curbuf)
-             (with-current-buffer curbuf
-               (git-gutter:update-diffinfo diffinfos)
-               (when git-gutter:has-indirect-buffers
-                 (git-gutter:update-indirect-buffers file))
-               (setq git-gutter:enabled t)))
-           (kill-buffer proc-buf)))))))
+  (cond
+   (git-gutter:exp-to-create-diff
+	(git-gutter:insert-diff-content proc-buf)
+	(git-gutter:update-current-buffer proc-buf)
+	(kill-buffer proc-buf))
+   (t
+	(let ((file (git-gutter:base-file)) ;; for tramp
+		  (process (git-gutter:start-diff-process1 curfile proc-buf)))
+	  (set-process-query-on-exit-flag process nil)
+	  (set-process-sentinel
+	   process
+	   (lambda (proc _event)
+		 (when (eq (process-status proc) 'exit)
+		   (git-gutter:update-current-buffer (process-buffer proc) file)
+		   (kill-buffer proc-buf))))))))
 
 (defsubst git-gutter:gutter-sperator ()
   (when git-gutter:separator-sign
@@ -875,7 +888,7 @@ gutter information of other windows."
       (when (and (called-interactively-p 'interactive) (get-buffer proc-buf))
         (kill-buffer proc-buf))
       (when (and file (file-exists-p file) (not (get-buffer proc-buf)))
-        (git-gutter:start-diff-process (file-name-nondirectory file)
+		(git-gutter:start-diff-process (file-name-nondirectory file)
                                        (get-buffer-create proc-buf))))))
 
 (defadvice make-indirect-buffer (before git-gutter:has-indirect-buffers activate)
@@ -981,27 +994,59 @@ start revision."
   (start-file-process "git-gutter:update-timer" proc-buf
                       "diff" "-U0" original now))
 
+(defun git-gutter:update-current-buffer (diff-buf &optional file)
+  (setq git-gutter:enabled nil)
+  (let* ((curbuf (current-buffer))
+		 (diffinfos (git-gutter:process-diff-output diff-buf)))
+	(when (buffer-live-p curbuf)
+	  (with-current-buffer curbuf
+		(git-gutter:update-diffinfo diffinfos)
+		(if (and file git-gutter:has-indirect-buffers)
+			(git-gutter:update-indirect-buffers file))
+		(setq git-gutter:enabled t)))))
+
+(defun git-gutter:insert-diff-content (buf)
+  (let* ((backend git-gutter:exp-to-create-diff)
+		 (content (cond
+				   ;; shell command
+				   ((stringp backend)
+					(shell-command-to-string backend))
+				   ;; function
+				   ((functionp backend)
+					(funcall backend))
+				   ;; lisp expression
+				   ((consp backend)
+					(funcall `(lambda () ,backend))))))
+
+	(save-current-buffer
+	  (set-buffer buf)
+	  (erase-buffer)
+	  (insert content))))
+
 (defun git-gutter:start-live-update (file original now)
-  (let ((proc-bufname (git-gutter:diff-process-buffer file)))
-    (when (get-buffer proc-bufname)
-      (kill-buffer proc-bufname))
-    (let* ((curbuf (current-buffer))
-           (proc-buf (get-buffer-create proc-bufname))
-           (process (git-gutter:start-raw-diff-process proc-buf original now)))
-      (set-process-query-on-exit-flag process nil)
-      (set-process-sentinel
-       process
-       (lambda (proc _event)
-         (when (eq (process-status proc) 'exit)
-           (setq git-gutter:enabled nil)
-           (let ((diffinfos (git-gutter:process-diff-output (process-buffer proc))))
-             (when (buffer-live-p curbuf)
-               (with-current-buffer curbuf
-                 (git-gutter:update-diffinfo diffinfos)
-                 (setq git-gutter:enabled t)))
-             (kill-buffer proc-buf)
-             (delete-file original)
-             (delete-file now))))))))
+  (let* (proc-buf
+		 (proc-bufname (git-gutter:diff-process-buffer file)))
+	(if (get-buffer proc-bufname)
+		(kill-buffer proc-bufname))
+	(setq proc-buf (get-buffer-create proc-bufname))
+	(cond
+	 (git-gutter:exp-to-create-diff
+	  (git-gutter:insert-diff-content proc-buf)
+	  (git-gutter:update-current-buffer proc-buf)
+	  (kill-buffer proc-buf)
+	  (delete-file original)
+	  (delete-file now))
+	 (t
+	  (let* ((process (git-gutter:start-raw-diff-process proc-buf original now)))
+		(set-process-query-on-exit-flag process nil)
+		(set-process-sentinel
+		 process
+		 (lambda (proc _event)
+		   (when (eq (process-status proc) 'exit)
+			 (git-gutter:update-current-buffer (process-buffer proc))
+			 (kill-buffer proc-buf)
+			 (delete-file original)
+			 (delete-file now)))))))))
 
 (defun git-gutter:should-update-p ()
   (let ((sha1 (secure-hash 'sha1 (current-buffer))))

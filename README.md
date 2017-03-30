@@ -211,13 +211,13 @@ character.
 
 ### Backends
 
-`git-gutter.el` supports following version control systems
+`git-gutter.el` supports following Version Control Systems (VCS)
 
 - [Git](http://git-scm.com/)(1.7.0 or higher)
 - [Mercurial](https://www.mercurial-scm.org/)
 - [Subversion](https://subversion.apache.org/)(1.8 or higher)
 - [Bazaar](http://bazaar.canonical.com/en/)
-
+- Any other VCS (Perforce, ClearCase, CVS, Team Foundation Server, Patch embedded in email ...)
 
 You can set backends which `git-gutter.el` will be used.
 Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
@@ -227,6 +227,25 @@ Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
 ;; Use for 'Git'(`git`), 'Mercurial'(`hg`), 'Bazaar'(`bzr`), and 'Subversion'(`svn`) projects
 (custom-set-variables
  '(git-gutter:handled-backends '(git hg bzr svn)))
+```
+
+You can set variable `git-gutter:exp-to-create-diff` to support any other VCS. It will override all the existing backends. So it's better to setup in [.dir-locals.el](https://www.gnu.org/software/emacs/manual/html_node/emacs/Directory-Variables.html).
+A sample `.dir-locals.el' for perforce.
+```lisp
+((nil (git-gutter:exp-to-create-diff . (shell-command-to-string (format \"p4 diff -du -db %s\"
+                                                                        (file-relative-name buffer-file-name))))))
+```
+
+Even for existing backends, `git-gutter:exp-to-create-diff` is also useful. For example, showing git staged changes is easy:
+```lisp
+(defun my-git-gutter-toggle-staged-changes ()
+  (interactive)
+  (if git-gutter:exp-to-create-diff
+      (setq git-gutter:exp-to-create-diff nil)
+    (setq git-gutter:exp-to-create-diff
+          '(shell-command-to-string (format "git diff --cached %s"
+                                            (file-relative-name buffer-file-name)))))
+  (git-gutter))
 ```
 
 ### Updates hooks
@@ -269,7 +288,7 @@ non-nil, `git-gutter` puts sign by visual lines.
  '(git-gutter:visual-line t))
 ```
 
-Default bahavior is that signs are put by logical lines.
+Default behavior is that signs are put by logical lines.
 value of `git-gutter:visual-line` is `nil`.
 
 ### Show Unchanged Information

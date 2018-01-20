@@ -1018,7 +1018,9 @@ start revision."
             (original (make-temp-file "git-gutter-orig")))
         (when (git-gutter:write-original-content original file)
           (git-gutter:write-current-content now)
-          (git-gutter:start-live-update file original now))))))
+          (git-gutter:start-live-update file original now))
+        (delete-file now)
+        (delete-file original)))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

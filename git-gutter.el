@@ -208,9 +208,12 @@ gutter information of other windows."
 (defun git-gutter:in-git-repository-p ()
   (when (executable-find "git")
     (with-temp-buffer
-      (when (zerop (git-gutter:execute-command "git" t "rev-parse" "--is-inside-work-tree"))
+      (let ((output (git-gutter:execute-command
+                     "git" t "rev-parse" "--is-inside-work-tree"))) 
+      (when (and (numberp output)
+                 (zerop output))
         (goto-char (point-min))
-        (looking-at-p "true")))))
+        (looking-at-p "true"))))))
 
 (defun git-gutter:in-repository-common-p (cmd check-subcmd repodir)
   (and (executable-find cmd)

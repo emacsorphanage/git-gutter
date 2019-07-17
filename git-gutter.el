@@ -141,7 +141,7 @@ gutter information of other windows."
 
 (defcustom git-gutter:handled-backends '(git)
   "List of version control backends for which `git-gutter.el` will be used.
-`git', `svn', `hg', and `bzr' are supported."
+`git', `svn', `hg', `bzr' and `file-system' are supported."
   :type '(repeat symbol))
 
 (defvar git-gutter:view-diff-function #'git-gutter:view-diff-infos
@@ -223,7 +223,8 @@ gutter information of other windows."
     (git (git-gutter:in-git-repository-p))
     (svn (git-gutter:in-repository-common-p "svn" '("info") ".svn"))
     (hg (git-gutter:in-repository-common-p "hg" '("root") ".hg"))
-    (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))))
+    (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))
+    (file-system (file-exists-p (git-gutter:base-file)))))
 
 (defun git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
@@ -296,6 +297,10 @@ gutter information of other windows."
            "diff" "--no-color" "--no-ext-diff" "--relative" "-U0"
            arg)))
 
+(defun git-gutter:start-file-system-diff-process (file proc-buf)
+    (apply #'start-file-process "git-gutter" proc-buf
+           "diff" (list buffer-file-name)))
+
 (defun git-gutter:svn-diff-arguments (file)
   (let (args)
     (unless (string= git-gutter:subversion-diff-option "")
@@ -343,7 +348,8 @@ gutter information of other windows."
     (git (git-gutter:start-git-diff-process file proc-buf))
     (svn (git-gutter:start-svn-diff-process file proc-buf))
     (hg (git-gutter:start-hg-diff-process file proc-buf))
-    (bzr (git-gutter:start-bzr-diff-process file proc-buf))))
+    (bzr (git-gutter:start-bzr-diff-process file proc-buf))
+    (file-system (git-gutter:start-file-system-diff-process file proc-buf))))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (git-gutter:set-window-margin (git-gutter:window-margin))
@@ -966,13 +972,15 @@ start revision."
     (with-temp-file tmpfile
       (insert content))))
 
-(defsubst git-gutter:original-file-content (file)
+(defsubst git-gutter:original-file-content (file vcs)
   (with-temp-buffer
-    (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
-      (buffer-substring-no-properties (point-min) (point-max)))))
+    (cl-case vcs
+      (git (when (zerop (process-file "git" nil t nil "show" (concat ":" (file-name-nondirectory file))))
+             (buffer-substring-no-properties (point-min) (point-max))))
+      (t (with-temp-buffer (insert-file-contents file) (buffer-string))))))
 
-(defun git-gutter:write-original-content (tmpfile filename)
-  (git-gutter:awhen (git-gutter:original-file-content filename)
+(defun git-gutter:write-original-content (tmpfile filename vcs)
+  (git-gutter:awhen (git-gutter:original-file-content filename vcs)
     (with-temp-file tmpfile
       (insert it)
       t)))
@@ -1008,15 +1016,21 @@ start revision."
     (unless (equal sha1 git-gutter:last-sha1)
       (setq git-gutter:last-sha1 sha1))))
 
+(defun git-gutter:get-vcs ()
+  (cl-loop for vcs in git-gutter:handled-backends
+           when (git-gutter:vcs-check-function vcs)
+           return vcs))
+
 (defun git-gutter:live-update ()
   (git-gutter:awhen (git-gutter:base-file)
     (when (and git-gutter:enabled
                (buffer-modified-p)
                (git-gutter:should-update-p))
-      (let ((file (file-name-nondirectory it))
+      (let ((file it)
             (now (make-temp-file "git-gutter-cur"))
-            (original (make-temp-file "git-gutter-orig")))
-        (when (git-gutter:write-original-content original file)
+            (original (make-temp-file "git-gutter-orig"))
+            (vcs (git-gutter:get-vcs)))
+        (when (git-gutter:write-original-content original file vcs)
           (git-gutter:write-current-content now)
           (git-gutter:start-live-update file original now))))))
 

@@ -394,7 +394,6 @@ Argument TEST is the case before BODY execution."
     (bzr (git-gutter:start-bzr-diff-process file proc-buf))))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
-  (git-gutter:set-window-margin (git-gutter:window-margin))
   (let ((file (git-gutter:base-file)) ;; for tramp
         (curbuf (current-buffer))
         (process (git-gutter:start-diff-process1 curfile proc-buf)))

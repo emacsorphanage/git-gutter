@@ -1014,15 +1014,23 @@ start revision."
     (unless (equal sha1 git-gutter:last-sha1)
       (setq git-gutter:last-sha1 sha1))))
 
+(defun git-gutter:git-root ()
+  (with-temp-buffer
+    (when (zerop (process-file "git" nil t nil "rev-parse" "--show-toplevel"))
+      (goto-char (point-min))
+      (file-name-as-directory
+       (buffer-substring-no-properties (point) (line-end-position))))))
+
 (defun git-gutter:live-update ()
   (git-gutter:awhen (git-gutter:base-file)
     (when (and git-gutter:enabled
                (buffer-modified-p)
                (git-gutter:should-update-p))
       (let ((file (file-name-nondirectory it))
+            (root (file-truename (git-gutter:git-root)))
             (now (make-temp-file "git-gutter-cur"))
             (original (make-temp-file "git-gutter-orig")))
-        (if (git-gutter:write-original-content original file)
+        (if (git-gutter:write-original-content original (file-relative-name it root))
             (progn
               (git-gutter:write-current-content now)
               (git-gutter:start-live-update file original now))

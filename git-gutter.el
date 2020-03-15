@@ -1016,11 +1016,12 @@ start revision."
       (let ((file (file-name-nondirectory it))
             (now (make-temp-file "git-gutter-cur"))
             (original (make-temp-file "git-gutter-orig")))
-        (when (git-gutter:write-original-content original file)
-          (git-gutter:write-current-content now)
-          (git-gutter:start-live-update file original now))
-        (delete-file now)
-        (delete-file original)))))
+        (if (git-gutter:write-original-content original file)
+            (progn
+              (git-gutter:write-current-content now)
+              (git-gutter:start-live-update file original now))
+          (delete-file now)
+          (delete-file original))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

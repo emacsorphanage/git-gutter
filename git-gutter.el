@@ -382,6 +382,10 @@ gutter information of other windows."
                       face 'git-gutter:modified))
       (deleted (setq sign git-gutter:deleted-sign
                      face 'git-gutter:deleted)))
+    (when (get-text-property 0 'face sign)
+      (setq face (append
+                  (get-text-property 0 'face sign)
+                  `(:inherit ,face))))
     (propertize sign 'face face)))
 
 (defsubst git-gutter:linum-get-overlay (pos)

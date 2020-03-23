@@ -1,4 +1,8 @@
-# git-gutter.el [![travis badge][travis-badge]][travis-link] [![melpa badge][melpa-badge]][melpa-link] [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
+# git-gutter.el
+
+[![melpa badge][melpa-badge]][melpa-link]
+[![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
+[![circleci badge][circleci-badge]][circleci-link]
 
 ## Introduction
 
@@ -388,9 +392,9 @@ Vim version of GitGutter
 Fork of `git-gutter.el`. Some features which are not provided `git-gutter.el` provides.
 However git-gutter-plus updates diff information synchronously.
 
-[travis-badge]: https://travis-ci.org/syohex/emacs-git-gutter.svg
-[travis-link]: https://travis-ci.org/syohex/emacs-git-gutter
 [melpa-link]: http://melpa.org/#/git-gutter
 [melpa-stable-link]: http://stable.melpa.org/#/git-gutter
+[circleci-link]: https://app.circleci.com/pipelines/github/emacsorphanage/git-gutter
 [melpa-badge]: http://melpa.org/packages/git-gutter-badge.svg
 [melpa-stable-badge]: http://stable.melpa.org/packages/git-gutter-badge.svg
+[circleci-badge]: https://img.shields.io/circleci/project/github/emacsorphanage/git-gutter.svg

@@ -14,11 +14,8 @@ version: elpa
 	$(CASK) exec $(EMACS) --version
 
 lint: elpa
-	$(CASK) exec $(EMACS) -Q --batch \
-	    --exec "(require 'package)" \
-	    --exec "(add-to-list 'package-archives '(\"melpa\" . \"https://melpa.org/packages\") t)" \
-	    --exec "(package-initialize)" \
-	    --exec "(require 'elisp-lint)" \
+	$(CASK) exec $(EMACS) -Q --batch $(LOADPATH) \
+	    -l elisp-lint.el \
 	    -f elisp-lint-files-batch \
 	    --no-checkdoc \
 	    --no-package-lint \

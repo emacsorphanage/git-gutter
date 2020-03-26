@@ -374,12 +374,12 @@ gutter information of other windows."
                (setq git-gutter:enabled t)))
            (kill-buffer proc-buf)))))))
 
-(defsubst git-gutter:gutter-sperator ()
+(defsubst git-gutter:gutter-seperator ()
   (when git-gutter:separator-sign
     (propertize git-gutter:separator-sign 'face 'git-gutter:separator)))
 
 (defun git-gutter:before-string (sign)
-  (let ((gutter-sep (concat sign (git-gutter:gutter-sperator))))
+  (let ((gutter-sep (concat sign (git-gutter:gutter-seperator))))
     (propertize " " 'display `((margin left-margin) ,gutter-sep))))
 
 (defun git-gutter:propertized-sign (type)

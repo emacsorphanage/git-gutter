@@ -132,11 +132,11 @@ gutter information of other windows."
   "Face of added")
 
 (defface git-gutter:deleted
-  '((t (:foreground "red" :weight bold)))
+  '((t (:foreground "red" :weight bold :inherit default)))
   "Face of deleted")
 
 (defface git-gutter:unchanged
-  '((t (:background "yellow")))
+  '((t (:background "yellow" :inherit default)))
   "Face of unchanged")
 
 (defcustom git-gutter:disabled-modes nil

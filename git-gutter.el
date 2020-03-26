@@ -202,6 +202,13 @@ gutter information of other windows."
   :type 'boolean
   :group 'git-gutter)
 
+(defvar git-gutter:start-revision nil
+  "Starting revision for vc diffs.
+Can be a directory-local variable in your project.")
+
+(put 'git-gutter:start-revision 'safe-local-variable
+     (lambda (x) (or (booleanp x) (stringp x))))
+
 (cl-defstruct git-gutter-hunk
   type content start-line end-line)
 
@@ -212,7 +219,6 @@ gutter information of other windows."
 (defvar git-gutter:linum-enabled nil)
 (defvar git-gutter:linum-prev-window-margin nil)
 (defvar git-gutter:vcs-type nil)
-(defvar git-gutter:start-revision nil)
 (defvar git-gutter:revision-history nil)
 (defvar git-gutter:update-timer nil)
 (defvar git-gutter:last-sha1 nil)

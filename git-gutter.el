@@ -206,6 +206,7 @@ gutter information of other windows."
   "Starting revision for vc diffs.
 Can be a directory-local variable in your project.")
 
+(make-variable-buffer-local 'git-gutter:start-revision)
 (put 'git-gutter:start-revision 'safe-local-variable
      (lambda (x) (or (booleanp x) (stringp x))))
 
@@ -586,7 +587,7 @@ Can be a directory-local variable in your project.")
             (make-local-variable 'git-gutter:enabled)
             (setq-local git-gutter:has-indirect-buffers nil)
             (make-local-variable 'git-gutter:diffinfos)
-            (setq-local git-gutter:start-revision nil)
+            ;;(setq-local git-gutter:start-revision nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
             (add-hook 'pre-command-hook 'git-gutter:pre-command-hook)
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)

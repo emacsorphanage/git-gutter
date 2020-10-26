@@ -1,9 +1,12 @@
 ;;; git-gutter.el --- Port of Sublime Text plugin GitGutter -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016-2020 Syohei YOSHIDA and Neil Okamoto
+;; Copyright (C) 2016-2020 Syohei YOSHIDA <syohex@gmail.com>
+;; Copyright (C) 2020 Neil Okamoto <neil.okamoto+melpa@gmail.com>
+;; Copyright (C) 2020 Shen, Jen-Chieh <jcs090218@gmail.com>
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; Maintainer: Neil Okamoto <neil.okamoto+melpa@gmail.com>
+;;             Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacsorphanage/git-gutter
 ;; Version: 0.90
 ;; Package-Requires: ((emacs "24.3"))

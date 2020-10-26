@@ -467,8 +467,12 @@ Can be a directory-local variable in your project.")
 
 (defun git-gutter:next-visual-line (arg)
   (let ((line-move-visual t))
-    (with-no-warnings
-      (next-line arg))))
+    (or (ignore-errors
+          ;; next-line raises exception at end of buffer
+          (with-no-warnings
+            (next-line arg))
+          t)
+        (goto-char (point-max)))))
 
 (defun git-gutter:view-for-unchanged ()
   (save-excursion

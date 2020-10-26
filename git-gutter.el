@@ -222,7 +222,7 @@ Can be a directory-local variable in your project.")
 (defvar git-gutter:vcs-type nil)
 (defvar git-gutter:revision-history nil)
 (defvar git-gutter:update-timer nil)
-(defvar git-gutter:last-sha1 nil)
+(defvar git-gutter:last-chars-modified-tick nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -1064,9 +1064,9 @@ start revision."
              (delete-file now))))))))
 
 (defun git-gutter:should-update-p ()
-  (let ((sha1 (secure-hash 'sha1 (current-buffer))))
-    (unless (equal sha1 git-gutter:last-sha1)
-      (setq git-gutter:last-sha1 sha1))))
+  (let ((chars-modified-tick (buffer-chars-modified-tick)))
+    (unless (equal chars-modified-tick git-gutter:last-chars-modified-tick)
+      (setq-local git-gutter:last-chars-modified-tick chars-modified-tick))))
 
 (defun git-gutter:git-root ()
   (with-temp-buffer
@@ -1077,19 +1077,18 @@ start revision."
 
 (defun git-gutter:live-update ()
   (git-gutter:awhen (git-gutter:base-file)
-                    (when (and git-gutter:enabled
-                               (buffer-modified-p)
-                               (git-gutter:should-update-p))
-                      (let ((file (file-name-nondirectory it))
-                            (root (file-truename (git-gutter:git-root)))
-                            (now (make-temp-file "git-gutter-cur"))
-                            (original (make-temp-file "git-gutter-orig")))
-                        (if (git-gutter:write-original-content original (file-relative-name it root))
-                            (progn
-                              (git-gutter:write-current-content now)
-                              (git-gutter:start-live-update file original now))
-                          (delete-file now)
-                          (delete-file original))))))
+    (when (and git-gutter:enabled
+               (git-gutter:should-update-p))
+      (let ((file (file-name-nondirectory it))
+            (root (file-truename (git-gutter:git-root)))
+            (now (make-temp-file "git-gutter-cur"))
+            (original (make-temp-file "git-gutter-orig")))
+        (if (git-gutter:write-original-content original (file-relative-name it root))
+            (progn
+              (git-gutter:write-current-content now)
+              (git-gutter:start-live-update file original now))
+          (delete-file now)
+          (delete-file original))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

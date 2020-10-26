@@ -1077,18 +1077,18 @@ start revision."
 
 (defun git-gutter:live-update ()
   (git-gutter:awhen (git-gutter:base-file)
-    (when (and git-gutter:enabled
-               (git-gutter:should-update-p))
-      (let ((file (file-name-nondirectory it))
-            (root (file-truename (git-gutter:git-root)))
-            (now (make-temp-file "git-gutter-cur"))
-            (original (make-temp-file "git-gutter-orig")))
-        (if (git-gutter:write-original-content original (file-relative-name it root))
-            (progn
-              (git-gutter:write-current-content now)
-              (git-gutter:start-live-update file original now))
-          (delete-file now)
-          (delete-file original))))))
+                    (when (and git-gutter:enabled
+                               (git-gutter:should-update-p))
+                      (let ((file (file-name-nondirectory it))
+                            (root (file-truename (git-gutter:git-root)))
+                            (now (make-temp-file "git-gutter-cur"))
+                            (original (make-temp-file "git-gutter-orig")))
+                        (if (git-gutter:write-original-content original (file-relative-name it root))
+                            (progn
+                              (git-gutter:write-current-content now)
+                              (git-gutter:start-live-update file original now))
+                          (delete-file now)
+                          (delete-file original))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

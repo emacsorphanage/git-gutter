@@ -441,11 +441,11 @@ Argument TEST is the case before BODY execution."
 (defun git-gutter:put-signs-linum (sign points)
   (dolist (pos points)
     (git-gutter:awhen (git-gutter:linum-get-overlay pos)
-                      (overlay-put it 'before-string
-                                   (propertize " "
-                                               'display
-                                               `((margin left-margin)
-                                                 ,(concat sign (overlay-get it 'linum-str))))))))
+      (overlay-put it 'before-string
+                   (propertize " "
+                               'display
+                               `((margin left-margin)
+                                 ,(concat sign (overlay-get it 'linum-str))))))))
 
 (defun git-gutter:put-signs (sign points)
   (if git-gutter:linum-enabled
@@ -530,7 +530,7 @@ Argument TEST is the case before BODY execution."
 (defun git-gutter:kill-buffer-hook ()
   (let ((buf (git-gutter:diff-process-buffer (git-gutter:base-file))))
     (git-gutter:awhen (get-buffer buf)
-                      (kill-buffer it))))
+      (kill-buffer it))))
 
 (defsubst git-gutter:linum-padding ()
   (cl-loop repeat (git-gutter:window-margin)
@@ -757,16 +757,16 @@ Argument TEST is the case before BODY execution."
 
 (defun git-gutter:query-action (action action-fn update-fn)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-                    (save-window-excursion
-                      (when git-gutter:ask-p
-                        (git-gutter:popup-hunk it))
-                      (when (or (not git-gutter:ask-p)
-                                (yes-or-no-p (format "%s current hunk ? " action)))
-                        (funcall action-fn it)
-                        (funcall update-fn))
-                      (if git-gutter:ask-p
-                          (delete-window (git-gutter:popup-buffer-window))
-                        (message "%s current hunk." action)))))
+    (save-window-excursion
+      (when git-gutter:ask-p
+        (git-gutter:popup-hunk it))
+      (when (or (not git-gutter:ask-p)
+                (yes-or-no-p (format "%s current hunk ? " action)))
+        (funcall action-fn it)
+        (funcall update-fn))
+      (if git-gutter:ask-p
+          (delete-window (git-gutter:popup-buffer-window))
+        (message "%s current hunk." action)))))
 
 (defun git-gutter:revert-hunk ()
   "Revert current hunk."
@@ -775,14 +775,14 @@ Argument TEST is the case before BODY execution."
 
 (defun git-gutter:extract-hunk-header ()
   (git-gutter:awhen (git-gutter:base-file)
-                    (with-temp-buffer
-                      (when (zerop (git-gutter:execute-command
-                                    "git" t "--no-pager" "-c" "diff.autorefreshindex=0"
-                                    "diff" "--no-color" "--no-ext-diff"
-                                    "--relative" (file-name-nondirectory it)))
-                        (goto-char (point-min))
-                        (forward-line 4)
-                        (buffer-substring-no-properties (point-min) (point))))))
+    (with-temp-buffer
+      (when (zerop (git-gutter:execute-command
+                    "git" t "--no-pager" "-c" "diff.autorefreshindex=0"
+                    "diff" "--no-color" "--no-ext-diff"
+                    "--relative" (file-name-nondirectory it)))
+        (goto-char (point-min))
+        (forward-line 4)
+        (buffer-substring-no-properties (point-min) (point))))))
 
 (defvar git-gutter:git-hunk-header-regexp
   "^@@ -\\([0-9]+\\),?\\([0-9]*\\) \\+\\([0-9]+\\),?\\([0-9]*\\) @@"
@@ -850,10 +850,10 @@ Argument TEST is the case before BODY execution."
 (defun git-gutter:mark-hunk ()
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-                    (let ((start (git-gutter:line-point (git-gutter-hunk-start-line it)))
-                          (end (git-gutter:line-point (1+ (git-gutter-hunk-end-line it)))))
-                      (goto-char start)
-                      (push-mark end nil t))))
+    (let ((start (git-gutter:line-point (git-gutter-hunk-start-line it)))
+          (end (git-gutter:line-point (1+ (git-gutter-hunk-end-line it)))))
+      (goto-char start)
+      (push-mark end nil t))))
 
 (defun git-gutter:update-popuped-buffer (diffinfo)
   (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
@@ -872,8 +872,8 @@ Argument TEST is the case before BODY execution."
   (interactive)
   (git-gutter:awhen (or diffinfo
                         (git-gutter:search-here-diffinfo git-gutter:diffinfos))
-                    (save-selected-window
-                      (pop-to-buffer (git-gutter:update-popuped-buffer it)))))
+    (save-selected-window
+      (pop-to-buffer (git-gutter:update-popuped-buffer it)))))
 
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"
@@ -908,8 +908,8 @@ Argument TEST is the case before BODY execution."
   "Move to end of current diff hunk"
   (interactive)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-                    (let ((lines (- (git-gutter-hunk-end-line it) (line-number-at-pos))))
-                      (forward-line lines))))
+    (let ((lines (- (git-gutter-hunk-end-line it) (line-number-at-pos))))
+      (forward-line lines))))
 
 (defalias 'git-gutter:next-diff 'git-gutter:next-hunk)
 (make-obsolete 'git-gutter:next-diff 'git-gutter:next-hunk "0.60")
@@ -1036,9 +1036,9 @@ start revision."
 
 (defun git-gutter:write-original-content (tmpfile filename)
   (git-gutter:awhen (git-gutter:original-file-content filename)
-                    (with-temp-file tmpfile
-                      (insert it)
-                      t)))
+    (with-temp-file tmpfile
+      (insert it)
+      t)))
 
 (defsubst git-gutter:start-raw-diff-process (proc-buf original now)
   (start-file-process "git-gutter:update-timer" proc-buf
@@ -1080,18 +1080,18 @@ start revision."
 
 (defun git-gutter:live-update ()
   (git-gutter:awhen (git-gutter:base-file)
-                    (when (and git-gutter:enabled
-                               (git-gutter:should-update-p))
-                      (let ((file (file-name-nondirectory it))
-                            (root (file-truename (git-gutter:git-root)))
-                            (now (make-temp-file "git-gutter-cur"))
-                            (original (make-temp-file "git-gutter-orig")))
-                        (if (git-gutter:write-original-content original (file-relative-name it root))
-                            (progn
-                              (git-gutter:write-current-content now)
-                              (git-gutter:start-live-update file original now))
-                          (delete-file now)
-                          (delete-file original))))))
+    (when (and git-gutter:enabled
+               (git-gutter:should-update-p))
+      (let ((file (file-name-nondirectory it))
+            (root (file-truename (git-gutter:git-root)))
+            (now (make-temp-file "git-gutter-cur"))
+            (original (make-temp-file "git-gutter-orig")))
+        (if (git-gutter:write-original-content original (file-relative-name it root))
+            (progn
+              (git-gutter:write-current-content now)
+              (git-gutter:start-live-update file original now))
+          (delete-file now)
+          (delete-file original))))))
 
 ;; for linum-user
 (when (and global-linum-mode (not (boundp 'git-gutter-fringe)))

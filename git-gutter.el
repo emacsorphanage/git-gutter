@@ -1029,13 +1029,19 @@ start revision."
     (with-temp-file tmpfile
       (insert content))))
 
-(defsubst git-gutter:original-file-content (file)
+(defun git-gutter:original-file-content (file vcs)
   (with-temp-buffer
-    (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
-      (buffer-substring-no-properties (point-min) (point-max)))))
+    (cl-case vcs
+      (git
+       (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
+         (buffer-substring-no-properties (point-min) (point-max))))
+      ((svn hg bzr)
+       (let ((command (symbol-name vcs)))
+         (when (zerop (process-file command nil t nil "cat" file))
+           (buffer-substring-no-properties (point-min) (point-max))))))))
 
 (defun git-gutter:write-original-content (tmpfile filename)
-  (git-gutter:awhen (git-gutter:original-file-content filename)
+  (git-gutter:awhen (git-gutter:original-file-content filename git-gutter:vcs-type)
     (with-temp-file tmpfile
       (insert it)
       t)))
@@ -1071,19 +1077,32 @@ start revision."
     (unless (equal chars-modified-tick git-gutter:last-chars-modified-tick)
       (setq-local git-gutter:last-chars-modified-tick chars-modified-tick))))
 
-(defun git-gutter:git-root ()
+(defun git-gutter:vcs-root (vcs)
   (with-temp-buffer
-    (when (zerop (process-file "git" nil t nil "rev-parse" "--show-toplevel"))
-      (goto-char (point-min))
-      (file-name-as-directory
-       (buffer-substring-no-properties (point) (line-end-position))))))
+    (cl-case vcs
+      (git
+       (when (zerop (process-file "git" nil t nil "rev-parse" "--show-toplevel"))
+         (goto-char (point-min))
+         (file-name-as-directory
+          (buffer-substring-no-properties (point) (line-end-position)))))
+      (svn
+       (when (zerop (process-file "svn" nil t nil "info"))
+         (goto-char (point-min))
+         (when (re-search-forward "^Working Copy Root Path: \(.+\)$" nil t)
+           (file-name-as-directory (match-string-no-properties 1)))))
+      ((hg bzr)
+       (let ((command (symbol-name vcs)))
+         (when (zerop (process-file command nil t nil "root"))
+           (goto-char (point-min))
+           (file-name-as-directory
+            (buffer-substring-no-properties (point) (line-end-position)))))))))
 
 (defun git-gutter:live-update ()
   (git-gutter:awhen (git-gutter:base-file)
     (when (and git-gutter:enabled
                (git-gutter:should-update-p))
       (let ((file (file-name-nondirectory it))
-            (root (file-truename (git-gutter:git-root)))
+            (root (file-truename (git-gutter:vcs-root git-gutter:vcs-type)))
             (now (make-temp-file "git-gutter-cur"))
             (original (make-temp-file "git-gutter-orig")))
         (if (git-gutter:write-original-content original (file-relative-name it root))

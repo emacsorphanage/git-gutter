@@ -205,6 +205,11 @@ gutter information of other windows."
   :type 'boolean
   :group 'git-gutter)
 
+(defcustom git-gutter:allow-remote nil
+  "Whether to turn on git-gutter on remote files."
+  :type 'boolean
+  :group 'git-gutter)
+
 (defvar git-gutter:start-revision nil
   "Starting revision for vc diffs.
 Can be a directory-local variable in your project.")
@@ -245,6 +250,7 @@ Argument TEST is the case before BODY execution."
 (defsubst git-gutter:execute-command (cmd output &rest args)
   (apply #'process-file cmd nil output nil args))
 
+
 (defun git-gutter:in-git-repository-p ()
   (when (executable-find "git")
     (with-temp-buffer
@@ -268,9 +274,11 @@ Argument TEST is the case before BODY execution."
     (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))))
 
 (defun git-gutter:in-repository-p ()
-  (cl-loop for vcs in git-gutter:handled-backends
-           when (git-gutter:vcs-check-function vcs)
-           return (setq-local git-gutter:vcs-type vcs)))
+  (and (or git-gutter:allow-remote
+           (not (file-remote-p default-directory)))
+       (cl-loop for vcs in git-gutter:handled-backends
+                when (git-gutter:vcs-check-function vcs)
+                return (setq-local git-gutter:vcs-type vcs))))
 
 (defsubst git-gutter:changes-to-number (str)
   (if (string= str "")

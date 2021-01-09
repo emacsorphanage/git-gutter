@@ -330,6 +330,7 @@ Argument TEST is the case before BODY execution."
   (let (args)
     (unless (string= git-gutter:diff-option "")
       (setq args (nreverse (split-string git-gutter:diff-option))))
+    (push "--" args)
     (when (git-gutter:revision-set-p)
       (push git-gutter:start-revision args))
     (nreverse (cons file args))))
@@ -338,7 +339,7 @@ Argument TEST is the case before BODY execution."
   (let ((arg (git-gutter:git-diff-arguments file)))
     (apply #'start-file-process "git-gutter" proc-buf
            "git" "--no-pager" "-c" "diff.autorefreshindex=0"
-           "diff" "--no-color" "--no-ext-diff" "--relative" "-U0" "--"
+           "diff" "--no-color" "--no-ext-diff" "--relative" "-U0"
            arg)))
 
 (defun git-gutter:svn-diff-arguments (file)

@@ -73,8 +73,8 @@ character for signs of changes"
 
 (defcustom git-gutter:update-windows-commands
   '(kill-buffer ido-kill-buffer)
-  "Each command of this list is executed, gutter information is updated and \
-gutter information of other windows."
+  "Each command of this list is executed, gutter information is
+updated and gutter information of other windows."
   :type '(list (function :tag "Update command")
                (repeat :inline t (function :tag "Update command")))
   :group 'git-gutter)

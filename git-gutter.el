@@ -479,7 +479,13 @@ Argument TEST is the case before BODY execution."
           t)
         (goto-char (point-max)))))
 
-(defun git-gutter:view-for-unchanged ()
+(defun git-gutter:unchanged-line-p (line diffinfos)
+  (cl-loop for info in diffinfos
+           for start = (git-gutter-hunk-start-line info)
+           for end = (git-gutter-hunk-end-line info)
+           never (and (>= line start) (<= line end))))
+
+(defun git-gutter:view-for-unchanged (diffinfos)
   (save-excursion
     (let ((sign (if git-gutter:unchanged-sign
                     (propertize git-gutter:unchanged-sign
@@ -491,7 +497,8 @@ Argument TEST is the case before BODY execution."
           points)
       (goto-char (point-min))
       (while (not (eobp))
-        (push (point) points)
+        (when (git-gutter:unchanged-line-p (line-number-at-pos) diffinfos)
+          (push (point) points))
         (funcall move-fn 1))
       (git-gutter:put-signs sign points))))
 
@@ -637,7 +644,7 @@ Argument TEST is the case before BODY execution."
 
 (defun git-gutter:view-set-overlays (diffinfos)
   (when (or git-gutter:unchanged-sign git-gutter:separator-sign)
-    (git-gutter:view-for-unchanged))
+    (git-gutter:view-for-unchanged diffinfos))
   (save-excursion
     (goto-char (point-min))
     (cl-loop with curline = 1

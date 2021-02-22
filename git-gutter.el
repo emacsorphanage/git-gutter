@@ -904,6 +904,13 @@ Argument TEST is the case before BODY execution."
   (interactive "p")
   (git-gutter:next-hunk (- arg)))
 
+(defun git-gutter:beginning-of-hunk ()
+  "Move to the beginning of the current diff hunk."
+  (interactive)
+  (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
+    (let ((lines (- (git-gutter-hunk-start-line it) (line-number-at-pos))))
+      (forward-line lines))))
+
 (defun git-gutter:end-of-hunk ()
   "Move to end of current diff hunk"
   (interactive)

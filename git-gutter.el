@@ -1012,8 +1012,8 @@ start revision."
 (defun git-gutter:update-all-windows ()
   "Update git-gutter information for all visible buffers."
   (interactive)
-  (dolist (win (window-list))
-    (let ((buf (window-buffer win)))
+  (dolist (buf (buffer-list))
+    (when (get-buffer-window buf 'visible)
       (with-current-buffer buf
         (when git-gutter-mode
           (git-gutter))))))

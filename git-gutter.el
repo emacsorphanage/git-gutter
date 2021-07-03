@@ -881,7 +881,7 @@ Argument TEST is the case before BODY execution."
   (git-gutter:awhen (or diffinfo
                         (git-gutter:search-here-diffinfo git-gutter:diffinfos))
     (save-selected-window
-      (pop-to-buffer (git-gutter:update-popuped-buffer it)))))
+      (display-buffer (git-gutter:update-popuped-buffer it)))))
 
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"

@@ -330,9 +330,9 @@ Argument TEST is the case before BODY execution."
   (let (args)
     (unless (string= git-gutter:diff-option "")
       (setq args (nreverse (split-string git-gutter:diff-option))))
-    (push "--" args)
     (when (git-gutter:revision-set-p)
       (push git-gutter:start-revision args))
+    (push "--" args)
     (nreverse (cons file args))))
 
 (defun git-gutter:start-git-diff-process (file proc-buf)

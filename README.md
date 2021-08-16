@@ -377,11 +377,11 @@ code you changed etc. To display them in mode-line is also useful.
 
 #### `(git-gutter:buffer-hunks)`
 
-Cound unstaged hunks in current buffer.
+Count unstaged hunks in current buffer.
 
 #### `(git-gutter:all-hunks)`
 
-Cound unstaged hunks in all buffers
+Count unstaged hunks in all buffers
 
 #### `(git-gutter:statistic)`
 

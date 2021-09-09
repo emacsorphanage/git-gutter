@@ -225,7 +225,7 @@ Can be a directory-local variable in your project.")
 (defvar git-gutter:vcs-type nil)
 (defvar git-gutter:revision-history nil)
 (defvar git-gutter:update-timer nil)
-(defvar git-gutter:last-chars-modified-tick nil)
+(defvar-local git-gutter:last-chars-modified-tick nil)
 
 (defvar git-gutter:popup-buffer "*git-gutter:diff*")
 (defvar git-gutter:ignore-commands
@@ -693,6 +693,7 @@ Argument TEST is the case before BODY execution."
     (when git-gutter:clear-function
       (funcall git-gutter:clear-function)))
   (setq git-gutter:enabled nil
+        git-gutter:last-chars-modified-tick nil
         git-gutter:diffinfos nil))
 
 (defun git-gutter:update-diffinfo (diffinfos)
@@ -1083,7 +1084,7 @@ start revision."
 (defun git-gutter:should-update-p ()
   (let ((chars-modified-tick (buffer-chars-modified-tick)))
     (unless (equal chars-modified-tick git-gutter:last-chars-modified-tick)
-      (setq-local git-gutter:last-chars-modified-tick chars-modified-tick))))
+      (setq git-gutter:last-chars-modified-tick chars-modified-tick))))
 
 (defun git-gutter:vcs-root (vcs)
   (with-temp-buffer

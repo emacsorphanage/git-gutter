@@ -9,7 +9,7 @@
 ;;             Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacsorphanage/git-gutter
 ;; Version: 0.91
-;; Package-Requires: ((emacs "24.3"))
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@
   "Port GitGutter"
   :prefix "git-gutter:"
   :group 'vc)
+
+(defvar git-gutter-mode nil)
 
 (defcustom git-gutter:window-width nil
   "Character width of gutter window.  Emacs mistakes width of some characters.
@@ -569,19 +571,21 @@ Argument TEST is the case before BODY execution."
   (setq-local git-gutter:linum-enabled t)
   (make-local-variable 'git-gutter:linum-prev-window-margin))
 
+(defun git-gutter:linum-update-window (&rest _args)
+  (when git-gutter:display-p
+    (if (and git-gutter-mode git-gutter:diffinfos)
+        (git-gutter:linum-update git-gutter:diffinfos)
+      (let ((curwin (get-buffer-window))
+            (margin (or git-gutter:linum-prev-window-margin
+                        (car (window-margins)))))
+        (set-window-margins curwin margin (cdr (window-margins curwin)))))))
+
 ;;;###autoload
 (defun git-gutter:linum-setup ()
   "Setup for linum-mode."
   (setq git-gutter:init-function 'git-gutter:linum-init
         git-gutter:view-diff-function nil)
-  (defadvice linum-update-window (after git-gutter:linum-update-window activate)
-    (when git-gutter:display-p
-      (if (and git-gutter-mode git-gutter:diffinfos)
-          (git-gutter:linum-update git-gutter:diffinfos)
-        (let ((curwin (get-buffer-window))
-              (margin (or git-gutter:linum-prev-window-margin
-                          (car (window-margins)))))
-          (set-window-margins curwin margin (cdr (window-margins curwin))))))))
+  (advice-add 'linum-update-window :after #'git-gutter:linum-update-window))
 
 (defun git-gutter:show-backends ()
   (mapconcat (lambda (backend)
@@ -949,27 +953,33 @@ Argument TEST is the case before BODY execution."
         (git-gutter:start-diff-process (file-name-nondirectory file)
                                        (get-buffer-create proc-buf))))))
 
-(defadvice make-indirect-buffer (before git-gutter:has-indirect-buffers activate)
+(defun git-gutter:make-indirect-buffer (&rest _args)
   (when (and git-gutter-mode (not (buffer-base-buffer)))
     (setq git-gutter:has-indirect-buffers t)))
+(advice-add 'make-indirect-buffer :before #'git-gutter:make-indirect-buffer)
 
-(defadvice vc-revert (after git-gutter:vc-revert activate)
+(defun git-gutter:vc-revert (&rest _args)
   (when git-gutter-mode
     (run-with-idle-timer 0.1 nil 'git-gutter)))
+(advice-add 'vc-revert :after #'git-gutter:vc-revert)
 
-(defadvice toggle-truncate-lines (after git-gutter:toggle-truncate-lines activate)
+(defun git-gutter:toggle-truncate-lines (&rest _args)
   (when (and git-gutter-mode git-gutter:visual-line)
     (run-with-idle-timer 0.1 nil 'git-gutter)))
+(advice-add 'toggle-truncate-lines :after #'git-gutter:toggle-truncate-lines)
 
 ;; `quit-window' and `switch-to-buffer' are called from other
-;; commands. So we should use `defadvice' instead of `post-command-hook'.
-(defadvice quit-window (after git-gutter:quit-window activate)
+;; commands. So calling git-gutter from `post-command-hook' is not enough, use
+;; advices instead.
+(defun git-gutter:quit-window (&rest _args)
   (when git-gutter-mode
     (git-gutter)))
+(advice-add 'quit-window :after #'git-gutter:quit-window)
 
-(defadvice switch-to-buffer (after git-gutter:switch-to-buffer activate)
+(defun git-gutter:switch-to-buffer (&rest _args)
   (when git-gutter-mode
     (git-gutter)))
+(advice-add 'switch-to-buffer :after #'git-gutter:switch-to-buffer)
 
 (defun git-gutter:clear ()
   "Clear diff information in gutter."

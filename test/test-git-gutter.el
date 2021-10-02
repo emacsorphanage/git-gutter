@@ -177,7 +177,7 @@ bar
 
     (let* ((git-gutter:start-revision "HEAD")
            (got (git-gutter:git-diff-arguments file)))
-      (should (equal got '("-a" "-b" "-c" "--" "HEAD" "git-gutter.el"))))))
+      (should (equal got '("-a" "-b" "-c" "HEAD" "--" "git-gutter.el"))))))
 
 (ert-deftest git-gutter-hg-diff-arguments ()
   "Command line options of `hg diff'"

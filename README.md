@@ -1,8 +1,8 @@
 # git-gutter.el
 
-[![circleci badge][circleci-badge]][circleci-link]
 [![melpa badge][melpa-badge]][melpa-link]
 [![melpa stable badge][melpa-stable-badge]][melpa-stable-link]
+[![gh actions badge][gh-actions-badge]][gh-actions-link]
 
 ## Introduction
 
@@ -409,7 +409,7 @@ However git-gutter-plus updates diff information synchronously.
 
 [melpa-link]: http://melpa.org/#/git-gutter
 [melpa-stable-link]: http://stable.melpa.org/#/git-gutter
-[circleci-link]: https://app.circleci.com/pipelines/github/emacsorphanage/git-gutter
+[gh-actions-link]: https://github.com/emacsorphanage/git-gutter/actions
 [melpa-badge]: http://melpa.org/packages/git-gutter-badge.svg
 [melpa-stable-badge]: http://stable.melpa.org/packages/git-gutter-badge.svg
-[circleci-badge]: https://img.shields.io/circleci/project/github/emacsorphanage/git-gutter.svg
+[gh-actions-badge]: https://github.com/emacsorphanage/git-gutter/workflows/ci-checks/badge.svg

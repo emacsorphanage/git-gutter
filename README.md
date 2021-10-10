@@ -32,12 +32,12 @@
 
 ## git-gutter.el vs [git-gutter-fringe.el](https://github.com/syohex/emacs-git-gutter-fringe)
 
-|                      | git-gutter.el   | git-gutter-fringe.el |
-|:---------------------|:---------------:|:--------------------:|
-| Work in tty frame    | OK              | NG                   |
-| Work with linum-mode | OK(experimental)| OK                   |
-| Show on right side   | NG              | OK                   |
-| More configurable    | OK              | NG                   |
+|                      | git-gutter.el     | git-gutter-fringe.el |
+|:---------------------|:-----------------:|:--------------------:|
+| Work in tty frame    | OK                | unsupported          |
+| Work with linum-mode | OK(experimental)  | OK                   |
+| Show on right side   | unsupporeted      | OK                   |
+| configurable         | more configurable | less configurable    |
 
 
 ## Installation

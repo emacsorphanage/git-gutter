@@ -769,16 +769,17 @@ Argument TEST is the case before BODY execution."
 
 (defun git-gutter:query-action (action action-fn update-fn)
   (git-gutter:awhen (git-gutter:search-here-diffinfo git-gutter:diffinfos)
-    (save-window-excursion
-      (when git-gutter:ask-p
-        (git-gutter:popup-hunk it))
-      (when (or (not git-gutter:ask-p)
-                (yes-or-no-p (format "%s current hunk ? " action)))
-        (funcall action-fn it)
-        (funcall update-fn))
-      (if git-gutter:ask-p
-          (delete-window (git-gutter:popup-buffer-window))
-        (message "%s current hunk." action)))))
+    (let ((diff-info (git-gutter:adjust-diff-info it)))
+      (save-window-excursion
+        (when git-gutter:ask-p
+          (git-gutter:popup-hunk diff-info))
+        (when (or (not git-gutter:ask-p)
+                  (yes-or-no-p (format "%s current hunk ? " action)))
+          (funcall action-fn diff-info)
+          (funcall update-fn))
+        (if git-gutter:ask-p
+            (delete-window (git-gutter:popup-buffer-window))
+          (message "%s current hunk." action))))))
 
 (defun git-gutter:revert-hunk ()
   "Revert current hunk."
@@ -828,6 +829,67 @@ Argument TEST is the case before BODY execution."
 (defun git-gutter:apply-directory-option ()
   (let ((root (locate-dominating-file default-directory ".git")))
     (file-name-directory (file-relative-name (git-gutter:base-file) root))))
+
+(defun git-gutter:adjust-added-hunk (diff-info start-line end-line)
+  (unless (= (git-gutter-hunk-start-line diff-info) start-line)
+    (error "Invalid region. Staging region for added hunk must start from first line of this hunk"))
+  (let ((region-changes (1+ (- end-line start-line))))
+    (with-temp-buffer
+      (insert (git-gutter-hunk-content diff-info))
+      (goto-char (point-min))
+      ;; re-write header
+      (re-search-forward "\\+\\([0-9]+\\),\\([0-9]+\\)" nil t)
+      (let ((base-line (string-to-number (match-string-no-properties 1))))
+        (replace-match (number-to-string region-changes) t t nil 2)
+        (let ((end-offset (1+ (- end-line base-line))))
+          (forward-line (1+ end-offset))
+          (delete-region (point) (point-max))
+          (buffer-string))))))
+
+(defun git-gutter:adjust-diff-by-region (pre-keep-lines keep-lines post-keep-lines)
+  (let ((delete-fn (lambda (lines)
+                     (dotimes (_i lines)
+                       (let ((pos (point)))
+                         (forward-line 1)
+                         (delete-region pos (point)))))))
+    (funcall delete-fn pre-keep-lines)
+    (forward-line keep-lines)
+    (funcall delete-fn post-keep-lines)))
+
+(defun git-gutter:adjust-modified-hunk (diff-info start-line end-line)
+  (with-temp-buffer
+    (insert (git-gutter-hunk-content diff-info))
+    (goto-char (point-min))
+    (re-search-forward ",[0-9]+ \\+\\([0-9]+\\),[0-9]+" nil t)
+    (let* ((base-line (string-to-number (match-string-no-properties 1)))
+           (pre-keep-lines (- start-line base-line))
+           (keep-lines (1+ (- end-line start-line)))
+           (post-keep-lines (- (git-gutter-hunk-end-line diff-info) end-line))
+           (new-header (format ",%d +%d,%d" keep-lines base-line keep-lines)))
+      (replace-match new-header)
+      (forward-line 1)
+      ;; adjust '-' part
+      (git-gutter:adjust-diff-by-region pre-keep-lines keep-lines post-keep-lines)
+      (re-search-forward "^\\+" nil t)
+      (goto-char (match-beginning 0))
+      ;; adjust '+' part
+      (git-gutter:adjust-diff-by-region pre-keep-lines keep-lines post-keep-lines)
+      (buffer-string))))
+
+(defun git-gutter:adjust-diff-info (diff-info)
+  (let ((hunk-type (git-gutter-hunk-type diff-info)))
+    (if (or (not (use-region-p)) (not (memq hunk-type '(added modified))))
+        diff-info
+      (let ((start-line (max (line-number-at-pos (region-beginning))
+                             (git-gutter-hunk-start-line diff-info)))
+            (end-line (min (line-number-at-pos (region-end))
+                           (git-gutter-hunk-end-line diff-info))))
+        (let ((new-hunk (cl-case hunk-type
+                          (added (git-gutter:adjust-added-hunk diff-info start-line end-line))
+                          (modified (git-gutter:adjust-modified-hunk diff-info start-line end-line))))
+              (adjusted-hunk (copy-git-gutter-hunk diff-info)))
+          (setf (git-gutter-hunk-content adjusted-hunk) new-hunk)
+          adjusted-hunk)))))
 
 (defun git-gutter:do-stage-hunk (diff-info)
   (let ((content (git-gutter-hunk-content diff-info))

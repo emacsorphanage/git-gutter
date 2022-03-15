@@ -220,7 +220,7 @@ Can be a directory-local variable in your project.")
 
 (defvar git-gutter:enabled nil)
 (defvar git-gutter:diffinfos nil)
-(defvar-local git-gutter:has-indirect-buffers nil)
+(defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
 (defvar git-gutter:linum-enabled nil)
 (defvar git-gutter:linum-prev-window-margin nil)
@@ -957,14 +957,14 @@ Argument TEST is the case before BODY execution."
     (when git-gutter:has-indirect-buffers
       (if (< 1 git-gutter:has-indirect-buffers)
           (setq git-gutter:has-indirect-buffers (1- git-gutter:has-indirect-buffers))
-        (setq git-gutter:has-indirect-buffers nil)))))
+        (kill-local-variable 'git-gutter:has-indirect-buffers)))))
 
 (defun git-gutter:make-indirect-buffer (oldfun base-buffer &rest args)
   (with-current-buffer (or (buffer-base-buffer (window-normalize-buffer base-buffer))
                            base-buffer)
     (if git-gutter:has-indirect-buffers
         (setq git-gutter:has-indirect-buffers (1+ git-gutter:has-indirect-buffers))
-      (setq git-gutter:has-indirect-buffers 1))
+      (setq-local git-gutter:has-indirect-buffers 1))
     (with-current-buffer (apply oldfun base-buffer args)
       (add-hook 'kill-buffer-hook #'git-gutter:kill-indirect-buffer nil t)
       (current-buffer))))

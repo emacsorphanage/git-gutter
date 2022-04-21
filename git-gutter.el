@@ -218,7 +218,7 @@ Can be a directory-local variable in your project.")
 (cl-defstruct git-gutter-hunk
   type content start-line end-line)
 
-(defvar git-gutter:enabled nil)
+(defvar-local git-gutter:enabled nil)
 (defvar git-gutter:diffinfos nil)
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
@@ -603,7 +603,6 @@ Argument TEST is the case before BODY execution."
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
-            (make-local-variable 'git-gutter:enabled)
             (setq-local git-gutter:has-indirect-buffers nil)
             (make-local-variable 'git-gutter:diffinfos)
             ;;(setq-local git-gutter:start-revision nil)

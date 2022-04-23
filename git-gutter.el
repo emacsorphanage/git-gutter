@@ -604,7 +604,6 @@ Argument TEST is the case before BODY execution."
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
-            (setq-local git-gutter:has-indirect-buffers nil)
             (make-local-variable 'git-gutter:diffinfos)
             ;;(setq-local git-gutter:start-revision nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
@@ -953,10 +952,23 @@ Argument TEST is the case before BODY execution."
         (git-gutter:start-diff-process (file-name-nondirectory file)
                                        (get-buffer-create proc-buf))))))
 
-(defun git-gutter:make-indirect-buffer (&rest _args)
-  (when (and git-gutter-mode (not (buffer-base-buffer)))
-    (setq git-gutter:has-indirect-buffers t)))
-(advice-add 'make-indirect-buffer :before #'git-gutter:make-indirect-buffer)
+(defun git-gutter:kill-indirect-buffer ()
+  (with-current-buffer (buffer-base-buffer)
+    (when git-gutter:has-indirect-buffers
+      (if (< 1 git-gutter:has-indirect-buffers)
+          (setq git-gutter:has-indirect-buffers (1- git-gutter:has-indirect-buffers))
+        (kill-local-variable 'git-gutter:has-indirect-buffers)))))
+
+(defun git-gutter:make-indirect-buffer (oldfun base-buffer &rest args)
+  (with-current-buffer (or (buffer-base-buffer (window-normalize-buffer base-buffer))
+                           base-buffer)
+    (if git-gutter:has-indirect-buffers
+        (setq git-gutter:has-indirect-buffers (1+ git-gutter:has-indirect-buffers))
+      (setq-local git-gutter:has-indirect-buffers 1))
+    (with-current-buffer (apply oldfun base-buffer args)
+      (add-hook 'kill-buffer-hook #'git-gutter:kill-indirect-buffer nil t)
+      (current-buffer))))
+(advice-add 'make-indirect-buffer :around #'git-gutter:make-indirect-buffer)
 
 (defun git-gutter:vc-revert (&rest _args)
   (when git-gutter-mode

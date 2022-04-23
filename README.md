@@ -26,7 +26,7 @@
 
 ## Requirements
 
-* Emacs 24 or higher
+* Emacs 25.1 or higher
 * [Git](http://git-scm.com/)(1.7.0 or higher)
 
 

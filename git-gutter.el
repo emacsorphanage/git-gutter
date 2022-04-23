@@ -1,14 +1,14 @@
 ;;; git-gutter.el --- Port of Sublime Text plugin GitGutter -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2016-2020 Syohei YOSHIDA <syohex@gmail.com>
-;; Copyright (C) 2020 Neil Okamoto <neil.okamoto+melpa@gmail.com>
-;; Copyright (C) 2020 Shen, Jen-Chieh <jcs090218@gmail.com>
+;; Copyright (C) 2020-2022 Neil Okamoto <neil.okamoto+melpa@gmail.com>
+;; Copyright (C) 2020-2022 Shen, Jen-Chieh <jcs090218@gmail.com>
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; Maintainer: Neil Okamoto <neil.okamoto+melpa@gmail.com>
 ;;             Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacsorphanage/git-gutter
-;; Version: 0.91
+;; Version: 0.92
 ;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -218,7 +218,7 @@ Can be a directory-local variable in your project.")
 (cl-defstruct git-gutter-hunk
   type content start-line end-line)
 
-(defvar git-gutter:enabled nil)
+(defvar-local git-gutter:enabled nil)
 (defvar git-gutter:diffinfos nil)
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
@@ -604,12 +604,11 @@ Argument TEST is the case before BODY execution."
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
-            (make-local-variable 'git-gutter:enabled)
             (setq-local git-gutter:has-indirect-buffers nil)
             (make-local-variable 'git-gutter:diffinfos)
             ;;(setq-local git-gutter:start-revision nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
-            (add-hook 'pre-command-hook 'git-gutter:pre-command-hook)
+            (add-hook 'pre-command-hook 'git-gutter:pre-command-hook t)
             (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
             (dolist (hook git-gutter:update-hooks)
               (add-hook hook 'git-gutter nil t))
@@ -623,7 +622,7 @@ Argument TEST is the case before BODY execution."
           (message "Here is not %s work tree" (git-gutter:show-backends)))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
-    (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook)
+    (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook t)
     (remove-hook 'post-command-hook 'git-gutter:post-command-hook t)
     (dolist (hook git-gutter:update-hooks)
       (remove-hook hook 'git-gutter t))

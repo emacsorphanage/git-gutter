@@ -1,15 +1,15 @@
 ;;; git-gutter.el --- Port of Sublime Text plugin GitGutter -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2016-2020 Syohei YOSHIDA <syohex@gmail.com>
-;; Copyright (C) 2020 Neil Okamoto <neil.okamoto+melpa@gmail.com>
-;; Copyright (C) 2020 Shen, Jen-Chieh <jcs090218@gmail.com>
+;; Copyright (C) 2020-2022 Neil Okamoto <neil.okamoto+melpa@gmail.com>
+;; Copyright (C) 2020-2022 Shen, Jen-Chieh <jcs090218@gmail.com>
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; Maintainer: Neil Okamoto <neil.okamoto+melpa@gmail.com>
 ;;             Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacsorphanage/git-gutter
-;; Version: 0.91
-;; Package-Requires: ((emacs "24.4"))
+;; Version: 0.92
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -218,7 +218,7 @@ Can be a directory-local variable in your project.")
 (cl-defstruct git-gutter-hunk
   type content start-line end-line)
 
-(defvar git-gutter:enabled nil)
+(defvar-local git-gutter:enabled nil)
 (defvar git-gutter:diffinfos nil)
 (defvar git-gutter:has-indirect-buffers nil)
 (defvar git-gutter:real-this-command nil)
@@ -250,10 +250,11 @@ Argument TEST is the case before BODY execution."
 (defun git-gutter:in-git-repository-p ()
   (when (executable-find "git")
     (with-temp-buffer
-      (when (zerop (git-gutter:execute-command
-                    "git" t "rev-parse" "--is-inside-work-tree"))
-        (goto-char (point-min))
-        (looking-at-p "true")))))
+      (when-let ((exec-result (git-gutter:execute-command
+                               "git" t "rev-parse" "--is-inside-work-tree")))
+        (when (zerop exec-result)
+          (goto-char (point-min))
+          (looking-at-p "true"))))))
 
 (defun git-gutter:in-repository-common-p (cmd check-subcmd repodir)
   (and (executable-find cmd)
@@ -603,7 +604,6 @@ Argument TEST is the case before BODY execution."
           (progn
             (when git-gutter:init-function
               (funcall git-gutter:init-function))
-            (make-local-variable 'git-gutter:enabled)
             (make-local-variable 'git-gutter:diffinfos)
             ;;(setq-local git-gutter:start-revision nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)

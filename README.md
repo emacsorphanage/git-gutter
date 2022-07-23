@@ -36,7 +36,7 @@
 |:---------------------|:-----------------:|:--------------------:|
 | Work in tty frame    | OK                | unsupported          |
 | Work with linum-mode | OK(experimental)  | OK                   |
-| Show on right side   | unsupporeted      | OK                   |
+| Show on right side   | unsupported       | OK                   |
 | configurable         | more configurable | less configurable    |
 
 

@@ -412,4 +412,4 @@ However git-gutter-plus updates diff information synchronously.
 [gh-actions-link]: https://github.com/emacsorphanage/git-gutter/actions
 [melpa-badge]: http://melpa.org/packages/git-gutter-badge.svg
 [melpa-stable-badge]: http://stable.melpa.org/packages/git-gutter-badge.svg
-[gh-actions-badge]: https://github.com/emacsorphanage/git-gutter/workflows/ci-checks/badge.svg
+[gh-actions-badge]: https://github.com/emacsorphanage/git-gutter/workflows/test/badge.svg

@@ -1,43 +1,39 @@
-name: ci-checks
+name: CI
 
 on:
   push:
     branches:
       - master
   pull_request:
-    branches:
-      - master
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  test:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        emacs_version: [25.3, 26.3, 27.2]
-        allow_failure: [false]
-        include:
-          - emacs_version: snapshot
-            allow_failure: true
-    continue-on-error: ${{ matrix.allow_failure }}
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        emacs-version:
+          - 26.3
+          - 27.2
+          - 28.1
+          - snapshot
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-      - uses: purcell/setup-emacs@master
-        with:
-          version: ${{ matrix.emacs_version }}
-      - uses: conao3/setup-cask@master
+    - uses: actions/checkout@v2
 
-      - name: Log Emacs version
-        run: 'make version'
+    - uses: jcs090218/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs-version }}
 
-      - name: Run lint check
-        run: 'make lint'
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '16'
 
-      - name: Run tests
-        run: 'make test'
+    - uses: emacs-eask/setup-eask@master
+      with:
+        version: 'snapshot'
+
+    - name: Run tests
+      run:
+        make ci

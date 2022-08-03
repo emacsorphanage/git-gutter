@@ -7,11 +7,15 @@ TEST-FILES := $(shell ls test/git-gutter-*.el)
 
 .PHONY: clean checkdoc lint install compile test
 
-ci: clean install compile
+ci: clean package install compile
 
 clean:
 	@echo "Cleaning..."
 	$(EASK) clean-all
+
+package:
+	@echo "Packaging..."
+	$(EASK) package
 
 install:
 	@echo "Installing..."

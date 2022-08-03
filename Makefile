@@ -5,7 +5,7 @@ EASK ?= eask
 
 TEST-FILES := $(shell ls test/git-gutter-*.el)
 
-.PHONY: clean checkdoc lint install compile unix-test
+.PHONY: clean checkdoc lint install compile test
 
 ci: clean install compile
 
@@ -23,8 +23,8 @@ compile:
 
 lint:
 	@echo "Linting..."
-	$(EASK) lint
+	$(EASK) lint package
 
-unix-test:
+test:
 	@echo "Testing..."
 	$(EASK) exec ert-runner -L . $(LOAD-TEST-FILES) -t '!no-win' -t '!org'

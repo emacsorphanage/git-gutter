@@ -11,7 +11,7 @@ ci: clean package install compile
 
 clean:
 	@echo "Cleaning..."
-	$(EASK) clean-all
+	$(EASK) clean all
 
 package:
 	@echo "Packaging..."

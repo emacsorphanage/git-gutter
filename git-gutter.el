@@ -897,7 +897,7 @@ Argument TEST is the case before BODY execution."
                   (font-lock-default-function 'diff-mode)
                   (font-lock-default-fontify-buffer)
                   (buffer-string))))
-      (momentary-string-display diff (point-at-bol))))))
+      (momentary-string-display diff (point-at-bol)))))
 
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"

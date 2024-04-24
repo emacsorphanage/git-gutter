@@ -248,18 +248,21 @@ Argument TEST is the case before BODY execution."
   (apply #'process-file cmd nil output nil args))
 
 (defun git-gutter:in-git-repository-p ()
-  (when (executable-find "git")
-    (with-temp-buffer
-      (when-let ((exec-result (git-gutter:execute-command
-                               "git" t "rev-parse" "--is-inside-work-tree")))
-        (when (zerop exec-result)
-          (goto-char (point-min))
-          (looking-at-p "true"))))))
+  (with-temp-buffer
+    (when-let ((exec-result
+                (condition-case nil
+                    (git-gutter:execute-command
+                     "git" t "rev-parse" "--is-inside-work-tree")
+                  (error -1))))
+      (when (zerop exec-result)
+        (goto-char (point-min))
+        (looking-at-p "true")))))
 
 (defun git-gutter:in-repository-common-p (cmd check-subcmd repodir)
-  (and (executable-find cmd)
-       (locate-dominating-file default-directory repodir)
-       (zerop (apply #'git-gutter:execute-command cmd nil check-subcmd))
+  (and (locate-dominating-file default-directory repodir)
+       (zerop (condition-case nil
+                  (apply #'git-gutter:execute-command cmd nil check-subcmd)
+                (error -1)))
        (not (string-match-p (regexp-quote (concat "/" repodir "/"))
                             default-directory))))
 

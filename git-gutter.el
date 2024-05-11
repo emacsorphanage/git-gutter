@@ -886,6 +886,19 @@ Argument TEST is the case before BODY execution."
     (save-selected-window
       (display-buffer (git-gutter:update-popuped-buffer it)))))
 
+(defun git-gutter:popup-hunk-inline-at-point ()
+  "Show hunk by temporarily expanding it at point"
+  (interactive)
+  (-when-let (diffinfo (git-gutter:search-here-diffinfo git-gutter:diffinfos))
+    (let ((diff (with-temp-buffer
+                  (insert (git-gutter-hunk-content diffinfo) "\n")
+                  (diff-mode)
+                  ;; Force-fontify the invisible temp buffer
+                  (font-lock-default-function 'diff-mode)
+                  (font-lock-default-fontify-buffer)
+                  (buffer-string))))
+      (momentary-string-display diff (point-at-bol)))))
+
 (defun git-gutter:next-hunk (arg)
   "Move to next diff hunk"
   (interactive "p")

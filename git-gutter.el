@@ -1143,7 +1143,7 @@ start revision."
           (delete-file original))))))
 
 ;; for linum-user
-(when (and (bound-and-true-p global-linum-mode) (not (boundp 'git-gutter-fringe)))
+(when (and (and (boundp 'global-linum-mode) global-linum-mode) (not (boundp 'git-gutter-fringe)))
   (git-gutter:linum-setup))
 
 (defun git-gutter:all-hunks ()

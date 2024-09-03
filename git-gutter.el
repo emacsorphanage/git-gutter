@@ -2,13 +2,13 @@
 
 ;; Copyright (C) 2016-2020 Syohei YOSHIDA <syohex@gmail.com>
 ;; Copyright (C) 2020-2022 Neil Okamoto <neil.okamoto+melpa@gmail.com>
-;; Copyright (C) 2020-2022 Shen, Jen-Chieh <jcs090218@gmail.com>
+;; Copyright (C) 2020-2024 Shen, Jen-Chieh <jcs090218@gmail.com>
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; Maintainer: Neil Okamoto <neil.okamoto+melpa@gmail.com>
 ;;             Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacsorphanage/git-gutter
-;; Version: 0.93
+;; Version: 0.94
 ;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software; you can redistribute it and/or modify

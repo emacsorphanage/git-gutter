@@ -1,6 +1,6 @@
 (package "git-gutter"
-         "0.92"
-		 "Port of Sublime Text plugin GitGutter")
+         "0.93"
+         "Port of Sublime Text plugin GitGutter")
 
 (package-file "git-gutter.el")
 

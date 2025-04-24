@@ -388,11 +388,12 @@ Argument TEST is the case before BODY execution."
            "bzr" "diff" "--context=0" args)))
 
 (defun git-gutter:start-diff-process1 (file proc-buf)
-  (cl-case git-gutter:vcs-type
-    (git (git-gutter:start-git-diff-process file proc-buf))
-    (svn (git-gutter:start-svn-diff-process file proc-buf))
-    (hg (git-gutter:start-hg-diff-process file proc-buf))
-    (bzr (git-gutter:start-bzr-diff-process file proc-buf))))
+  (let ((coding-system-for-read buffer-file-coding-system))
+    (cl-case git-gutter:vcs-type
+      (git (git-gutter:start-git-diff-process file proc-buf))
+      (svn (git-gutter:start-svn-diff-process file proc-buf))
+      (hg (git-gutter:start-hg-diff-process file proc-buf))
+      (bzr (git-gutter:start-bzr-diff-process file proc-buf)))))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (let ((file (git-gutter:base-file)) ;; for tramp
@@ -832,9 +833,13 @@ Argument TEST is the case before BODY execution."
   (let ((content (git-gutter-hunk-content diff-info))
         (type (git-gutter-hunk-type diff-info))
         (header (git-gutter:extract-hunk-header))
-        (patch (make-temp-name "git-gutter")))
+        (patch (make-temp-name "git-gutter"))
+        (coding buffer-file-coding-system))
     (when header
       (with-temp-file patch
+        ;; patch must match target file encoding, but unix eols are mandatory
+        (setq buffer-file-coding-system
+              (coding-system-change-eol-conversion coding 'unix))
         (insert header)
         (git-gutter:insert-staging-hunk content type))
       (let ((dir-option (git-gutter:apply-directory-option))
@@ -867,16 +872,18 @@ Argument TEST is the case before BODY execution."
       (push-mark end nil t))))
 
 (defun git-gutter:update-popuped-buffer (diffinfo)
-  (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
-    (view-mode -1)
-    (setq buffer-read-only nil)
-    (erase-buffer)
-    (insert (git-gutter-hunk-content diffinfo))
-    (insert "\n")
-    (goto-char (point-min))
-    (diff-mode)
-    (view-mode +1)
-    (current-buffer)))
+  (let ((coding buffer-file-coding-system))
+    (with-current-buffer (get-buffer-create git-gutter:popup-buffer)
+      (setq buffer-file-coding-system (coding-system-base coding))
+      (view-mode -1)
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (insert (git-gutter-hunk-content diffinfo))
+      (insert "\n")
+      (goto-char (point-min))
+      (diff-mode)
+      (view-mode +1)
+      (current-buffer))))
 
 (defun git-gutter:popup-hunk (&optional diffinfo)
   "Popup current diff hunk."
@@ -1055,30 +1062,36 @@ start revision."
   (setq git-gutter:update-timer nil))
 
 (defsubst git-gutter:write-current-content (tmpfile)
-  (let ((content (buffer-substring-no-properties (point-min) (point-max))))
+  (let ((content (buffer-substring-no-properties (point-min) (point-max)))
+        (coding buffer-file-coding-system))
     (with-temp-file tmpfile
+      (setq buffer-file-coding-system coding)
       (insert content))))
 
 (defun git-gutter:original-file-content (file vcs)
-  (with-temp-buffer
-    (cl-case vcs
-      (git
-       (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
-         (buffer-substring-no-properties (point-min) (point-max))))
-      ((svn hg bzr)
-       (let ((command (symbol-name vcs)))
-         (when (zerop (process-file command nil t nil "cat" file))
-           (buffer-substring-no-properties (point-min) (point-max))))))))
+  (let ((coding-system-for-read (coding-system-base buffer-file-coding-system)))
+    (with-temp-buffer
+      (cl-case vcs
+        (git
+         (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
+           (buffer-substring-no-properties (point-min) (point-max))))
+        ((svn hg bzr)
+         (let ((command (symbol-name vcs)))
+           (when (zerop (process-file command nil t nil "cat" file))
+             (buffer-substring-no-properties (point-min) (point-max)))))))))
 
 (defun git-gutter:write-original-content (tmpfile filename)
   (git-gutter:awhen (git-gutter:original-file-content filename git-gutter:vcs-type)
-    (with-temp-file tmpfile
-      (insert it)
-      t)))
+    (let ((coding buffer-file-coding-system))
+      (with-temp-file tmpfile
+        (setq buffer-file-coding-system coding)
+        (insert it)
+        t))))
 
 (defsubst git-gutter:start-raw-diff-process (proc-buf original now)
-  (start-file-process "git-gutter:update-timer" proc-buf
-                      "diff" "-U0" original now))
+  (let ((coding-system-for-read buffer-file-coding-system))
+    (start-file-process "git-gutter:update-timer" proc-buf
+                        "diff" "-U0" original now)))
 
 (defun git-gutter:start-live-update (file original now)
   (let ((proc-bufname (git-gutter:diff-process-buffer file)))

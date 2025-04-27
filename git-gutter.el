@@ -3,6 +3,7 @@
 ;; Copyright (C) 2016-2020 Syohei YOSHIDA <syohex@gmail.com>
 ;; Copyright (C) 2020-2022 Neil Okamoto <neil.okamoto+melpa@gmail.com>
 ;; Copyright (C) 2020-2024 Shen, Jen-Chieh <jcs090218@gmail.com>
+;; Copyright (C) 2024-2025 Seven Beep <ebn@entreparentheses.xyz>
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; Maintainer: Neil Okamoto <neil.okamoto+melpa@gmail.com>
@@ -37,8 +38,6 @@
   :prefix "git-gutter:"
   :group 'vc)
 
-(defvar git-gutter-mode nil)
-
 (defcustom git-gutter:window-width nil
   "Character width of gutter window.  Emacs mistakes width of some characters.
 It is better to explicitly assign width to this variable, if you use full-width
@@ -69,14 +68,6 @@ character for signs of changes"
 (defcustom git-gutter:update-commands
   '(ido-switch-buffer helm-buffers-list)
   "Each command of this list is executed, gutter information is updated."
-  :type '(list (function :tag "Update command")
-               (repeat :inline t (function :tag "Update command")))
-  :group 'git-gutter)
-
-(defcustom git-gutter:update-windows-commands
-  '(kill-buffer ido-kill-buffer)
-  "Each command of this list is executed, gutter information is
-updated and gutter information of other windows."
   :type '(list (function :tag "Update command")
                (repeat :inline t (function :tag "Update command")))
   :group 'git-gutter)
@@ -508,31 +499,11 @@ Argument TEST is the case before BODY execution."
   (and (git-gutter:base-file)
        default-directory (file-directory-p default-directory)))
 
-(defun git-gutter:pre-command-hook ()
-  (unless (memq this-command git-gutter:ignore-commands)
-    (setq git-gutter:real-this-command this-command)))
-
-(defun git-gutter:update-other-window-buffers (curwin curbuf)
-  (save-selected-window
-    (cl-loop for win in (window-list)
-             unless (eq win curwin)
-             do
-             (progn
-               (select-window win)
-               (let ((win-width (window-margins win)))
-                 (unless (car win-width)
-                   (if (eq (current-buffer) curbuf)
-                       (git-gutter:set-window-margin (git-gutter:window-margin))
-                     (git-gutter:update-diffinfo git-gutter:diffinfos))))))))
-
-(defun git-gutter:post-command-hook ()
-  (cond ((memq git-gutter:real-this-command git-gutter:update-commands)
-         (git-gutter))
-        ((memq git-gutter:real-this-command git-gutter:update-windows-commands)
-         (git-gutter)
-         (unless (bound-and-true-p global-linum-mode)
-           (git-gutter:update-other-window-buffers (selected-window)
-                                                   (current-buffer))))))
+(defun git-gutter:window-buffer-change-function (window)
+  "Function to hook into `window-buffer-change-function' to update `git-gutter'."
+  (with-selected-window (window-normalize-window window)
+    (when git-gutter-mode
+      (git-gutter))))
 
 (defsubst git-gutter:diff-process-buffer (curfile)
   (concat " *git-gutter-" curfile "-*"))
@@ -607,8 +578,8 @@ Argument TEST is the case before BODY execution."
             (make-local-variable 'git-gutter:diffinfos)
             ;;(setq-local git-gutter:start-revision nil)
             (add-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook nil t)
-            (add-hook 'pre-command-hook 'git-gutter:pre-command-hook t)
-            (add-hook 'post-command-hook 'git-gutter:post-command-hook nil t)
+            (add-hook 'window-buffer-change-functions
+                      #'git-gutter:window-buffer-change-function nil t)
             (dolist (hook git-gutter:update-hooks)
               (add-hook hook 'git-gutter nil t))
             (git-gutter)
@@ -621,10 +592,10 @@ Argument TEST is the case before BODY execution."
           (message "Here is not %s work tree" (git-gutter:show-backends)))
         (git-gutter-mode -1))
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
-    (remove-hook 'pre-command-hook 'git-gutter:pre-command-hook t)
-    (remove-hook 'post-command-hook 'git-gutter:post-command-hook t)
     (dolist (hook git-gutter:update-hooks)
       (remove-hook hook 'git-gutter t))
+    (remove-hook 'window-buffer-change-functions
+                 #'git-gutter:window-buffer-change-function t)
     (git-gutter:clear-gutter)))
 
 (defun git-gutter--turn-on ()
@@ -980,19 +951,6 @@ Argument TEST is the case before BODY execution."
     (run-with-idle-timer 0.1 nil 'git-gutter)))
 (advice-add 'toggle-truncate-lines :after #'git-gutter:toggle-truncate-lines)
 
-;; `quit-window' and `switch-to-buffer' are called from other
-;; commands. So calling git-gutter from `post-command-hook' is not enough, use
-;; advices instead.
-(defun git-gutter:quit-window (&rest _args)
-  (when git-gutter-mode
-    (git-gutter)))
-(advice-add 'quit-window :after #'git-gutter:quit-window)
-
-(defun git-gutter:switch-to-buffer (&rest _args)
-  (when git-gutter-mode
-    (git-gutter)))
-(advice-add 'switch-to-buffer :after #'git-gutter:switch-to-buffer)
-
 (defun git-gutter:clear ()
   "Clear diff information in gutter."
   (interactive)
@@ -1178,6 +1136,7 @@ start revision."
                    (- (git-gutter-hunk-end-line hunk)
                       (git-gutter-hunk-start-line hunk))))))
 
+;; FIXME: This does not work as advertised.
 (defun git-gutter:statistic ()
   "Return statistic unstaged hunks in current buffer."
   (interactive)

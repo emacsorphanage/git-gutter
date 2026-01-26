@@ -66,6 +66,11 @@ character for signs of changes"
   :type 'string
   :group 'git-gutter)
 
+(defcustom git-gutter:jj-diff-option ""
+  "Option of 'jj diff'."
+  :type 'string
+  :group 'git-gutter)
+
 (defcustom git-gutter:update-commands
   '(ido-switch-buffer helm-buffers-list)
   "Each command of this list is executed, gutter information is updated."
@@ -169,7 +174,7 @@ updated and gutter information of other windows."
 
 (defcustom git-gutter:handled-backends '(git)
   "List of version control backends for which `git-gutter.el` will be used.
-`git', `svn', `hg', and `bzr' are supported."
+`git', `svn', `hg', `bzr' and `jj' are supported."
   :type '(repeat symbol)
   :group 'git-gutter)
 
@@ -268,7 +273,9 @@ Argument TEST is the case before BODY execution."
     (git (git-gutter:in-git-repository-p))
     (svn (git-gutter:in-repository-common-p "svn" '("info") ".svn"))
     (hg (git-gutter:in-repository-common-p "hg" '("root") ".hg"))
-    (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))))
+    (bzr (git-gutter:in-repository-common-p "bzr" '("root") ".bzr"))
+    (jj (git-gutter:in-repository-common-p "jj" '("root") ".jj"))))
+
 
 (defun git-gutter:in-repository-p ()
   (cl-loop for vcs in git-gutter:handled-backends
@@ -387,12 +394,30 @@ Argument TEST is the case before BODY execution."
     (apply #'start-file-process "git-gutter" proc-buf
            "bzr" "diff" "--context=0" args)))
 
+(defun git-gutter:jj-diff-arguments (file)
+  (let (args)
+    (unless (string= git-gutter:jj-diff-option "@")
+      (setq args (nreverse (split-string git-gutter:jj-diff-option))))
+    (when (git-gutter:revision-set-p)
+        (push "-r" args)
+        (push git-gutter:start-revision args))
+    (nreverse (cons file args))))
+
+(defsubst git-gutter:start-jj-diff-process (file proc-buf)
+  (let ((args (git-gutter:jj-diff-arguments file)))
+    (apply #'start-file-process "git-gutter" proc-buf
+           "jj" "--config=ui.diff-formatter=:git" "--ignore-working-copy"
+           "--no-pager" "--quiet" "--color" "never" "diff" "--context" "0"
+           args)))
+
 (defun git-gutter:start-diff-process1 (file proc-buf)
   (cl-case git-gutter:vcs-type
     (git (git-gutter:start-git-diff-process file proc-buf))
     (svn (git-gutter:start-svn-diff-process file proc-buf))
     (hg (git-gutter:start-hg-diff-process file proc-buf))
-    (bzr (git-gutter:start-bzr-diff-process file proc-buf))))
+    (bzr (git-gutter:start-bzr-diff-process file proc-buf))
+    (jj (git-gutter:start-jj-diff-process file proc-buf))
+    ))
 
 (defun git-gutter:start-diff-process (curfile proc-buf)
   (let ((file (git-gutter:base-file)) ;; for tramp
@@ -1017,7 +1042,10 @@ Argument TEST is the case before BODY execution."
                                             (file-relative-name (buffer-file-name))))
            (hg (git-gutter:execute-command "hg" nil "id" "-r" revision))
            (bzr (git-gutter:execute-command "bzr" nil
-                                            "revno" "-r" revision)))))
+                                            "revno" "-r" revision))
+           (jj (git-gutter:execute-command "jj" nil
+                                           "log" "--ignore-working-copy" "--no-graph"
+                                           "-r" revision "-T" "commit_id.short()")))))
 
 (defun git-gutter:set-start-revision (start-rev)
   "Set start revision. If `start-rev' is nil or empty string then reset
@@ -1068,7 +1096,10 @@ start revision."
       ((svn hg bzr)
        (let ((command (symbol-name vcs)))
          (when (zerop (process-file command nil t nil "cat" file))
-           (buffer-substring-no-properties (point-min) (point-max))))))))
+           (buffer-substring-no-properties (point-min) (point-max)))))
+      (jj
+       (when (zerop (process-file "jj" nil t nil "file" "show" "-r" "@-"))
+       (buffer-substring-no-properties (point-min) (point-max)))))))
 
 (defun git-gutter:write-original-content (tmpfile filename)
   (git-gutter:awhen (git-gutter:original-file-content filename git-gutter:vcs-type)
@@ -1120,7 +1151,7 @@ start revision."
          (goto-char (point-min))
          (when (re-search-forward "^Working Copy Root Path: \(.+\)$" nil t)
            (file-name-as-directory (match-string-no-properties 1)))))
-      ((hg bzr)
+      ((hg bzr jj)
        (let ((command (symbol-name vcs)))
          (when (zerop (process-file command nil t nil "root"))
            (goto-char (point-min))

@@ -236,6 +236,7 @@ character.
 - [Mercurial](https://www.mercurial-scm.org/)
 - [Subversion](https://subversion.apache.org/)(1.8 or higher)
 - [Bazaar](http://bazaar.canonical.com/en/)
+- [Jujutsu](https://github.com/jj-vcs/jj)
 
 
 You can set backends which `git-gutter.el` will be used.
@@ -243,9 +244,9 @@ Default value of `git-gutter:handled-backends` is `'(git)`. If you want to use
 `git-gutter.el` for other VCS, please change value of `git-gutter:handled-backends` as below.
 
 ```lisp
-;; Use for 'Git'(`git`), 'Mercurial'(`hg`), 'Bazaar'(`bzr`), and 'Subversion'(`svn`) projects
+;; Use for 'Git'(`git`), 'Mercurial'(`hg`), 'Bazaar'(`bzr`), 'Subversion'(`svn`) and 'Jujutsu'(`jj`) projects
 (custom-set-variables
- '(git-gutter:handled-backends '(git hg bzr svn)))
+ '(git-gutter:handled-backends '(git hg bzr svn jj)))
 ```
 
 ### Updates hooks

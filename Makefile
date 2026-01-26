@@ -3,7 +3,7 @@ SHELL := /usr/bin/env bash
 EMACS ?= emacs
 EASK ?= eask
 
-TEST-FILES := $(shell ls test/git-gutter-*.el)
+TEST-FILES := $(shell ls test/test-*.el)
 
 .PHONY: clean checkdoc lint install compile test
 

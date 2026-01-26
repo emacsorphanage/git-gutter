@@ -203,6 +203,18 @@ bar
            (got (git-gutter:bzr-diff-arguments file)))
       (should (equal got '("-a" "-b" "-c" "-r" "30000" "git-gutter.el"))))))
 
+(ert-deftest git-gutter-jj-diff-arguments ()
+  "Command line options of `jj diff'"
+
+  (let ((git-gutter:jj-diff-option "-a -b -c")
+        (file "git-gutter.el"))
+    (let ((got (git-gutter:jj-diff-arguments file)))
+      (should (equal go '("-a" "-b" "-c" "git-gutter.el"))))
+
+    (let* ((git-gutter:start-revision "30000")
+           (got (git-gutter:jj-diff-arguments file)))
+      (should (equal got '("-a" "-b" "-c" "-r" "300000"
+
 (ert-deftest git-gutter-read-header ()
   "Read header of diff hunk"
 

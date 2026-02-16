@@ -487,22 +487,51 @@ Argument TEST is the case before BODY execution."
            for end = (git-gutter-hunk-end-line info)
            never (and (>= line start) (<= line end))))
 
+(defun git-gutter:build-unchanged-ranges (diffinfos max-line)
+  "Build list of unchanged line ranges [start, end] from diff hunks.
+Returns list of (start-line . end-line) pairs for unchanged regions."
+  (if (null diffinfos)
+      (list (cons 1 max-line))
+    (let ((ranges '())
+          (last-end 0))
+      ;; Process gaps between hunks
+      (dolist (hunk diffinfos)
+        (let ((hunk-start (git-gutter-hunk-start-line hunk))
+              (hunk-end (git-gutter-hunk-end-line hunk)))
+          ;; Add unchanged range before this hunk
+          (when (> hunk-start (1+ last-end))
+            (push (cons (1+ last-end) (1- hunk-start)) ranges))
+          (setq last-end hunk-end)))
+      ;; Add final unchanged range after last hunk
+      (when (< last-end max-line)
+        (push (cons (1+ last-end) max-line) ranges))
+      (nreverse ranges))))
+
 (defun git-gutter:view-for-unchanged (diffinfos)
-  (save-excursion
-    (let ((sign (if git-gutter:unchanged-sign
-                    (propertize git-gutter:unchanged-sign
-                                'face 'git-gutter:unchanged)
-                  " "))
-          (move-fn (if git-gutter:visual-line
-                       #'git-gutter:next-visual-line
-                     #'forward-line))
-          points)
-      (goto-char (point-min))
-      (while (not (eobp))
-        (when (git-gutter:unchanged-line-p (line-number-at-pos) diffinfos)
-          (push (point) points))
-        (funcall move-fn 1))
-      (git-gutter:put-signs sign points))))
+  "Optimized version that processes unchanged line ranges instead of individual lines."
+  (when git-gutter:unchanged-sign
+    (save-excursion
+      (let ((sign (propertize git-gutter:unchanged-sign
+                              'face 'git-gutter:unchanged))
+            (move-fn (if git-gutter:visual-line
+                         #'git-gutter:next-visual-line
+                       #'forward-line))
+            (max-line (line-number-at-pos (point-max)))
+            points)
+        ;; Get unchanged ranges
+        (let ((unchanged-ranges (git-gutter:build-unchanged-ranges diffinfos max-line)))
+          ;; Process each unchanged range
+          (dolist (range unchanged-ranges)
+            (let ((start-line (car range))
+                  (end-line (cdr range)))
+              (goto-char (point-min))
+              (forward-line (1- start-line))
+              ;; Collect points for this range
+              (dotimes (i (1+ (- end-line start-line)))
+                (unless (eobp)
+                  (push (point) points)
+                  (funcall move-fn 1))))))
+        (git-gutter:put-signs sign points)))))
 
 (defsubst git-gutter:check-file-and-directory ()
   (and (git-gutter:base-file)

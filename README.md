@@ -324,6 +324,122 @@ Default value of `git-gutter:separator-sign` is `nil`.
 Please set `git-gutter:always-show-separator` to non-nil, if you want to show
 separator always.
 
+### Theming the gutter column background
+
+Many modern themes — for example the built-in `modus-operandi` and
+`modus-vivendi` (see https://github.com/protesilaos/modus-themes) — give the
+line-number column a background color that differs from the main buffer
+background.  git-gutter places its change indicators in that same left-margin
+area, so when a theme colors the line numbers, the gutter should share that
+background for the column to look uniform.
+
+git-gutter uses a dedicated face for each type of change: `git-gutter:added`
+for added lines, `git-gutter:modified` for modified lines, and
+`git-gutter:deleted` for deleted lines.  On those rows, the sign character
+configured under [Look and feel](#look-and-feel) (e.g. `git-gutter:added-sign`)
+is drawn in the foreground color of the corresponding face, against that face's
+background color.
+
+How the *remaining* rows — those with no changes — get their background
+depends on your Emacs version.
+
+#### Emacs 31.1 and later: use the built-in `margin` face
+
+Emacs 31.1 introduced a new basic face called `margin` (see
+[bug #80693](https://debbugs.gnu.org/cgi/bugreport.cgi?bug=80693)).  The
+display engine fills every empty cell in the left and right window margins
+with this face's background.  Content written into the margin (such as a
+git-gutter sign) is drawn with its own face, but where that face does not
+specify a background of its own, it inherits from the `margin` face. So,
+configuring `margin` once yields a visually uniform gutter column background,
+without any per-package further customization.
+
+Note that the line-number area is a separate display column with its own
+face (`line-number`); the `margin` face does not affect it.  Most users will
+want the two backgrounds to match visually, when the line numbers are displayed.
+This is something themes can arrange and the example below does explicitly.
+The `margin` face was added in May 2026, so it will take time before third-party
+themes ship explicit support — until then, customizing it yourself is the way to go.
+
+To match the line-number column without hardcoding a color:
+
+```lisp
+(defun my/margin-update-face ()
+  (let ((bg (face-background 'line-number nil t)))
+    (when bg
+      (set-face-background 'margin bg))))
+
+(add-hook 'enable-theme-functions (lambda (&rest _) (my/margin-update-face)))
+(my-margin-update-face)
+```
+
+With this in place, you do **not** need to set `git-gutter:unchanged-sign` or
+`git-gutter:always-show-separator` just to fill the gutter background — and
+on large files you should actively *avoid* them for that purpose, because
+each requires git-gutter to install an overlay on every line of the buffer.
+That cost becomes prohibitive on files with tens of thousands of lines (e.g.
+Emacs' own `xdisp.c`); the `margin` face approach moves the work to the C
+display loop, where it costs nothing per line.
+
+If you want a visual gap between the change indicator and the buffer text,
+the right approach on 31.1+ is to widen the gutter — for example
+`(setq git-gutter:window-width 2)` — and let the `margin` face fill the
+extra column for free.  `git-gutter:unchanged-sign` and
+`git-gutter:separator-sign` retain their original meaning only when you
+actually want a visible character drawn on every unchanged line.
+
+#### Emacs 30.x and earlier: fill via git-gutter's own faces
+
+Before the `margin` face existed, an unwritten margin cell fell back to the
+default frame or terminal background.  git-gutter had no way to influence
+cells it did not render into, so a uniform gutter background required filling
+those cells via git-gutter itself, using `git-gutter:unchanged` (when
+`git-gutter:unchanged-sign` is set) or `git-gutter:separator` (when
+`git-gutter:always-show-separator` is non-nil).
+
+**Important gotcha:** `git-gutter:window-width` reserves space for the gutter
+column in every buffer, but on unchanged rows nothing is written into that space
+unless one of the two signs above is configured.  A cell that is reserved but
+never written falls back to the default frame or terminal background — so
+setting a background color on `git-gutter:unchanged` or `git-gutter:separator`
+has no visible effect unless the corresponding sign is also set (even a single
+space `" "`).  Once a sign is in place, those two faces control the background
+of every cell not covered by a diff sign, making them the key to a visually
+uniform column.
+
+To keep the gutter background in sync with the active theme without hardcoding
+a color, derive it from the `line-number` face:
+
+```lisp
+(defun my-git-gutter-update-faces ()
+  (let ((bg (face-background 'line-number nil t)))
+    (when bg
+      ;; All gutter cells share the same background as the line-number column.
+      (dolist (face '(git-gutter:added git-gutter:modified git-gutter:deleted
+                                       git-gutter:unchanged git-gutter:separator))
+        (set-face-background face bg))
+      ;; Make unchanged and separator invisible by matching foreground to background.
+      (dolist (face '(git-gutter:unchanged git-gutter:separator))
+        (set-face-foreground face bg)))))
+
+;; Re-run after every theme change (Emacs 29+).
+(add-hook 'enable-theme-functions (lambda (&rest _) (my-git-gutter-update-faces)))
+(my-git-gutter-update-faces)
+```
+
+#### Recommendation for theme designers
+
+On Emacs 31.1+, themes should set the background of the `margin` face —
+typically matching `line-number`'s background, or a related accent.  This
+single setting covers every margin cell in every buffer.
+
+For backward compatibility with Emacs ≤30.x, themes that include explicit
+support for git-gutter should additionally set the background of
+`git-gutter:unchanged` and `git-gutter:separator` to the same color.  Leaving
+these backgrounds unspecified is the most common cause of a broken-looking
+gutter column on those older Emacs versions: an empty stripe drawn in the
+frame's default background, mismatched against the line-number column.
+
 ### Hide gutter if there are no changes
 
 Hide gutter when there are no changes if `git-gutter:hide-gutter` is non-nil.

@@ -448,15 +448,40 @@ Argument TEST is the case before BODY execution."
                    (propertize " "
                                'display
                                `((margin left-margin)
-                                 ,(concat sign (overlay-get it 'linum-str))))))))
+                                 ,(concat sign (overlay-get it 'linum-str)))))
+      ;; Ensure changed signs win over separator/unchanged overlays.
+      (let ((raw (substring-no-properties sign)))
+        (when (string-match-p "\\S-" raw)
+          (overlay-put it 'priority 10))))))
 
-(defun git-gutter:put-signs (sign points)
+(defun git-gutter:wrap-prefix-for-sign (sign pos)
+  "Return a `wrap-prefix' string that renders SIGN in the left margin.
+Prepends the gutter sign to any existing `wrap-prefix' text property at POS
+so that continuation indentation (e.g. from `visual-wrap-prefix-mode') is
+preserved on wrapped rows."
+  (let ((existing (get-text-property pos 'wrap-prefix)))
+    (concat (git-gutter:before-string sign) (if (stringp existing) existing ""))))
+
+(defun git-gutter:put-signs (sign points &optional wrap-sign)
+  "Put SIGN at each position in POINTS.
+When `git-gutter:visual-line' is non-nil, continuation rows show WRAP-SIGN,
+or SIGN if WRAP-SIGN is nil."
   (if git-gutter:linum-enabled
       (git-gutter:put-signs-linum sign points)
     (dolist (pos points)
-      (let ((ov (make-overlay pos pos))
-            (gutter-sign (git-gutter:before-string sign)))
+      (let* ((eol (when git-gutter:visual-line
+                    (save-excursion (goto-char pos) (line-end-position))))
+             ;; Span to eol so `wrap-prefix' fires on every continuation row.
+             (ov (make-overlay pos (or eol pos)))
+             (gutter-sign (git-gutter:before-string sign)))
         (overlay-put ov 'before-string gutter-sign)
+        ;; Ensure changed signs win over separator/unchanged overlays.
+        (let ((raw (substring-no-properties sign)))
+          (when (string-match-p "\\S-" raw)
+            (overlay-put ov 'priority 10)))
+        (when eol
+          (overlay-put ov 'wrap-prefix
+                       (git-gutter:wrap-prefix-for-sign (or wrap-sign sign) pos)))
         (overlay-put ov 'git-gutter t)))))
 
 (defsubst git-gutter:sign-width (sign)
@@ -472,36 +497,26 @@ Argument TEST is the case before BODY execution."
     (+ (apply #'max (mapcar 'git-gutter:sign-width signs))
        (git-gutter:sign-width git-gutter:separator-sign))))
 
-(defun git-gutter:next-visual-line (arg)
-  (let ((line-move-visual t))
-    (or (ignore-errors
-          ;; next-line raises exception at end of buffer
-          (with-no-warnings
-            (next-line arg))
-          t)
-        (goto-char (point-max)))))
-
 (defun git-gutter:unchanged-line-p (line diffinfos)
   (cl-loop for info in diffinfos
            for start = (git-gutter-hunk-start-line info)
            for end = (git-gutter-hunk-end-line info)
            never (and (>= line start) (<= line end))))
 
+(defun git-gutter:propertized-unchanged-sign ()
+  (if git-gutter:unchanged-sign
+      (propertize git-gutter:unchanged-sign 'face 'git-gutter:unchanged)
+    " "))
+
 (defun git-gutter:view-for-unchanged (diffinfos)
   (save-excursion
-    (let ((sign (if git-gutter:unchanged-sign
-                    (propertize git-gutter:unchanged-sign
-                                'face 'git-gutter:unchanged)
-                  " "))
-          (move-fn (if git-gutter:visual-line
-                       #'git-gutter:next-visual-line
-                     #'forward-line))
+    (let ((sign (git-gutter:propertized-unchanged-sign))
           points)
       (goto-char (point-min))
       (while (not (eobp))
         (when (git-gutter:unchanged-line-p (line-number-at-pos) diffinfos)
           (push (point) points))
-        (funcall move-fn 1))
+        (forward-line 1))
       (git-gutter:put-signs sign points))))
 
 (defsubst git-gutter:check-file-and-directory ()
@@ -650,10 +665,6 @@ Argument TEST is the case before BODY execution."
   (save-excursion
     (goto-char (point-min))
     (cl-loop with curline = 1
-             with move-fn = (if git-gutter:visual-line
-                                #'git-gutter:next-visual-line
-                              #'forward-line)
-
              for info in diffinfos
              for start-line = (git-gutter-hunk-start-line info)
              for end-line = (git-gutter-hunk-end-line info)
@@ -663,16 +674,18 @@ Argument TEST is the case before BODY execution."
              do
              (let ((bound (progn
                             (forward-line (- end-line curline))
-                            (point))))
+                            (line-end-position))))
                (forward-line (- start-line end-line))
                (cl-case type
                  ((modified added)
                   (while (and (<= (point) bound) (not (eobp)))
                     (push (point) points)
-                    (funcall move-fn 1))
+                    (forward-line 1))
                   (git-gutter:put-signs sign points))
                  (deleted
-                  (git-gutter:put-signs sign (list (point)))
+                  ;; The line itself is unchanged; mark only its first row.
+                  (git-gutter:put-signs sign (list (point))
+                                        (git-gutter:propertized-unchanged-sign))
                   (forward-line 1)))
                (setq curline (1+ end-line))))))
 

@@ -1473,21 +1473,31 @@ WHERE)."
     (write-region nil nil tmpfile nil 'silent)))
 
 (defun git-gutter:original-file-content (file vcs)
-  (let ((coding-system-for-read (coding-system-base buffer-file-coding-system)))
+  "Return the version of FILE that the full update diffs against.
+That is `git-gutter:start-revision' if it is set; otherwise the index
+for git, the parent of the working copy for jj, and the base revision
+for svn, hg and bzr."
+  (let ((coding-system-for-read (coding-system-base buffer-file-coding-system))
+        ;; `git-gutter:start-revision' is buffer-local; read it before
+        ;; `with-temp-buffer'.
+        (revision (and (git-gutter:revision-set-p) git-gutter:start-revision)))
     (with-temp-buffer
       (cl-case vcs
         (git
-         (when (zerop (process-file "git" nil t nil "show" (concat ":" file)))
+         (when (zerop (process-file "git" nil t nil "show"
+                                    (concat revision ":" file)))
            (buffer-substring-no-properties (point-min) (point-max))))
         ((svn hg bzr)
          (let ((command (symbol-name vcs)))
-           (when (zerop (process-file command nil t nil "cat" file))
+           (when (zerop (apply #'process-file command nil t nil "cat"
+                               (append (and revision (list "-r" revision))
+                                       (list file))))
              (buffer-substring-no-properties (point-min) (point-max)))))
         (jj
          ;; FILE is relative to the repository root.  Reading @- does not
          ;; need a snapshot of the working copy.
          (when (zerop (process-file "jj" nil t nil "--ignore-working-copy"
-                                    "file" "show" "-r" "@-"
+                                    "file" "show" "-r" (or revision "@-")
                                     (format "root-file:%S" file)))
            (buffer-substring-no-properties (point-min) (point-max))))))))
 

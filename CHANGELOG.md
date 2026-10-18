@@ -11,6 +11,16 @@ Releases up to 0.90 are described in [Changes](Changes). Releases 0.91 to
 
 ## [Unreleased]
 
+### Fixed
+
+- Live update ignored `git-gutter:start-revision`: it compared the buffer
+  with the index (git), the parent of the working copy (jj) or the base
+  revision (svn, hg, bzr), and replaced the signs of the full update,
+  which compares with the start revision. After
+  `git-gutter:set-start-revision`, the signs for that revision showed
+  until the next live update. Live update now compares with the start
+  revision when it is set.
+
 ## [0.94.4] - 2026-09-25
 
 ### Fixed

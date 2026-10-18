@@ -915,6 +915,32 @@ on."
         (should (= shows 2)))
       (set-buffer-modified-p nil))))
 
+(ert-deftest git-gutter:live-update-start-revision ()
+  "With a start revision, live update compares the buffer with that revision."
+  (git-gutter-test:with-file-in-repo
+    (git-gutter-test:write-lines "f.txt" '("1" "2" "3" "4" "5"))
+    (git-gutter-test:git "commit" "-q" "-a" "-m" "init")
+    (git-gutter-test:write-lines "f.txt" '("1" "TWO" "3" "4" "5"))
+    (git-gutter-test:git "commit" "-q" "-a" "-m" "second")
+    (revert-buffer t t)
+    (git-gutter-test:wait-for-full-update)
+    (git-gutter:set-start-revision "HEAD^")
+    (git-gutter-test:wait-for-full-update)
+    (goto-char (point-min))
+    (forward-line 3)
+    (delete-region (point) (line-end-position))
+    (insert "FOUR")
+    (git-gutter:live-update)
+    (with-timeout (10 (error "live update did not finish"))
+      (while git-gutter--live-update-process
+        (accept-process-output nil 0.1)))
+    (should (equal (mapcar (lambda (h)
+                             (list (git-gutter-hunk-type h)
+                                   (git-gutter-hunk-start-line h)))
+                           git-gutter:diffinfos)
+                   '((modified 2) (modified 4))))
+    (set-buffer-modified-p nil)))
+
 (defun git-gutter-test:wait-for-full-update ()
   "Wait until the diff process of `git-gutter' has finished."
   (with-timeout (10 (error "git-gutter did not finish"))
@@ -1405,5 +1431,23 @@ With CHANGE-BUFFER, call it in the buffer and run a live update."
                       (delete-region (point) (line-end-position))
                       (insert "ONE")))
                    '((modified 1))))))
+
+(ert-deftest git-gutter:jj-live-update-start-revision ()
+  "With a start revision, live update compares the buffer with that revision."
+  (git-gutter-test:require-jj)
+  (git-gutter-test:with-jj-repo
+    (git-gutter-test:write-lines "f.txt" '("1" "2" "3" "4" "5"))
+    (git-gutter-test:jj "commit" "-m" "init")
+    (git-gutter-test:write-lines "f.txt" '("1" "TWO" "3" "4" "5"))
+    (git-gutter-test:jj "commit" "-m" "second")
+    (let ((git-gutter:start-revision "@--"))
+      (should (equal (git-gutter-test:jj-hunks
+                      (expand-file-name "f.txt")
+                      (lambda ()
+                        (goto-char (point-min))
+                        (forward-line 3)
+                        (delete-region (point) (line-end-position))
+                        (insert "FOUR")))
+                     '((modified 2) (modified 4)))))))
 
 ;;; test-git-gutter.el end here

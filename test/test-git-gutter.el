@@ -917,29 +917,39 @@ on."
 
 (ert-deftest git-gutter:live-update-start-revision ()
   "With a start revision, live update compares the buffer with that revision."
-  (git-gutter-test:with-file-in-repo
-    (git-gutter-test:write-lines "f.txt" '("1" "2" "3" "4" "5"))
-    (git-gutter-test:git "commit" "-q" "-a" "-m" "init")
-    (git-gutter-test:write-lines "f.txt" '("1" "TWO" "3" "4" "5"))
-    (git-gutter-test:git "commit" "-q" "-a" "-m" "second")
-    (revert-buffer t t)
-    (git-gutter-test:wait-for-full-update)
-    (git-gutter:set-start-revision "HEAD^")
-    (git-gutter-test:wait-for-full-update)
-    (goto-char (point-min))
-    (forward-line 3)
-    (delete-region (point) (line-end-position))
-    (insert "FOUR")
-    (git-gutter:live-update)
-    (with-timeout (10 (error "live update did not finish"))
-      (while git-gutter--live-update-process
-        (accept-process-output nil 0.1)))
-    (should (equal (mapcar (lambda (h)
-                             (list (git-gutter-hunk-type h)
-                                   (git-gutter-hunk-start-line h)))
-                           git-gutter:diffinfos)
-                   '((modified 2) (modified 4))))
-    (set-buffer-modified-p nil)))
+  (with-temporary-directory
+   (lambda ()
+     (git-gutter-test:git "init" "-q")
+     (git-gutter-test:write-lines "f.txt" '("1" "2" "3" "4" "5"))
+     (git-gutter-test:git "add" "f.txt")
+     (git-gutter-test:git "commit" "-q" "-m" "init")
+     (git-gutter-test:write-lines "f.txt" '("1" "TWO" "3" "4" "5"))
+     (git-gutter-test:git "commit" "-q" "-a" "-m" "second")
+     ;; Open the file after the commits: on Windows, editing a buffer
+     ;; whose file changed on disk asks about the conflict, also after
+     ;; `revert-buffer'.
+     (let ((buf (find-file-noselect (expand-file-name "f.txt"))))
+       (unwind-protect
+           (with-current-buffer buf
+             (git-gutter-mode 1)
+             (git-gutter-test:wait-for-full-update)
+             (git-gutter:set-start-revision "HEAD^")
+             (git-gutter-test:wait-for-full-update)
+             (goto-char (point-min))
+             (forward-line 3)
+             (delete-region (point) (line-end-position))
+             (insert "FOUR")
+             (git-gutter:live-update)
+             (with-timeout (10 (error "live update did not finish"))
+               (while git-gutter--live-update-process
+                 (accept-process-output nil 0.1)))
+             (should (equal (mapcar (lambda (h)
+                                      (list (git-gutter-hunk-type h)
+                                            (git-gutter-hunk-start-line h)))
+                                    git-gutter:diffinfos)
+                            '((modified 2) (modified 4)))))
+         (with-current-buffer buf (set-buffer-modified-p nil))
+         (kill-buffer buf))))))
 
 (ert-deftest git-gutter:set-start-revision-during-diff ()
   "Setting the start revision while a diff runs shows that revision's signs."

@@ -941,6 +941,25 @@ on."
                    '((modified 2) (modified 4))))
     (set-buffer-modified-p nil)))
 
+(ert-deftest git-gutter:set-start-revision-during-diff ()
+  "Setting the start revision while a diff runs shows that revision's signs."
+  (dolist (staged '(nil t))
+    (let ((git-gutter:staged-sign (and staged "S")))
+      (git-gutter-test:with-file-in-repo
+        (git-gutter-test:write-lines "f.txt" '("1" "2" "3"))
+        (git-gutter-test:git "commit" "-q" "-a" "-m" "second")
+        (revert-buffer t t)
+        (git-gutter-test:wait-for-full-update)
+        (git-gutter)
+        (should (get-buffer (git-gutter:diff-process-buffer (git-gutter:base-file))))
+        (git-gutter:set-start-revision "HEAD^")
+        (git-gutter-test:wait-for-full-update)
+        (should (equal (mapcar (lambda (h)
+                                 (list (git-gutter-hunk-type h)
+                                       (git-gutter-hunk-start-line h)))
+                               git-gutter:diffinfos)
+                       '((added 2))))))))
+
 (defun git-gutter-test:wait-for-full-update ()
   "Wait until the diff process of `git-gutter' has finished."
   (with-timeout (10 (error "git-gutter did not finish"))

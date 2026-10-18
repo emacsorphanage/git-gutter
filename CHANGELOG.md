@@ -20,6 +20,10 @@ Releases up to 0.90 are described in [Changes](Changes). Releases 0.91 to
   `git-gutter:set-start-revision`, the signs for that revision showed
   until the next live update. Live update now compares with the start
   revision when it is set.
+- `git-gutter:set-start-revision` did not show the new revision's signs
+  when a diff was running: `git-gutter` starts no new diff while one
+  runs, so the signs stayed those of the old revision until the next
+  update. It now kills the running diff first.
 
 ## [0.94.4] - 2026-09-25
 

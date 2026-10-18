@@ -863,13 +863,23 @@ WINDOW is deselected; then it does nothing."
 (defsubst git-gutter:diff-process-buffer (curfile)
   (concat " *git-gutter-" curfile "-*"))
 
+(defun git-gutter--kill-diff-process-buffers (proc-buf)
+  "Kill the buffer named PROC-BUF and the buffers of its diff processes.
+`git-gutter:start-combined-git-diff-process' runs its two processes in
+the buffers PROC-BUF-unstaged and PROC-BUF-head.  Killing a buffer kills
+its process."
+  (dolist (name (list proc-buf
+                      (concat proc-buf "-unstaged")
+                      (concat proc-buf "-head")))
+    (git-gutter:awhen (get-buffer name)
+      (kill-buffer it))))
+
 (defun git-gutter:kill-buffer-hook ()
   (git-gutter--delete-buffer-temp-files)
   ;; In an indirect buffer, the process buffer is the base buffer's.
   (unless (buffer-base-buffer)
-    (let ((buf (git-gutter:diff-process-buffer (git-gutter:base-file))))
-      (git-gutter:awhen (get-buffer buf)
-        (kill-buffer it)))))
+    (git-gutter--kill-diff-process-buffers
+     (git-gutter:diff-process-buffer (git-gutter:base-file)))))
 
 ;;;###autoload
 (defun git-gutter:linum-setup ()
@@ -1328,8 +1338,8 @@ still show the right sign, and delete the others."
   (when (or git-gutter:vcs-type (git-gutter:in-repository-p))
     (let* ((file (git-gutter:base-file))
            (proc-buf (git-gutter:diff-process-buffer file)))
-      (when (and (called-interactively-p 'interactive) (get-buffer proc-buf))
-        (kill-buffer proc-buf))
+      (when (called-interactively-p 'interactive)
+        (git-gutter--kill-diff-process-buffers proc-buf))
       (when (and file (file-exists-p file) (not (get-buffer proc-buf)))
         (git-gutter:start-diff-process (file-name-nondirectory file)
                                        (get-buffer-create proc-buf))))))
@@ -1409,6 +1419,10 @@ start revision."
     (unless (git-gutter:revision-valid-p start-rev)
       (error "Revision '%s' is not valid." start-rev)))
   (setq git-gutter:start-revision start-rev)
+  ;; A running diff compares with the old revision, and `git-gutter'
+  ;; starts no new diff while it runs.
+  (git-gutter--kill-diff-process-buffers
+   (git-gutter:diff-process-buffer (git-gutter:base-file)))
   (git-gutter))
 
 (defun git-gutter:update-all-windows ()

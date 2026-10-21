@@ -1,7 +1,7 @@
 ;; -*- mode: eask; lexical-binding: t -*-
 
 (package "git-gutter"
-         "0.94.5"
+         "0.94.6"
          "Port of Sublime Text plugin GitGutter")
 
 (package-file "git-gutter.el")

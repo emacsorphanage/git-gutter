@@ -11,6 +11,8 @@ Releases up to 0.90 are described in [Changes](Changes). Releases 0.91 to
 
 ## [Unreleased]
 
+## [0.94.6] - 2026-10-21
+
 ### Fixed
 
 - After `write-file` (`C-x C-w`) to a file outside the repository, the
@@ -224,7 +226,8 @@ Releases up to 0.90 are described in [Changes](Changes). Releases 0.91 to
   `when-let`, obsolete since Emacs 31.1
   ([#236](https://github.com/emacsorphanage/git-gutter/pull/236)).
 
-[Unreleased]: https://github.com/alberti42/fork-git-gutter/compare/0.94.5...HEAD
+[Unreleased]: https://github.com/alberti42/fork-git-gutter/compare/0.94.6...HEAD
+[0.94.6]: https://github.com/alberti42/fork-git-gutter/compare/0.94.5...0.94.6
 [0.94.5]: https://github.com/alberti42/fork-git-gutter/compare/0.94.4...0.94.5
 [0.94.4]: https://github.com/alberti42/fork-git-gutter/compare/0.94.3...0.94.4
 [0.94.3]: https://github.com/alberti42/fork-git-gutter/compare/0.94.2...0.94.3

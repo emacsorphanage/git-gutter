@@ -1278,6 +1278,49 @@ The base buffer does not see them in its `after-change-functions'."
     (should (equal (mapcar #'git-gutter-hunk-start-line git-gutter:diffinfos) '(1)))
     (set-buffer-modified-p nil)))
 
+;; `write-file' gives the buffer a new file name, maybe in another repository.
+
+(ert-deftest git-gutter:write-file-out-of-repository ()
+  "Writing the buffer to a file outside every repository turns the mode off."
+  (let ((outside (make-temp-file "git-gutter-test-" t)))
+    (unwind-protect
+        (git-gutter-test:with-file-in-repo
+          (git-gutter-test:live-update-and-wait)
+          (write-file (expand-file-name "g.txt" outside))
+          (should-not git-gutter-mode)
+          (should-not git-gutter:vcs-type)
+          (should-not git-gutter:live-update-cache)
+          (insert "y")
+          (git-gutter:live-update))
+      (delete-directory outside t))))
+
+(ert-deftest git-gutter:write-file-to-another-repository ()
+  "Writing the buffer into another repository uses that repository."
+  (let ((other (file-name-as-directory (make-temp-file "git-gutter-test-" t))))
+    (unwind-protect
+        (git-gutter-test:with-file-in-repo
+          (let ((default-directory other))
+            (git-gutter-test:git "init" "-q"))
+          (write-file (expand-file-name "g.txt" other))
+          (should git-gutter-mode)
+          (git-gutter-test:wait-for-full-update)
+          (git-gutter-test:live-update-and-wait)
+          (should (equal (car git-gutter:live-update-cache)
+                         (file-truename other)))
+          (set-buffer-modified-p nil))
+      (delete-directory other t))))
+
+(ert-deftest git-gutter:live-update-without-repository ()
+  "Live update does nothing when the repository is gone."
+  (git-gutter-test:with-file-in-repo
+    (delete-directory ".git" t)
+    (goto-char (point-min))
+    (insert "x")
+    (git-gutter:live-update)
+    (should (equal git-gutter:live-update-cache '(nil . nil)))
+    (should-not git-gutter--live-update-process)
+    (set-buffer-modified-p nil)))
+
 (ert-deftest git-gutter:live-update-interval ()
   "nil, 0 and negative values of `git-gutter:update-interval' mean off."
   (dolist (case '((nil . nil) (0 . nil) (-1 . nil) (0.1 . 0.1) (2 . 2)))

@@ -11,6 +11,16 @@ Releases up to 0.90 are described in [Changes](Changes). Releases 0.91 to
 
 ## [Unreleased]
 
+### Fixed
+
+- After `write-file` (`C-x C-w`) to a file outside the repository, the
+  live update timer signaled `(wrong-type-argument arrayp nil)` every
+  idle period: the mode stayed on with the old version control system,
+  which found no repository root. When the buffer's file name changes,
+  the mode is now turned off and on again, so it turns off outside every
+  repository and uses the new repository otherwise. Live update also
+  does nothing, without an error, when the repository root is gone.
+
 ## [0.94.5] - 2026-10-18
 
 ### Fixed

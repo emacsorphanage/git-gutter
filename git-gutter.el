@@ -936,6 +936,8 @@ bindings (OPERATION)."
                       #'git-gutter--delete-buffer-temp-files nil t)
             (add-hook 'kill-emacs-hook #'git-gutter--delete-temp-files)
             (add-hook 'after-change-functions #'git-gutter--after-change nil t)
+            (add-hook 'after-set-visited-file-name-hook
+                      #'git-gutter--visited-file-name-change nil t)
             (add-hook 'window-buffer-change-functions
                       #'git-gutter:window-buffer-change-function nil t)
             (add-hook 'window-selection-change-functions
@@ -951,6 +953,8 @@ bindings (OPERATION)."
     (remove-hook 'kill-buffer-hook 'git-gutter:kill-buffer-hook t)
     (remove-hook 'change-major-mode-hook #'git-gutter--delete-buffer-temp-files t)
     (remove-hook 'after-change-functions #'git-gutter--after-change t)
+    (remove-hook 'after-set-visited-file-name-hook
+                 #'git-gutter--visited-file-name-change t)
     (git-gutter--set-edited t)
     (git-gutter--install-update-hooks nil)
     (remove-hook 'window-buffer-change-functions
@@ -958,6 +962,15 @@ bindings (OPERATION)."
     (remove-hook 'window-selection-change-functions
                  #'git-gutter:window-selection-change-function t)
     (git-gutter:clear-gutter)))
+
+(defun git-gutter--visited-file-name-change ()
+  "Turn `git-gutter-mode' off and on again for the new file name.
+`write-file' and `set-visited-file-name' can move the buffer to another
+repository, to another version control system, or out of every
+repository."
+  (git-gutter-mode -1)
+  (kill-local-variable 'git-gutter:vcs-type)
+  (git-gutter-mode +1))
 
 (defun git-gutter--turn-on ()
   (when (and (buffer-file-name)
@@ -1646,16 +1659,21 @@ for the repository root and once for the original version of FILE."
   (or git-gutter:live-update-cache
       (setq git-gutter--temp-files-owner (current-buffer)
             git-gutter:live-update-cache
-            (let* ((root (file-truename (git-gutter:vcs-root git-gutter:vcs-type)))
-                   (original (make-temp-file "git-gutter-orig")))
-              ;; ROOT is a true name; the file name must be one too, or a
-              ;; path through a symbolic link becomes "../../..." relative
-              ;; to ROOT.
-              (unless (git-gutter:write-original-content
-                       original (file-relative-name (file-truename file) root))
-                (delete-file original)
-                (setq original nil))
-              (cons root original)))))
+            (let ((root (git-gutter:vcs-root git-gutter:vcs-type)))
+              ;; Without a root (the repository is gone), cache no original
+              ;; version: live update does nothing until the next full update.
+              (if (not root)
+                  (cons nil nil)
+                (let ((root (file-truename root))
+                      (original (make-temp-file "git-gutter-orig")))
+                  ;; ROOT is a true name; the file name must be one too, or a
+                  ;; path through a symbolic link becomes "../../..." relative
+                  ;; to ROOT.
+                  (unless (git-gutter:write-original-content
+                           original (file-relative-name (file-truename file) root))
+                    (delete-file original)
+                    (setq original nil))
+                  (cons root original)))))))
 
 (defun git-gutter:live-update ()
   (git-gutter--own-temp-files)
